@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Test API Contact</title>
+</head>
+<body>
+  <h2>Formulaire test contact</h2>
+  <form id="contactForm">
+    <input type="text" name="user_name" placeholder="Nom" required><br><br>
+    <input type="email" name="user_email" placeholder="Email" required><br><br>
+    <textarea name="message" placeholder="Votre message" required></textarea><br><br>
+    <button type="submit">Envoyer</button>
+  </form>
+  <p id="result"></p>
+
+  <script>
+    const form = document.getElementById("contactForm");
+    const result = document.getElementById("result");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(form).entries());
+
+      try {
+        const res = await fetch("https://cdotchad.com/api/contact", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ ...data, recaptchaToken: "test1234" }),
+        });
+
+        const json = await res.json();
+        result.innerText = json.message || "Succès.";
+      } catch (err) {
+        console.error(err);
+        result.innerText = "Erreur : " + err.message;
+      }
+    });
+  </script>
+</body>
+</html>

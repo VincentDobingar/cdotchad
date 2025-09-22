@@ -1,0 +1,157 @@
+import { pool } from "../config/db.js";
+
+export async function getAdminStats(_req, res) {
+  try {
+    const [offres, cands, users] = await Promise.all([
+      pool.query("SELECT COUNT(*)::int AS n FROM offres"),
+      pool.query("SELECT COUNT(*)::int AS n FROM candidatures"),
+      pool.query("SELECT COUNT(*)::int AS n FROM utilisateurs"),
+    ]);
+    res.json({
+      total_offres: offres.rows[0].n,
+      total_candidatures: cands.rows[0].n,
+      total_utilisateurs: users.rows[0].n,
+    });
+  } catch (err) {
+    console.error("❌ [ADMIN/STATS] Error:", err);
+    res.status(500).json({ error: "STATS_FAILED", details: err.message });
+  }
+}
+
+export async function getCandidaturesParMois(req, res) {
+  const year = String(req.query.year || new Date().getFullYear());
+  try {
+    const { rows } = await pool.query(
+      `
+      SELECT TO_CHAR(date_trunc('month', date_candidature), 'YYYY-MM') AS mois,
+             COUNT(*)::int AS total
+      FROM candidatures
+      WHERE EXTRACT(YEAR FROM date_candidature) = $1::int
+      GROUP BY 1
+      ORDER BY 1 ASC
+      `,
+      [year]
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error("❌ [ADMIN/STATS/mois] Error:", err);
+    res.status(500).json({ error: "STATS_MONTH_FAILED", details: err.message });
+  }
+}
+
+export async function getAdminStatsResume(req, res) {
+  const year = String(req.query.year || new Date().getFullYear());
+  const month = req.query.month ? String(req.query.month).padStart(2, "0") : null;
+
+  try {
+    const joinDateCond = month
+      ? `AND EXTRACT(YEAR FROM c.date_candidature) = $1::int AND TO_CHAR(c.date_candidature,'MM') = $2`
+      : `AND EXTRACT(YEAR FROM c.date_candidature) = $1::int`;
+    const params = month ? [year, month] : [year];
+
+    const [totalCands, totalUsers, totalOffres] = await Promise.all([
+      pool.query("SELECT COUNT(*)::int AS n FROM candidatures"),
+      pool.query("SELECT COUNT(*)::int AS n FROM utilisateurs"),
+      pool.query("SELECT COUNT(*)::int AS n FROM offres"),
+    ]);
+
+    const candidaturesParMois = await pool.query(
+      `
+      SELECT TO_CHAR(date_trunc('month', date_candidature), 'MM') AS mois,
+             COUNT(*)::int AS total
+      FROM candidatures
+      WHERE EXTRACT(YEAR FROM date_candidature) = $1::int
+      ${month ? "AND TO_CHAR(date_candidature,'MM') = $2" : ""}
+      GROUP BY 1
+      ORDER BY 1 ASC
+      `,
+      params
+    );
+
+    const candidaturesParOffre = await pool.query(
+      `
+      SELECT o.titre,
+             COALESCE(COUNT(c.id), 0)::int AS total
+      FROM offres o
+      LEFT JOIN candidatures c
+             ON o.id = c.offre_id
+            ${joinDateCond}
+      GROUP BY o.titre
+      ORDER BY total DESC
+      `,
+      params
+    );
+
+    const parTypeContrat = await pool.query(
+      `
+      SELECT o.type_contrat,
+             COALESCE(COUNT(c.id), 0)::int AS total
+      FROM offres o
+      LEFT JOIN candidatures c
+             ON o.id = c.offre_id
+            ${joinDateCond}
+      GROUP BY o.type_contrat
+      ORDER BY total DESC
+      `,
+      params
+    );
+
+    const parLieu = await pool.query(
+      `
+      SELECT o.lieu,
+             COALESCE(COUNT(c.id), 0)::int AS total
+      FROM offres o
+      LEFT JOIN candidatures c
+             ON o.id = c.offre_id
+            ${joinDateCond}
+      GROUP BY o.lieu
+      ORDER BY total DESC
+      LIMIT 5
+      `,
+      params
+    );
+
+    const parCategorie = await pool.query(
+      `
+      SELECT o.categorie,
+             COALESCE(COUNT(c.id), 0)::int AS total
+      FROM offres o
+      LEFT JOIN candidatures c
+             ON o.id = c.offre_id
+            ${joinDateCond}
+      GROUP BY o.categorie
+      ORDER BY total DESC
+      `,
+      params
+    );
+
+    const nextYear = String(Number(year) + 1);
+    const multiYearData = await pool.query(
+      `
+      SELECT TO_CHAR(date_trunc('month', date_candidature),'MM') AS mois,
+             EXTRACT(YEAR FROM date_candidature)::TEXT AS annee,
+             COUNT(*)::int AS total
+      FROM candidatures
+      WHERE EXTRACT(YEAR FROM date_candidature) IN ($1::int, $2::int)
+      GROUP BY annee, mois
+      ORDER BY annee, mois
+      `,
+      [year, nextYear]
+    );
+
+    res.json({
+      total_candidatures: totalCands.rows[0].n,
+      total_utilisateurs: totalUsers.rows[0].n,
+      total_offres: totalOffres.rows[0].n,
+      candidatures_par_mois: candidaturesParMois.rows,
+      candidatures_par_offre: candidaturesParOffre.rows,
+      par_type_contrat: parTypeContrat.rows,
+      par_lieu: parLieu.rows,
+      par_categorie: parCategorie.rows,
+      multi_year_data: multiYearData.rows,
+    });
+  } catch (err) {
+    console.error("❌ [ADMIN/STATS/resume] Error:", err);
+    res.status(500).json({ error: "STATS_RESUME_FAILED", details: err.message });
+  }
+}
