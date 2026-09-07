@@ -118,6 +118,7 @@ app.get(`${BASE}/`, (_req, res) => res.send("✅ API CDO Tchad opérationnelle !
 /* ---------------------- Imports de routes (tes noms) -------------- */
 import adminRoutes from "./routes/admin.js";
 import adminStatsRoutes from "./routes/adminStats.routes.js";
+import authRoutes from "./routes/auth.routes.js";
 import utilisateursRoutes from "./routes/utilisateurs.routes.js";
 import actualitesRoutes from "./routes/actualites.routes.js";
 import contactRoutes from "./routes/contact.routes.js";
@@ -126,11 +127,12 @@ import servicesRoutes from "./routes/services.routes.js";
 import galerieRoutes from "./routes/galerie.routes.js";
 import offresRoutes from "./routes/offres.js";
 import candidatureRoutes from "./routes/candidatureRoutes.js";
-import recrutementRoutes from "./routes/recrutement.routes.js";
+
 
 /* ------------------- Montage des routers -------------------------- */
 app.use(`${BASE}/admin`, adminRoutes);
 app.use(`${BASE}/admin/stats`, adminStatsRoutes);
+app.use(`${BASE}/auth`, authRoutes);
 app.use(`${BASE}/utilisateurs`, utilisateursRoutes);
 app.use(`${BASE}/actualites`, actualitesRoutes);
 app.use(`${BASE}/contact`, contactRoutes);
@@ -139,7 +141,6 @@ app.use(`${BASE}/services`, servicesRoutes);
 app.use(`${BASE}/galerie`, galerieRoutes);
 app.use(`${BASE}/offres`, offresRoutes);
 app.use(`${BASE}/candidatures`, candidatureRoutes);
-app.use(`${BASE}/recrutement`, recrutementRoutes);
 
 /* ----------------------- 404 & gestion erreurs -------------------- */
 app.use((req, res, next) => {

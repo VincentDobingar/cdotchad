@@ -1,0 +1,32 @@
+# Dépendances et builds
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Variables d'environnement et secrets
+.env
+.env.*
+!.env.example
+
+# Documents utilisateur / candidatures (ne doivent jamais être versionnés)
+uploads/
+backend/uploads/
+
+# Archives et sauvegardes
+*.zip
+*.tar
+*.bak
+*.bak.*
+*.old
+*.sqlite
+
+# Documents métier personnels (devis, gabarits, cachet, signature) — hors dépôt
+*.pub
+
+# Éditeurs / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.swp

@@ -1,12 +1,12 @@
 // 📁 routes/messages.routes.js
 import express from "express";
 import { pool } from "../config/db.js";
-import { verifyAdminToken } from "../middlewares/verifyAdminToken.js";
+import { requireRole } from "../middlewares/requireRole.js";
 
 const router = express.Router();
 
 // ✅ GET tous les messages (protégé)
-router.get("/", verifyAdminToken, async (req, res) => {
+router.get("/", requireRole("admin", "superadmin"), async (req, res) => {
   try {
     const result = await pool.query("SELECT * FROM messages_contact ORDER BY date_envoi DESC");
     res.json(result.rows);
@@ -17,7 +17,7 @@ router.get("/", verifyAdminToken, async (req, res) => {
 });
 
 // ✅ DELETE un message (protégé)
-router.delete("/:id", verifyAdminToken, async (req, res) => {
+router.delete("/:id", requireRole("admin", "superadmin"), async (req, res) => {
   const { id } = req.params;
   try {
     await pool.query("DELETE FROM messages_contact WHERE id = $1", [id]);

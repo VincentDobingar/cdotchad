@@ -4,8 +4,7 @@ import { rateLimit, ipKeyGenerator } from "express-rate-limit";
 import { pool } from "../config/db.js";
 
 // 🔐 Middlewares
-import { verifyAdminToken } from "../middlewares/verifyAdminToken.js";
-import { verifySuperAdmin } from "../middlewares/verifySuperAdmin.js";
+import { requireRole } from "../middlewares/requireRole.js";
 
 // 📥 Contrôleurs principaux
 import {
@@ -47,15 +46,15 @@ router.post("/login", loginLimiter, loginAdmin);
 router.post("/refresh", refreshSession);
 
 // Infos admin connecté
-router.get("/me", verifyAdminToken, (req, res) => {
+router.get("/me", requireRole("admin", "superadmin"), (req, res) => {
   // renvoyer le profil minimal
   res.json({ admin: { id: req.admin.id, email: req.admin.email, role: req.admin.role } });
 });
 
-router.get("/profile", verifyAdminToken, getAdminMe);
+router.get("/profile", requireRole("admin", "superadmin"), getAdminMe);
 
 // Changer mot de passe (admin connecté)
-router.put("/change-password", verifyAdminToken, changePassword);
+router.put("/change-password", requireRole("admin", "superadmin"), changePassword);
 
 // Mot de passe oublié / reset (public)
 router.post("/forgot-password", forgotPassword);
@@ -64,17 +63,17 @@ router.post("/reset-password/:token", resetPassword);
 /* ---------------------------
    👥 Gestion des administrateurs
 ---------------------------- */
-router.get("/admins", verifyAdminToken, getAllAdmins);
+router.get("/admins", requireRole("admin", "superadmin"), getAllAdmins);
 
-router.post("/admins", verifyAdminToken, verifySuperAdmin, ajouterAdministrateur);
+router.post("/admins", requireRole("superadmin"), ajouterAdministrateur);
 
 // Validation légère de l'ID (numérique)
-router.delete("/admins/:id", verifyAdminToken, verifySuperAdmin, deleteAdmin);
+router.delete("/admins/:id", requireRole("superadmin"), deleteAdmin);
 
 /* ---------------------------
    🧨 Réinitialisation base (ultra-protégée)
 ---------------------------- */
-router.delete("/reset", verifyAdminToken, verifySuperAdmin, async (_req, res) => {
+router.delete("/reset", requireRole("superadmin"), async (_req, res) => {
   const isProd = process.env.NODE_ENV === "production";
   if (isProd && process.env.ALLOW_DB_RESET !== "true") {
     return res.status(403).json({ error: "RESET_FORBIDDEN", message: "Réinitialisation désactivée en production." });
@@ -95,7 +94,7 @@ router.delete("/reset", verifyAdminToken, verifySuperAdmin, async (_req, res) =>
 /* ---------------------------
    ✅ Vérification du token
 ---------------------------- */
-router.get("/verify-token", verifyAdminToken, (req, res) => {
+router.get("/verify-token", requireRole("admin", "superadmin"), (req, res) => {
   res.json({ message: "Token valide ✅", admin: req.admin });
 });
 

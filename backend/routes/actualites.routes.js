@@ -1,6 +1,6 @@
 // 📁 routes/actualites.routes.js
 import express from "express";
-import { verifyAdminToken } from "../middlewares/verifyAdminToken.js";
+import { requireRole } from "../middlewares/requireRole.js";
 import { uploadImageActu } from "../middlewares/uploadImage.js";
 import {
   getActualitesStats,
@@ -34,12 +34,12 @@ router.get("/categories", getCategoriesActualites);
 router.get("/", getActualites);
 
 // 🔹 CRUD (protégé)
-router.post("/", verifyAdminToken, uploadImageActu.single("image"), createActualite);
+router.post("/", requireRole("admin", "superadmin"), uploadImageActu.single("image"), createActualite);
 
 // Option 1 : forcer un id numérique pour éviter les collisions de routes
 router.get("/:id", mustBeNumericId, getActualiteById);
-router.put("/:id", verifyAdminToken, uploadImageActu.single("image"), mustBeNumericId, updateActualite);
-router.delete("/:id", verifyAdminToken, mustBeNumericId, deleteActualite);
+router.put("/:id", requireRole("admin", "superadmin"), uploadImageActu.single("image"), mustBeNumericId, updateActualite);
+router.delete("/:id", requireRole("admin", "superadmin"), mustBeNumericId, deleteActualite);
 
 // Si tu veux aussi un accès par slug plus tard :
 // router.get("/slug/:slug", getActualiteBySlug);

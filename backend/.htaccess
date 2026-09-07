@@ -1,3 +1,10 @@
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
+PassengerAppRoot "/home/cp1740442p04/public_html/backend"
+PassengerBaseURI "/backend"
+PassengerNodejs "/home/cp1740442p04/nodevenv/public_html/backend/18/bin/node"
+PassengerAppType node
+PassengerStartupFile index.cjs
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
 # ~/public_html/backend/.htaccess
 PassengerEnabled on
 PassengerAppEnv production
@@ -5,7 +12,7 @@ PassengerAppRoot "/home/cp1740442p04/public_html/backend"
 PassengerAppType node
 PassengerStartupFile index.cjs
 PassengerBaseURI "/backend"
-PassengerNodejs "/home/cp1740442p04/nodevenv/public_html/backend/20/bin/node"
+PassengerNodejs "/home/cp1740442p04/nodevenv/public_html/backend/18/bin/node"
 
 # 👇 add this line
 SetEnv UNDICI_NO_WASM 1

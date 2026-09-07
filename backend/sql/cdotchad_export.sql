@@ -60,41 +60,6 @@ ALTER SEQUENCE public.actualites_id_seq OWNED BY public.actualites.id;
 
 
 --
--- Name: admin_users; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.admin_users (
-    id integer NOT NULL,
-    username character varying(100) NOT NULL,
-    password_hash text NOT NULL
-);
-
-
-ALTER TABLE public.admin_users OWNER TO postgres;
-
---
--- Name: admin_users_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.admin_users_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public.admin_users_id_seq OWNER TO postgres;
-
---
--- Name: admin_users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.admin_users_id_seq OWNED BY public.admin_users.id;
-
-
---
 -- Name: administrateurs; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -424,13 +389,6 @@ ALTER TABLE ONLY public.actualites ALTER COLUMN id SET DEFAULT nextval('public.a
 
 
 --
--- Name: admin_users id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.admin_users ALTER COLUMN id SET DEFAULT nextval('public.admin_users_id_seq'::regclass);
-
-
---
 -- Name: administrateurs id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -496,15 +454,6 @@ COPY public.actualites (id, titre, contenu, image, date_publication, categorie) 
 3	Le Conseil Financier CDO consulting accompagne Pendé Investissement	<p>Le Conseil Financier CDO consulting accompagne Pendé Investissement à la Représentation Afrique Centrale du Fonds Africain de Garanti et de Coopération Economique (FAGACE) basé à Douala au Cameroun pour la délivrance de la contre-garantie bancaire des demandes de financement clients.</p>	/uploads/actualites/actu-1750690694025-3811.png	2022-10-30 00:00:00	Formation
 4	CDO Consulting : Signataire des Principes d’apprentissage de l’IFC.	<p>Félicitations&nbsp;à&nbsp;CDO&nbsp;Consulting&nbsp;pour&nbsp;être&nbsp;devenu&nbsp;signataire&nbsp;des&nbsp;Principes d’apprentissage de l’IFC. Ce faisant, votre équipe s’est engagée à améliorer continuellement vos programmes de formation pour les aligner sur les principes d’apprentissage de l’IFC.</p><p>Devenez un&nbsp;défenseur des&nbsp;Principes d’apprentissage&nbsp;en soulignant l’importance d’adhérer aux principes fondamentaux qui rendent un&nbsp;projet d’amélioration de la performance percutant, inclusif, évolutif et durable. Envisagez&nbsp;de&nbsp;nommer&nbsp;une autre organisation de performance ou d’apprentissage pour devenir&nbsp;signataire&nbsp;. Incluez&nbsp;un&nbsp;badge&nbsp;de&nbsp;signataire dans votre site&nbsp;Web, vos supports marketing, vos communications, vos réseaux sociaux, etc. Veuillez lier le badge à la page&nbsp;:&nbsp;https://www.growlearnconnect.org/principles-learning, si vous comptez l’utiliser en ligne. Faites une annonce et une promesse de don sur les réseaux sociaux en utilisant les points clés des exemples ci-dessous&nbsp;: En tant qu’organisation engagée dans la conception et la réalisation de projets de formation selon les normes les plus élevées, nous souscrivons pleinement aux Principes d’apprentissage de l’IFC et sommes ravis de devenir signataire. Nous sommes fiers d’approuver les Principes d’apprentissage&nbsp;! Nous croyons fermement qu’il faut tirer parti des normes les plus élevées pour aider nos clients à réussir. Les principes d’apprentissage d’IFC s’alignent sur notre philosophie de formation, donc l’approbation des principes était une solution naturelle. En tant que signataire des Principes d’apprentissage d’IFC, nous sommes ravis de rejoindre une communauté internationale de formateurs, d’institutions financières et d’organisations internationales de premier plan qui souscrivent aux normes les plus élevées en matière de formation. Devenir signataire des Principes d’apprentissage renforce la crédibilité de notre organisation et permet à nos clients de savoir que nous nous engageons à respecter les normes internationales de qualité et d’impact. Veuillez utiliser les hashtags suivants lorsque vous partagez du matériel ou des informations sur le programme GrowLearnConnect&nbsp;: #GrowLearnConnect et #PrinciplesForLearning</p>	/uploads/actualites/actu-1750690783626-2929.png	2022-09-27 00:00:00	Formation
 5	CDO Consulting : L’expertise financière de haut standing	<p><strong style="color: rgb(0, 0, 0);"><em>Depuis sa création en septembre 2021, le Cabinet d’expertise financière CDO Consulting forme et accompagne constamment les entreprises d’envergure parmi lesquelles, les entreprises du secteur pétroliers et les plus grandes banques de la place.</em></strong></p><p><span style="color: rgb(0, 0, 0);">Certifié Formateur des formateurs par la Banque Mondiale, CDO Consulting accompagne les entreprises dans la formation de leurs personnels. Depuis deux ans, les principaux clients de CDO Consulting proviennent essentiellement des banques, des industries agroalimentaires mais également des entreprises du secteur pétrolier. On cite aussi des projets de la Banque Mondiale à travers des études de faisabilités et autres.</span></p><p><span style="color: rgb(0, 0, 0);">La procédure utilisée par CDO Consulting est simple mais polyvalent et professionnelle. Un catalogue spécifique explicitant les types de formations à la carte est mis à la disposition des clients. Pour des besoins de formations spécifiques à la demande, un canevas de discussion et d’adaptation permettant de rassembler les outils nécessaires relatif au module sollicité est mis en place.</span></p><p><span style="color: rgb(0, 0, 0);">Selon le Gérant de CDO Consulting Sougnabé Oualoumi, la création de CDO Consulting est à la base, née du souci de combler les besoins en personnels qualifiés des entreprises. «&nbsp;</span><em style="color: rgb(0, 0, 0);">Nous avons constaté qu’il y a assez de besoins de formations des jeunes cadres qui intègrent le milieu professionnel. Suite à ce constat, nous nous sommes convenus de mettre en place une structure qui assurerait l’accompagnement des entreprises dans la formation des jeunes compte tenu de nos expériences capitalisées dans différents domaines</em><span style="color: rgb(0, 0, 0);">&nbsp;», explique-il.</span></p><p><span style="color: rgb(0, 0, 0);">Si la formation est une opportunité pour les entreprises, plusieurs directions des ressources humaines, restent retissant à cette dynamique. La raison principale est le départ des agents formés qui démissionnent après avoir bénéficiés de la formation. Pour Sougnabé Oualoumi, cette crainte ne doit pas entraver la formation du personnel. Car, les employés non formés sont moins productifs pour leurs employeurs. «&nbsp;</span><em style="color: rgb(0, 0, 0);">L’école ne donne pas tout. Il faut former les gens pour qu’ils soient à la hauteur des taches qui leurs sont confiées. La formation est considérée comme un outil de production à part entière. Pas de formation, pas de production. Nous demandons aux entreprises de faire confiances à nos notre expertise car nous avons de de l’expérience et la compétence requise&nbsp;</em><span style="color: rgb(0, 0, 0);">», a spécifié le Gérant de CDO Consulting Sougnabé Oualoumi.</span></p><p><span style="color: rgb(0, 0, 0);">D’une manière générale, dans le domaine de management des organisations, CDO Consulting intervient sur la Formation du personnel, le Recrutement et l’Externalisation de la paie.</span></p><p><span style="color: rgb(0, 0, 0);">Dans le domaine des Finances, </span><strong style="color: rgb(0, 0, 0);">CDO</strong><span style="color: rgb(0, 0, 0);"> Consulting accompagne les clients dans la recherche des financements.</span><em style="color: rgb(0, 0, 0);"> «&nbsp;Nous accompagnons les clients qui cherchent des financements auprès des banques. Etant banquier de formation, nous savons les difficultés rencontrées par les banques dans la structuration de leurs dossiers lorsque les besoins sont mal exprimés par les clients. Nous conseillons les clients à mieux formuler leurs besoins à travers un business plan que nous aidons dans l’élaboration. Ceci facilite la compréhension entre les banques et les clients </em><span style="color: rgb(0, 0, 0);">», relève le Gérant de CDO Consulting.&nbsp;En termes de Formalisation des structures informelles, CDO Consulting accompagne dans l’élaboration des états financiers des entreprises.</span></p><p><span style="color: rgb(0, 0, 0);">L’Assistance fiscale qui est aussi au cœur de notre métier permet d’accompagner les clients des clients à travers les déclarations fiscales périodiques et la maitrise de leurs droits et devoirs en matière fiscale.</span></p><p><span style="color: rgb(0, 0, 0);">Le Cabinet assure aussi la Représentation commerciale et aide dans l’élaboration de la Stratégie commerciale pour les entreprises qui en font la demande.</span></p><p><span style="color: rgb(0, 0, 0);">La Transformation des organisations en difficultés est également notre domaine de compétence.</span></p>	/uploads/actualites/actu-1750690863384-4268.jpg	2023-07-13 00:00:00	Formation
-\.
-
-
---
--- Data for Name: admin_users; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.admin_users (id, username, password_hash) FROM stdin;
-1	Vincent.dobingar	Dob123
 \.
 
 
@@ -620,13 +569,6 @@ SELECT pg_catalog.setval('public.actualites_id_seq', 5, true);
 
 
 --
--- Name: admin_users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.admin_users_id_seq', 1, true);
-
-
---
 -- Name: administrateurs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -688,22 +630,6 @@ SELECT pg_catalog.setval('public.utilisateurs_id_seq', 1, false);
 
 ALTER TABLE ONLY public.actualites
     ADD CONSTRAINT actualites_pkey PRIMARY KEY (id);
-
-
---
--- Name: admin_users admin_users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.admin_users
-    ADD CONSTRAINT admin_users_pkey PRIMARY KEY (id);
-
-
---
--- Name: admin_users admin_users_username_key; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.admin_users
-    ADD CONSTRAINT admin_users_username_key UNIQUE (username);
 
 
 --
@@ -800,6 +726,110 @@ ALTER TABLE ONLY public.applications
 
 ALTER TABLE ONLY public.candidatures
     ADD CONSTRAINT fk_offre FOREIGN KEY (offre_id) REFERENCES public.offres(id) ON DELETE CASCADE;
+
+
+--
+-- Tables ajoutées lors du nettoyage Phase 0 : utilisées par le code actif
+-- (services.routes.js, contact.service.js) mais absentes de l'export d'origine.
+-- Schéma reconstitué à partir des requêtes SQL littérales du code, colonne par colonne.
+--
+
+--
+-- Name: services; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.services (
+    id integer NOT NULL,
+    titre text NOT NULL,
+    description text,
+    icone text,
+    created_at timestamp without time zone DEFAULT now()
+);
+
+
+ALTER TABLE public.services OWNER TO postgres;
+
+CREATE SEQUENCE public.services_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.services_id_seq OWNER TO postgres;
+ALTER SEQUENCE public.services_id_seq OWNED BY public.services.id;
+ALTER TABLE ONLY public.services ALTER COLUMN id SET DEFAULT nextval('public.services_id_seq'::regclass);
+
+ALTER TABLE ONLY public.services
+    ADD CONSTRAINT services_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: sous_services; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.sous_services (
+    id integer NOT NULL,
+    service_id integer NOT NULL,
+    nom text NOT NULL
+);
+
+
+ALTER TABLE public.sous_services OWNER TO postgres;
+
+CREATE SEQUENCE public.sous_services_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.sous_services_id_seq OWNER TO postgres;
+ALTER SEQUENCE public.sous_services_id_seq OWNED BY public.sous_services.id;
+ALTER TABLE ONLY public.sous_services ALTER COLUMN id SET DEFAULT nextval('public.sous_services_id_seq'::regclass);
+
+ALTER TABLE ONLY public.sous_services
+    ADD CONSTRAINT sous_services_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY public.sous_services
+    ADD CONSTRAINT sous_services_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.services(id) ON DELETE CASCADE;
+
+
+--
+-- Name: messages_contact; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.messages_contact (
+    id integer NOT NULL,
+    nom text NOT NULL,
+    email text NOT NULL,
+    sujet text,
+    message text NOT NULL,
+    date_envoi timestamp without time zone DEFAULT now()
+);
+
+
+ALTER TABLE public.messages_contact OWNER TO postgres;
+
+CREATE SEQUENCE public.messages_contact_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.messages_contact_id_seq OWNER TO postgres;
+ALTER SEQUENCE public.messages_contact_id_seq OWNED BY public.messages_contact.id;
+ALTER TABLE ONLY public.messages_contact ALTER COLUMN id SET DEFAULT nextval('public.messages_contact_id_seq'::regclass);
+
+ALTER TABLE ONLY public.messages_contact
+    ADD CONSTRAINT messages_contact_pkey PRIMARY KEY (id);
 
 
 --

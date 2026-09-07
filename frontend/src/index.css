@@ -1,0 +1,72 @@
+/* Correction de la syntaxe */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .btn-primary {
+     @apply bg-primary text-white px-4 py-2 rounded hover:bg-primary-dark transition-colors;
+  }
+}
+
+/* 📄 src/index.css */
+
+/* 🌐 Styles globaux pour impression */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* 🛑 Cacher la navbar, sidebar, boutons etc. */
+  nav,
+  aside,
+  header,
+  footer,
+  .no-print,
+  .ExportButtons {
+    display: none !important;
+  }
+
+  /* 📑 Empêcher les coupures dans les sections */
+  .print-section {
+    page-break-inside: avoid;
+    margin-bottom: 1rem;
+  }
+
+  /* 📊 Étendre le contenu en largeur */
+  main,
+  #root,
+  .dashboard-container {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* 📌 Titre centré sur PDF/print */
+  h1,
+  h2,
+  h3 {
+    color: #000 !important;
+    font-weight: bold !important;
+  }
+
+  /* ✅ Améliorer lisibilité des tableaux */
+  table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+  }
+
+  th,
+  td {
+    border: 1px solid #ddd !important;
+    padding: 6px !important;
+    font-size: 12px !important;
+  }
+
+  th {
+    background: #f3f4f6 !important;
+  }
+}

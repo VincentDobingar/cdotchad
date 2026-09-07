@@ -4,7 +4,7 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { Parser } from "json2csv";
-import { verifyAdminToken } from "../middlewares/auth.js";
+import { requireRole } from "../middlewares/requireRole.js";
 import {
   getAllCandidatures,
   postCandidature,
@@ -51,19 +51,19 @@ router.post(
 );
 
 // 📊 Statistiques
-router.get("/stats", verifyAdminToken, getCandidaturesStats);
+router.get("/stats", requireRole("admin", "superadmin"), getCandidaturesStats);
 
 // 📩 Renvoi manuel des emails (optionnel)
-router.post("/envoyer-mails", verifyAdminToken, envoyerEmailsCandidature);
+router.post("/envoyer-mails", requireRole("admin", "superadmin"), envoyerEmailsCandidature);
 
 // 📄 Récupérer toutes les candidatures
-router.get("/", verifyAdminToken, getAllCandidatures);
+router.get("/", requireRole("admin", "superadmin"), getAllCandidatures);
 
 // 📤 Export PDF pour une offre donnée
-router.get("/export/:offre_id", verifyAdminToken, exportCandidaturesPDF);
+router.get("/export/:offre_id", requireRole("admin", "superadmin"), exportCandidaturesPDF);
 
 // 🧾 Export CSV global
-router.get("/export", verifyAdminToken, async (req, res) => {
+router.get("/export", requireRole("admin", "superadmin"), async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT c.id, c.nom, c.email, c.telephone, c.date_postulation, o.titre AS offre
@@ -84,6 +84,6 @@ router.get("/export", verifyAdminToken, async (req, res) => {
 });
 
 // 🗑️ Supprimer une candidature
-router.delete("/:id", verifyAdminToken, deleteCandidature);
+router.delete("/:id", requireRole("admin", "superadmin"), deleteCandidature);
 
 export default router;

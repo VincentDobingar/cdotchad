@@ -1,6 +1,6 @@
 import express from "express";
 import { pool } from "../config/db.js";
-import { verifyUserToken, verifyAdminToken } from "../middlewares/auth.js";
+import { requireRole } from "../middlewares/requireRole.js";
 
 const router = express.Router();
 
@@ -24,7 +24,7 @@ router.get("/", async (req, res) => {
 });
 
 // ✅ POST service + sous-services
-router.post("/", verifyAdminToken, async (req, res) => {
+router.post("/", requireRole("admin", "superadmin"), async (req, res) => {
   const { titre, description, sous_services, icone } = req.body;
   const client = await pool.connect();
 
@@ -59,7 +59,7 @@ router.post("/", verifyAdminToken, async (req, res) => {
 });
 
 // ✅ PUT service + sous-services
-router.put("/:id", verifyAdminToken, async (req, res) => {
+router.put("/:id", requireRole("admin", "superadmin"), async (req, res) => {
   const { id } = req.params;
   const { titre, description, sous_services, icone } = req.body;
   const client = await pool.connect();
@@ -95,7 +95,7 @@ router.put("/:id", verifyAdminToken, async (req, res) => {
 });
 
 // ✅ DELETE service + cascade
-router.delete("/:id", verifyAdminToken, async (req, res) => {
+router.delete("/:id", requireRole("admin", "superadmin"), async (req, res) => {
   try {
     await pool.query("DELETE FROM services WHERE id = $1", [req.params.id]);
     res.sendStatus(204);
