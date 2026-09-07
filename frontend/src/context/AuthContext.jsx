@@ -6,8 +6,22 @@ import api from "@/utils/api";
 const AuthContext = createContext(null);
 export const useAuth = () => useContext(AuthContext);
 
-const getToken = () =>
-  localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
+const ADMIN_ROLES = ["admin", "superadmin"];
+const TOKEN_KEYS = ["adminToken", "userToken"];
+
+// Un seul token actif à la fois : la clé de stockage suit le rôle du compte
+// connecté (admin/superadmin -> adminToken, candidat/partenaire -> userToken),
+// pour rester compatible avec les écrans qui lisent encore ces clés directement
+// (ImportDBButton, ResetDBButton, AdminCandidatureDetail, AdminCreateUser...).
+const storageKeyFor = (role) => (ADMIN_ROLES.includes(role) ? "adminToken" : "userToken");
+
+const getToken = () => {
+  for (const key of TOKEN_KEYS) {
+    const t = localStorage.getItem(key) || sessionStorage.getItem(key);
+    if (t) return t;
+  }
+  return null;
+};
 
 const setAuthHeader = (token) => {
   if (token) api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
@@ -15,8 +29,10 @@ const setAuthHeader = (token) => {
 };
 
 const clearStorages = () => {
-  localStorage.removeItem("authToken");
-  sessionStorage.removeItem("authToken");
+  for (const key of TOKEN_KEYS) {
+    localStorage.removeItem(key);
+    sessionStorage.removeItem(key);
+  }
 };
 
 export function AuthProvider({ children }) {
@@ -50,8 +66,12 @@ export function AuthProvider({ children }) {
   }, []);
 
   // Seul point d'écriture du storage — tous les écrans de login doivent passer par là.
-  const login = async ({ token, user: userPayload, remember = true }) => {
-    (remember ? localStorage : sessionStorage).setItem("authToken", token);
+  // roleHint permet de choisir la bonne clé de stockage quand la réponse de login
+  // ne renvoie pas déjà l'objet utilisateur complet (ex: session cookie-only).
+  const login = async ({ token, user: userPayload, remember = true, roleHint } = {}) => {
+    const role = userPayload?.role || roleHint;
+    const storage = remember ? localStorage : sessionStorage;
+    storage.setItem(storageKeyFor(role), token);
     setAuthHeader(token);
 
     if (userPayload?.role) {
@@ -69,7 +89,10 @@ export function AuthProvider({ children }) {
     setStatus("unauthenticated");
   };
 
-  const value = useMemo(() => ({ status, user, login, logout }), [status, user]);
+  const value = useMemo(
+    () => ({ status, user, login, logout, refreshMe: fetchMe }),
+    [status, user]
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

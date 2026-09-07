@@ -7,8 +7,7 @@ import MainLayout from "@/layout/MainLayout.jsx";
 import AdminLayout from "@/layout/AdminLayout.jsx";
 
 // --- Auth guards ---
-import ProtectedRoute from "@/routes/ProtectedRoute";
-import RequireSuperAdmin from "@/routes/RequireSuperAdmin";
+import RequireRole from "@/routes/RequireRole";
 
 // --- Pages Admin ---
 import AdminLogin from "@/pages/admin/AdminLogin";
@@ -38,7 +37,7 @@ export default function App() {
       <Routes>
         <Route path="/admin/login" element={<AdminLogin />} />
 
-        <Route path="/admin" element={<ProtectedRoute />}>
+        <Route path="/admin" element={<RequireRole roles={["admin", "superadmin"]} />}>
           <Route element={<AdminLayout />}>
             {adminBaseRoutes.map((r, i) =>
               r.index ? (
@@ -49,7 +48,7 @@ export default function App() {
             )}
 
             {adminSuperRoutes.length > 0 && (
-              <Route element={<RequireSuperAdmin />}>
+              <Route element={<RequireRole roles={["superadmin"]} />}>
                 {adminSuperRoutes.map((r, i) =>
                   r.index ? (
                     <Route key={`admin-sa-index-${i}`} index element={r.element} />

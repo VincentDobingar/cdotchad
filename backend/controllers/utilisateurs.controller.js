@@ -2,10 +2,6 @@
 // Gestion des comptes candidats (table `users`, role='candidat').
 import { pool } from '../config/db.js';
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-
-const JWT_SECRET = process.env.JWT_SECRET;
-const JWT_EXPIRES = process.env.JWT_EXPIRES || "3h";
 
 // Liste des handlers
 
@@ -109,34 +105,6 @@ const getProfilUtilisateur = async (req, res) => {
   }
 };
 
-const loginUtilisateur = async (req, res) => {
-  const { email, motdepasse } = req.body;
-  if (!email || !motdepasse) return res.status(400).json({ message: "Champs requis manquants." });
-
-  try {
-    const { rows } = await pool.query(
-      "SELECT * FROM users WHERE role = 'candidat' AND lower(email) = lower($1) LIMIT 1",
-      [email.toLowerCase().trim()]
-    );
-    const u = rows[0];
-    if (!u) return res.status(401).json({ message: "Email incorrect" });
-
-    const ok = await bcrypt.compare(motdepasse, u.password_hash);
-    if (!ok) return res.status(401).json({ message: "Mot de passe incorrect" });
-
-    const token = jwt.sign(
-      { id: u.id, email: u.email, role: u.role },
-      JWT_SECRET,
-      { expiresIn: JWT_EXPIRES }
-    );
-
-    res.json({ token, utilisateur: { id: u.id, nom: u.nom, email: u.email, role: u.role } });
-  } catch (err) {
-    console.error("loginUtilisateur:", err);
-    res.status(500).json({ message: "Erreur serveur" });
-  }
-};
-
 const updateMe = async (req, res) => {
   try {
     const userId = req.user?.id;
@@ -191,7 +159,6 @@ export {
   modifierUtilisateur,
   supprimerUtilisateur,
   getProfilUtilisateur,
-  loginUtilisateur,
   updateMe,
   changeMyPassword
 };

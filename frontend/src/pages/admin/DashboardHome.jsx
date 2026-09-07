@@ -29,7 +29,7 @@ const isAdmin = (a) => a?.isAdmin === true || isSuperAdmin(a) || roleOf(a) === "
 
 export default function DashboardHome() {
   const navigate = useNavigate();
-  const { status, admin } = useAuth();
+  const { status, user: admin } = useAuth();
 
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(""); // "01".."12" ou ""

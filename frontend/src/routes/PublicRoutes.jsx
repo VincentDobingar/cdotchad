@@ -11,10 +11,12 @@ import Actualites from "@/pages/public/Actualites";
 import ActualiteDetail from "@/pages/public/ActualiteDetail";
 import Contact from "@/pages/public/Contact";
 import Login from "@/pages/public/Login";
+import Profile from "@/pages/public/Profile";
 import Galerie from "@/pages/public/Galerie";
 import CandidatureConfirmation from "@/pages/public/CandidatureConfirmation";
 import TestQuill from "@/components/public/TestQuill";
 import NotFound from "@/pages/NotFound";
+import RequireRole from "@/routes/RequireRole";
 import { Navigate, useParams } from "react-router-dom";
 
 function RedirectOffre() {
@@ -38,6 +40,14 @@ const publicRoutes = [
   { path: "/actualites/:id", element: <ActualiteDetail /> },
   { path: "/contact", element: <Contact /> },
   { path: "/login", element: <Login /> },
+  {
+    path: "/profile",
+    element: (
+      <RequireRole roles={[]} redirectTo="/login">
+        <Profile />
+      </RequireRole>
+    ),
+  },
   { path: "/galerie", element: <Galerie /> },
   { path: "/candidature/success", element: <CandidatureConfirmation /> },
   { path: "/test-quill", element: <TestQuill /> },

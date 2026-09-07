@@ -1,10 +1,7 @@
 // routes/utilisateurs.routes.js
+// Gestion administrative des comptes candidats. L'inscription/connexion candidat
+// canonique vit sous /backend/auth (register/login), pas ici.
 import express from 'express';
-import dotenv from "dotenv";
-dotenv.config();
-
-import bcrypt from "bcryptjs";               // <-- ajouté pour la route /register
-import { pool } from "../config/db.js";
 import { requireRole } from "../middlewares/requireRole.js";
 
 import {
@@ -14,8 +11,8 @@ import {
   modifierUtilisateur,
   supprimerUtilisateur,
   getProfilUtilisateur,
-  loginUtilisateur,
-  updateMe
+  updateMe,
+  changeMyPassword
 } from '../controllers/utilisateurs.controller.js';
 
 const router = express.Router();
@@ -29,31 +26,7 @@ router.delete('/:id', requireRole("admin", "superadmin"), supprimerUtilisateur);
 
 // User-protected routes
 router.put('/me', requireRole("candidat"), updateMe);
-//router.put('/me/password', requireRole("candidat"), changeMyPassword);
-
-// Public registration
-router.post('/register', async (req, res) => {
-  const { email, motdepasse, nom } = req.body;
-  if (!email || !motdepasse) return res.status(400).json({ message: "Champs requis manquants." });
-
-  try {
-    const existing = await pool.query("SELECT id FROM users WHERE lower(email) = lower($1)", [email.toLowerCase().trim()]);
-    if (existing.rows.length > 0) return res.status(400).json({ message: "Email déjà utilisé." });
-
-    const hashed = await bcrypt.hash(motdepasse, 10);
-    await pool.query(
-      "INSERT INTO users (nom, email, password_hash, role) VALUES ($1, $2, $3, 'candidat')",
-      [nom || null, email.toLowerCase().trim(), hashed]
-    );
-    res.status(201).json({ message: "Inscription réussie." });
-  } catch (err) {
-    console.error("Erreur d'inscription :", err);
-    res.status(500).json({ message: "Erreur serveur" });
-  }
-});
-
-// Login (use controller)
-router.post('/login', loginUtilisateur);
+router.put('/me/password', requireRole("candidat"), changeMyPassword);
 
 // Protected profile
 router.get("/profil", requireRole("candidat"), getProfilUtilisateur);

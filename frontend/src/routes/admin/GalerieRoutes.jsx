@@ -1,6 +1,5 @@
 // ✅ src/routes/admin/GalerieRoutes.js
 import AdminGalerie from "@/pages/admin/AdminGalerie";
-import RolePrivateRoute from "@/components/RolePrivateRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { ImageIcon } from "lucide-react";
 

@@ -1,10 +1,10 @@
 // src/pages/public/Profile.jsx
 import React, { useEffect, useState } from "react";
-import api from "../utils/api";
-import { useUserAuth } from "../context/UserAuthContext";
+import api from "@/utils/api";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Profile() {
-  const { user, setUser } = useUserAuth();
+  const { user, refreshMe } = useAuth();
   const [nom, setNom] = useState(user?.nom || "");
   const [avatarUrl, setAvatarUrl] = useState(user?.avatar_url || user?.avatarUrl || "");
   const [bio, setBio] = useState(user?.bio || "");
@@ -18,21 +18,16 @@ export default function Profile() {
 
   const save = async () => {
     try {
-      const { data } = await api.put("/utilisateurs/me", { nom, avatar_url: avatarUrl, bio });
-      setUser(data);
+      await api.put("/utilisateurs/me", { nom, avatar_url: avatarUrl, bio });
+      await refreshMe();
       setMessage("Enregistré.");
     } catch (err) {
-      setMessage(err.response?.data?.message || "Mise à jour échoué.");
+      setMessage(err.response?.data?.message || "Mise à jour échouée.");
     }
   };
 
-  const changePassword = async (currentPassword, newPassword) => {
-    try {
-      await api.put("/utilisateurs/me/password", { currentPassword, newPassword });
-      setMessage("Mot de passe changé.");
-    } catch (err) {
-      setMessage(err.response?.data?.message || "Password change failed.");
-    }
+  const changePassword = async (oldPassword, newPassword) => {
+    await api.put("/utilisateurs/me/password", { oldPassword, newPassword });
   };
 
   return (
@@ -80,7 +75,7 @@ function PasswordForm({ onChangePassword }) {
       setCurrent("");
       setNew("");
     } catch (err) {
-      setMsg("Impossible de changer le mot de passe.");
+      setMsg(err?.response?.data?.message || "Impossible de changer le mot de passe.");
     }
   };
 

@@ -51,8 +51,7 @@ export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { status = "unauthenticated", admin, logout } = useAuth() || {};
-  const user = admin ?? null;
+  const { status = "unauthenticated", user, logout } = useAuth() || {};
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [mode, setMode] = useState("solid-red");

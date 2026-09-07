@@ -1,46 +1,38 @@
-// src/pages
+// src/pages/public/Login.jsx
+// Connexion candidat (l'espace admin a son propre écran : AdminLogin.jsx / /admin/login).
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import api from "@/utils/api";
 import { useAuth } from "@/context/AuthContext";
 
 const Login = () => {
   const [email, setEmail] = useState("");
-  const [motDePasse, setMotDePasse] = useState("");
+  const [motdepasse, setMotdepasse] = useState("");
   const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState("");
 
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { login } = useAuth();
-
-  const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setErr("");
     setLoading(true);
 
     try {
-      const res = await fetch(`${backendUrl}/api/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, motDePasse }),
-      });
-
-      if (!res.ok) {
-        alert("Identifiants invalides");
-        return;
-      }
-
-      const data = await res.json();
+      const { data } = await api.post("/auth/login", { email, motdepasse });
 
       await login({
-        token: data.token,
-        admin: data.admin || { email, role: "admin" },
+        token: data.accessToken,
+        user: data.utilisateur,
         remember: true,
+        roleHint: "candidat",
       });
 
-      navigate("/admin");
+      navigate(searchParams.get("next") || "/profile");
     } catch (err) {
-      console.error("Erreur lors de la connexion :", err);
-      alert("Erreur lors de la connexion.");
+      setErr(err?.response?.data?.message || "Identifiants invalides");
     } finally {
       setLoading(false);
     }
@@ -48,23 +40,31 @@ const Login = () => {
 
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
-      <h2 className="text-xl font-semibold mb-4">Connexion Administrateur</h2>
+      <h2 className="text-xl font-semibold mb-4">Connexion candidat</h2>
+
+      {err && (
+        <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded p-2 mb-4">
+          {err}
+        </div>
+      )}
 
       <form onSubmit={handleLogin}>
         <input
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          type="text"
-          placeholder="Nom d'utilisateur ou email"
+          type="email"
+          placeholder="Email"
           className="border w-full mb-4 p-2"
+          required
         />
 
         <input
-          value={motDePasse}
-          onChange={(e) => setMotDePasse(e.target.value)}
+          value={motdepasse}
+          onChange={(e) => setMotdepasse(e.target.value)}
           type="password"
           placeholder="Mot de passe"
           className="border w-full mb-4 p-2"
+          required
         />
 
         <button

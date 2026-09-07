@@ -14,12 +14,12 @@ export default function AdminSidebar({ email, onLogout }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const location = useLocation();
 
-  const { admin, logout } = useAuth() || {};
+  const { user, logout } = useAuth() || {};
   const { darkMode, toggleTheme } = useTheme();
 
   // Détermination robuste du rôle
-  const adminEmail = (admin?.email || localStorage.getItem("adminEmail") || "").toLowerCase();
-  const role = String(admin?.role || "").toLowerCase();
+  const adminEmail = (user?.email || "").toLowerCase();
+  const role = String(user?.role || "").toLowerCase();
   const isSuperAdmin = role === "superadmin" || adminEmail === "contact@cdotchad.com";
 
   // Fermer le menu mobile à chaque navigation

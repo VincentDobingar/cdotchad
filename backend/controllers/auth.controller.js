@@ -112,3 +112,28 @@ export function logoutUser(_req, res) {
   res.clearCookie("refreshToken", { path: "/backend/auth" });
   return res.json({ ok: true });
 }
+
+// ---------- Me (tous rôles, utilisé par AuthContext) ----------
+export async function getMe(req, res) {
+  try {
+    const { id, email, role } = req.user || {};
+    if (id === undefined) return res.status(401).json({ message: "Non authentifié" });
+
+    // Compte de secours .env (id: 0) : n'existe pas dans `users`.
+    if (id === 0) {
+      return res.json({ user: { id: 0, email, role: role || "admin" } });
+    }
+
+    const { rows } = await pool.query(
+      "SELECT id, nom, prenom, email, role FROM users WHERE id = $1 LIMIT 1",
+      [id]
+    );
+    const user = rows[0];
+    if (!user) return res.status(401).json({ message: "Utilisateur introuvable" });
+
+    return res.json({ user });
+  } catch (err) {
+    console.error("getMe error:", err);
+    return res.status(500).json({ message: "Erreur serveur" });
+  }
+}

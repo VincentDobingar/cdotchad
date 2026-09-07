@@ -2,7 +2,7 @@
 import AdminCandidatures from "@/pages/admin/AdminCandidatures";
 import CandidatureDetail from "@/pages/admin/CandidatureDetail";
 import AdminCandidatureDetail from "@/pages/admin/AdminCandidatureDetail";
-import RolePrivateRoute from "@/components/RolePrivateRoute";
+import RequireRole from "@/routes/RequireRole";
 import { UserCheck } from "lucide-react";
 
 const candidaturesRoutes = [
@@ -11,7 +11,11 @@ const candidaturesRoutes = [
   { path: "candidature/:id", element: <CandidatureDetail /> },
   {
     path: "candidature/detail/:id",
-    element: <RolePrivateRoute allowedRoles={["admin"]}><AdminCandidatureDetail /></RolePrivateRoute>,
+    element: (
+      <RequireRole roles={["admin", "superadmin"]}>
+        <AdminCandidatureDetail />
+      </RequireRole>
+    ),
   },
 ];
 

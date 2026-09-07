@@ -5,28 +5,13 @@ import api from "@/utils/api";
 import { useAuth } from "@/context/AuthContext";
 import toast from "react-hot-toast";
 import { Eye, EyeOff } from "lucide-react";
-import { safeLocal, safeSession } from "@/utils/safeStorage";
 
 import logoLight from "@/assets/logo-cdotchad.png";
 import logoDark from "@/assets/logo-cdo-dark.png";
 
-function normalizeToken(data, headers = {}) {
-  const hAuth = headers?.authorization || headers?.Authorization;
-  const hX = headers?.["x-access-token"] || headers?.["X-Access-Token"];
-  const fromHeader = (hAuth && hAuth.replace(/^Bearer\s+/i, "")) || hX || null;
-  return (
-    data?.token ||
-    data?.accessToken ||
-    data?.jwt ||
-    data?.data?.token ||
-    fromHeader ||
-    null
-  );
-}
-
 export default function AdminLogin() {
   const navigate = useNavigate();
-  const { setStatus, setAdmin } = useAuth();
+  const { login } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState(""); // ← on garde “password” côté state
@@ -54,66 +39,18 @@ export default function AdminLogin() {
         throw new Error("Le backend a renvoyé du HTML (probable réécriture). Vérifie .htaccess.");
       }
 
-      const token = normalizeToken(res.data, res.headers);
-      const adminFromLogin = res?.data?.admin || res?.data?.data?.admin || null;
-
-      if (token) {
-        const storage = remember ? safeLocal : safeSession;
-        storage.set("adminToken", token);
-        if (adminFromLogin) {
-          storage.set("adminUser", JSON.stringify(adminFromLogin));
-          safeLocal.set("adminEmail", adminFromLogin.email || email);
-        }
-
-        // header axios pour la session actuelle
-        api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-
-        // si l’API ne renvoie pas l’admin, on tente /admin/me
-        if (adminFromLogin) {
-          setAdmin(adminFromLogin);
-        } else {
-          try {
-            const me = await api.get("/admin/me");
-            setAdmin(me?.data?.admin || null);
-            if (me?.data?.admin?.email) safeLocal.set("adminEmail", me.data.admin.email);
-          } catch {
-            setAdmin(null);
-          }
-        }
-
-        setStatus("authenticated");
-        toast.success("Connexion réussie !");
-        navigate("/admin/dashboard", { replace: true });
-        return;
+      const { token, admin } = res.data || {};
+      if (!token) {
+        throw new Error("Identifiants valides ? Le serveur n'a renvoyé aucun token.");
       }
 
-      // 🔁 Pas de token → on tente l’auth cookie httpOnly via /admin/me
-      try {
-        const me = await api.get("/admin/me");
-        if (me?.status === 200 && me?.data?.admin) {
-          setAdmin(me.data.admin);
-          setStatus("authenticated");
-          safeLocal.set("adminEmail", me.data.admin.email || email);
-          toast.success("Connexion réussie !");
-          navigate("/admin/dashboard", { replace: true });
-          return;
-        }
-      } catch {
-        // tombera dans l’erreur ci-dessous
-      }
+      await login({ token, user: admin, remember, roleHint: "admin" });
 
-      throw new Error("Identifiants valides ? Le serveur n'a renvoyé ni token ni cookie actif.");
+      toast.success("Connexion réussie !");
+      navigate("/admin/dashboard", { replace: true });
     } catch (e) {
       const message = e?.response?.data?.message || e?.message || "Connexion impossible";
       setErr(message);
-      setStatus("unauthenticated");
-
-      // Nettoyage stockage
-      safeLocal.remove("adminToken");
-      safeLocal.remove("adminUser");
-      safeSession.remove("adminToken");
-      safeSession.remove("adminUser");
-
       toast.error(message);
     } finally {
       setLoading(false);
