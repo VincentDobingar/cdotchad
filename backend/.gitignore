@@ -5,6 +5,7 @@ uploads/
 tmp/
 logs/
 .DS_Store
+sql/backups/
 
 # Optional:
 *.log
