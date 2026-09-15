@@ -4,6 +4,9 @@ import PDFDocument from "pdfkit";
 import fs from "fs";
 import path from "path";
 import dotenv from "dotenv";
+import { Parser } from "json2csv";
+
+const STATUTS_VALIDES = ["recue", "en_cours", "entretien", "acceptee", "refusee"];
 
 dotenv.config();
 
@@ -32,17 +35,59 @@ export const getAllCandidatures = async (req, res) => {
 
   try {
     const result = await pool.query(
-      `SELECT c.id, c.nom, c.email, c.telephone, c.cv_path, c.lettre_path, c.diplome_path, c.date_candidature, o.titre AS titre_offre
+      `SELECT c.id, c.nom, c.email, c.telephone, c.cv_path, c.lettre_path, c.diplome_path, c.statut, c.date_candidature, o.titre AS titre_offre
        FROM candidatures c
        LEFT JOIN offres o ON c.offre_id = o.id
        ${whereClause}
        ORDER BY c.date_candidature DESC`,
       values
     );
-    res.json(result.rows);
+    res.json({ candidatures: result.rows, totalPages: 1 });
   } catch (err) {
     console.error("Erreur récupération candidatures :", err);
     res.status(500).json({ success: false, message: "Erreur serveur" });
+  }
+};
+
+// 📋 Candidatures du candidat connecté
+export const getMesCandidatures = async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT c.id, c.statut, c.date_candidature, o.titre AS titre_offre
+       FROM candidatures c
+       LEFT JOIN offres o ON c.offre_id = o.id
+       WHERE c.user_id = $1
+       ORDER BY c.date_candidature DESC`,
+      [req.user.id]
+    );
+    res.json({ candidatures: result.rows });
+  } catch (err) {
+    console.error("Erreur récupération de mes candidatures :", err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+};
+
+// 🔄 Changer le statut d'une candidature (admin)
+export const updateStatutCandidature = async (req, res) => {
+  const { id } = req.params;
+  const { statut } = req.body;
+
+  if (!STATUTS_VALIDES.includes(statut)) {
+    return res.status(400).json({ error: "Statut invalide" });
+  }
+
+  try {
+    const result = await pool.query(
+      "UPDATE candidatures SET statut = $1 WHERE id = $2 RETURNING id, statut",
+      [statut, id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Candidature introuvable" });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("Erreur mise à jour statut candidature :", err);
+    res.status(500).json({ error: "Erreur serveur" });
   }
 };
 
@@ -53,11 +98,12 @@ export const postCandidature = async (req, res) => {
     const cv_path = req.files.cv[0].path;
     const lettre_path = req.files.lettre[0].path;
     const diplome_path = req.files.diplome[0].path;
+    const userId = req.user?.role === "candidat" ? req.user.id : null;
 
     await pool.query(
-      `INSERT INTO candidatures (nom, email, telephone, lien, commentaire, cv_path, lettre_path, diplome_path, offre_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-      [nom, email, telephone, lien, commentaire, cv_path, lettre_path, diplome_path, offre_id]
+      `INSERT INTO candidatures (nom, email, telephone, lien, commentaire, cv_path, lettre_path, diplome_path, offre_id, user_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+      [nom, email, telephone, lien, commentaire, cv_path, lettre_path, diplome_path, offre_id, userId]
     );
 
     const offreResult = await pool.query("SELECT titre FROM offres WHERE id = $1", [offre_id]);
@@ -250,5 +296,27 @@ export const envoyerEmailsCandidature = async (candidat, offreTitre, fichiers) =
 
   await transporter.sendMail(mailToAdmin);
   await transporter.sendMail(mailToCandidat);
+};
+
+// 🧾 Export CSV global (admin)
+export const exportCandidaturesCSV = async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT c.id, c.nom, c.email, c.telephone, c.statut, c.date_candidature, o.titre AS offre
+      FROM candidatures c
+      LEFT JOIN offres o ON c.offre_id = o.id
+      ORDER BY c.date_candidature DESC
+    `);
+
+    const parser = new Parser();
+    const csv = parser.parse(result.rows);
+
+    res.header("Content-Type", "text/csv");
+    res.attachment("candidatures.csv");
+    res.send(csv);
+  } catch (err) {
+    console.error("Erreur export candidatures:", err.message);
+    res.status(500).json({ error: "Erreur exportation CSV" });
+  }
 };
 

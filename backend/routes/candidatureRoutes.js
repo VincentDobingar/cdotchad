@@ -3,14 +3,17 @@ import express from "express";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import { Parser } from "json2csv";
 import { requireRole } from "../middlewares/requireRole.js";
+import { optionalAuth } from "../middlewares/optionalAuth.js";
 import {
   getAllCandidatures,
   postCandidature,
   deleteCandidature,
   exportCandidaturesPDF,
+  exportCandidaturesCSV,
   getCandidaturesStats,
+  getMesCandidatures,
+  updateStatutCandidature,
   envoyerEmailsCandidature
 } from "../controllers/candidatures.controller.js";
 
@@ -42,6 +45,7 @@ const upload = multer({ storage });
 // 📥 POSTULER : Ajout de candidature
 router.post(
   "/",
+  optionalAuth,
   upload.fields([
     { name: "cv", maxCount: 1 },
     { name: "lettre", maxCount: 1 },
@@ -56,6 +60,9 @@ router.get("/stats", requireRole("admin", "superadmin"), getCandidaturesStats);
 // 📩 Renvoi manuel des emails (optionnel)
 router.post("/envoyer-mails", requireRole("admin", "superadmin"), envoyerEmailsCandidature);
 
+// 🙋 Mes candidatures (candidat connecté)
+router.get("/mes-candidatures", requireRole("candidat"), getMesCandidatures);
+
 // 📄 Récupérer toutes les candidatures
 router.get("/", requireRole("admin", "superadmin"), getAllCandidatures);
 
@@ -63,25 +70,10 @@ router.get("/", requireRole("admin", "superadmin"), getAllCandidatures);
 router.get("/export/:offre_id", requireRole("admin", "superadmin"), exportCandidaturesPDF);
 
 // 🧾 Export CSV global
-router.get("/export", requireRole("admin", "superadmin"), async (req, res) => {
-  try {
-    const result = await pool.query(`
-      SELECT c.id, c.nom, c.email, c.telephone, c.date_postulation, o.titre AS offre
-      FROM candidatures c
-      JOIN offres o ON c.offre_id = o.id
-    `);
+router.get("/export-csv", requireRole("admin", "superadmin"), exportCandidaturesCSV);
 
-    const parser = new Parser();
-    const csv = parser.parse(result.rows);
-
-    res.header("Content-Type", "text/csv");
-    res.attachment("candidatures.csv");
-    res.send(csv);
-  } catch (err) {
-    console.error("Erreur export candidatures:", err.message);
-    res.status(500).json({ error: "Erreur exportation CSV" });
-  }
-});
+// 🔄 Changer le statut d'une candidature
+router.patch("/:id/statut", requireRole("admin", "superadmin"), updateStatutCandidature);
 
 // 🗑️ Supprimer une candidature
 router.delete("/:id", requireRole("admin", "superadmin"), deleteCandidature);

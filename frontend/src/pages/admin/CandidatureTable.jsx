@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import axios from "axios";
-import { Download, FileCheck } from "lucide-react";
+import { Download } from "lucide-react";
+import { STATUTS } from "@/utils/statutCandidature";
 
-export default function CandidatureTable({ candidatures, onDelete, onSelect, onSort, sortField, sortDirection }) {
+export default function CandidatureTable({ candidatures, onDelete, onSelect, onSort, onStatutChange, sortField, sortDirection }) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -51,7 +52,17 @@ export default function CandidatureTable({ candidatures, onDelete, onSelect, onS
               <td className="py-2 px-4">{c.titre_offre}</td>
               <td className="py-2 px-4">{new Date(c.date_candidature).toLocaleDateString()}</td>
               <td className="py-2 px-4 text-center">
-                <FileCheck className="inline text-green-600" title="Candidature reçue" />
+                <select
+                  value={c.statut || "recue"}
+                  onChange={(e) => onStatutChange(c.id, e.target.value)}
+                  className={`border rounded px-2 py-1 text-xs ${STATUTS[c.statut]?.className || ""}`}
+                >
+                  {Object.entries(STATUTS).map(([value, { label }]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
               </td>
               <td className="py-2 px-4 space-x-2">
                 <button

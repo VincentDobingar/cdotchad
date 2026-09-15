@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import api from "@/utils/api";
 import CandidatureTable from "./CandidatureTable";
+import { statutLabel } from "@/utils/statutCandidature";
 
 const backendUrl = import.meta.env.VITE_API_URL;
 
@@ -85,6 +86,16 @@ export default function AdminCandidatures() {
       setCandidatures((prev) => prev.filter((c) => c.id !== id));
     } catch (err) {
       toast.error("Erreur lors de la suppression");
+    }
+  };
+
+  const changerStatut = async (id, statut) => {
+    try {
+      await api.patch(`/candidatures/${id}/statut`, { statut });
+      setCandidatures((prev) => prev.map((c) => (c.id === id ? { ...c, statut } : c)));
+      toast.success("Statut mis à jour");
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Erreur lors du changement de statut");
     }
   };
 
@@ -184,6 +195,7 @@ export default function AdminCandidatures() {
             onDelete={supprimerCandidature}
             onSelect={setSelectedCandidature}
             onSort={handleSort}
+            onStatutChange={changerStatut}
             sortField={sortField}
             sortDirection={sortDirection}
           />
@@ -223,6 +235,7 @@ export default function AdminCandidatures() {
               <p><strong>Email :</strong> {selectedCandidature.email}</p>
               <p><strong>Téléphone :</strong> {selectedCandidature.telephone}</p>
               <p><strong>Offre :</strong> {selectedCandidature.titre_offre}</p>
+              <p><strong>Statut :</strong> {statutLabel(selectedCandidature.statut)}</p>
               <p><strong>Date :</strong> {new Date(selectedCandidature.date_candidature).toLocaleString()}</p>
               <p><strong>Lien :</strong> <a href={selectedCandidature.lien} target="_blank" rel="noreferrer" className="text-blue-600 underline">Profil</a></p>
               <p><strong>Commentaire :</strong> {selectedCandidature.commentaire}</p>

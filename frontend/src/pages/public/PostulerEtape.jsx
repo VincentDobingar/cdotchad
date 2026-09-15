@@ -2,10 +2,13 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import api from "@/utils/api";
+import { useAuth } from "@/context/AuthContext";
 
 export default function PostulerEtape() {
   const { id } = useParams(); // ID de l’offre depuis l’URL
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [offre, setOffre] = useState(null);
   const [formData, setFormData] = useState({
@@ -15,6 +18,16 @@ export default function PostulerEtape() {
     lien: "",
     commentaire: "",
   });
+
+  useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        nom: prev.nom || `${user.prenom || ""} ${user.nom || ""}`.trim(),
+        email: prev.email || user.email || "",
+      }));
+    }
+  }, [user]);
 
   const [files, setFiles] = useState({
     cv: null,
@@ -32,13 +45,10 @@ export default function PostulerEtape() {
       return;
     }
 
-    fetch(`/api/offres/${id}`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Offre introuvable");
-        return res.json();
-      })
-      .then(setOffre)
-      .catch((err) => {
+    api
+      .get(`/offres/${id}`)
+      .then((res) => setOffre(res?.data?.data ?? res?.data))
+      .catch(() => {
         toast.error("Offre introuvable.");
         navigate("/offres");
       });
@@ -62,17 +72,12 @@ export default function PostulerEtape() {
     data.append("offre_id", id);
 
     try {
-      const res = await fetch("/api/candidatures", {
-        method: "POST",
-        body: data,
-      });
-
-      if (!res.ok) throw new Error("Erreur de soumission");
+      await api.post("/candidatures", data);
 
       toast.success("Candidature envoyée avec succès !");
       navigate("/candidature/success");
     } catch (err) {
-      toast.error("Erreur lors de l'envoi de la candidature.");
+      toast.error(err.response?.data?.error || "Erreur lors de l'envoi de la candidature.");
     } finally {
       setSubmitting(false);
     }
@@ -96,8 +101,8 @@ export default function PostulerEtape() {
       <form onSubmit={handleSubmit} encType="multipart/form-data">
         {step === 1 && (
           <div className="space-y-4">
-            <input type="text" name="nom" placeholder="Nom complet" required onChange={handleInput} className="w-full border p-2 rounded" />
-            <input type="email" name="email" placeholder="Email" required onChange={handleInput} className="w-full border p-2 rounded" />
+            <input type="text" name="nom" placeholder="Nom complet" required value={formData.nom} onChange={handleInput} className="w-full border p-2 rounded" />
+            <input type="email" name="email" placeholder="Email" required value={formData.email} onChange={handleInput} className="w-full border p-2 rounded" />
             <input type="tel" name="telephone" placeholder="Téléphone" required onChange={handleInput} className="w-full border p-2 rounded" />
             <input type="url" name="lien" placeholder="Lien (LinkedIn, Portfolio...)" onChange={handleInput} className="w-full border p-2 rounded" />
             <textarea name="commentaire" rows="3" placeholder="Commentaire (facultatif)" onChange={handleInput} className="w-full border p-2 rounded" />

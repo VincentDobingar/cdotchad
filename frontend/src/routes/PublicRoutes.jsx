@@ -12,6 +12,7 @@ import ActualiteDetail from "@/pages/public/ActualiteDetail";
 import Contact from "@/pages/public/Contact";
 import Login from "@/pages/public/Login";
 import Profile from "@/pages/public/Profile";
+import MesCandidatures from "@/pages/public/MesCandidatures";
 import Galerie from "@/pages/public/Galerie";
 import CandidatureConfirmation from "@/pages/public/CandidatureConfirmation";
 import TestQuill from "@/components/public/TestQuill";
@@ -45,6 +46,14 @@ const publicRoutes = [
     element: (
       <RequireRole roles={[]} redirectTo="/login">
         <Profile />
+      </RequireRole>
+    ),
+  },
+  {
+    path: "/mes-candidatures",
+    element: (
+      <RequireRole roles={["candidat"]} redirectTo="/login">
+        <MesCandidatures />
       </RequireRole>
     ),
   },

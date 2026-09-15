@@ -1,5 +1,6 @@
 // src/pages/public/Profile.jsx
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import api from "@/utils/api";
 import { useAuth } from "@/context/AuthContext";
 
@@ -34,6 +35,11 @@ export default function Profile() {
     <div>
       <h2>Profile</h2>
       <div>Email: {user?.email}</div>
+      {user?.role === "candidat" && (
+        <p>
+          <Link to="/mes-candidatures">Voir mes candidatures</Link>
+        </p>
+      )}
 
       <div>
         <label>Nom</label>
