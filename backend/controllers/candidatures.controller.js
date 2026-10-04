@@ -5,6 +5,7 @@ import fs from "fs";
 import path from "path";
 import dotenv from "dotenv";
 import { Parser } from "json2csv";
+import { getDocumentEnregistre } from "./candidat.controller.js";
 
 const STATUTS_VALIDES = ["recue", "en_cours", "entretien", "acceptee", "refusee"];
 
@@ -91,14 +92,43 @@ export const updateStatutCandidature = async (req, res) => {
   }
 };
 
+// Dossiers publics des pièces de candidature (les mêmes que ceux de candidatureRoutes.js)
+const DOSSIER_PIECES = { cv: "uploads/cv", lettre: "uploads/lettres", diplome: "uploads/diplomes" };
+
+// Pour chaque pièce : le fichier joint à la candidature, sinon le document enregistré
+// dans le profil du candidat connecté (copié dans le dossier public des candidatures).
+async function resoudrePieces(fichiersRecus, userId) {
+  const pieces = {};
+  const manquantes = [];
+  for (const type of Object.keys(DOSSIER_PIECES)) {
+    const envoye = fichiersRecus?.[type]?.[0];
+    if (envoye) {
+      pieces[type] = envoye.path;
+      continue;
+    }
+    const enregistre = userId ? await getDocumentEnregistre(userId, type) : null;
+    if (!enregistre) {
+      manquantes.push(type);
+      continue;
+    }
+    const destination = path.join(DOSSIER_PIECES[type], `${Date.now()}-${type}.pdf`);
+    await fs.promises.copyFile(enregistre.absolu, destination);
+    pieces[type] = destination;
+  }
+  return { pieces, manquantes };
+}
+
 // ✅ Ajouter une candidature
 export const postCandidature = async (req, res) => {
   try {
     const { nom, email, telephone, lien, commentaire, offre_id } = req.body;
-    const cv_path = req.files.cv[0].path;
-    const lettre_path = req.files.lettre[0].path;
-    const diplome_path = req.files.diplome[0].path;
     const userId = req.user?.role === "candidat" ? req.user.id : null;
+
+    const { pieces, manquantes } = await resoudrePieces(req.files, userId);
+    if (manquantes.length > 0) {
+      return res.status(400).json({ error: `Pièce(s) manquante(s) : ${manquantes.join(", ")}.` });
+    }
+    const { cv: cv_path, lettre: lettre_path, diplome: diplome_path } = pieces;
 
     await pool.query(
       `INSERT INTO candidatures (nom, email, telephone, lien, commentaire, cv_path, lettre_path, diplome_path, offre_id, user_id)

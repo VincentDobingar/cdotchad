@@ -127,6 +127,7 @@ import servicesRoutes from "./routes/services.routes.js";
 import galerieRoutes from "./routes/galerie.routes.js";
 import offresRoutes from "./routes/offres.js";
 import candidatureRoutes from "./routes/candidatureRoutes.js";
+import candidatRoutes from "./routes/candidat.routes.js";
 
 
 /* ------------------- Montage des routers -------------------------- */
@@ -141,6 +142,7 @@ app.use(`${BASE}/services`, servicesRoutes);
 app.use(`${BASE}/galerie`, galerieRoutes);
 app.use(`${BASE}/offres`, offresRoutes);
 app.use(`${BASE}/candidatures`, candidatureRoutes);
+app.use(`${BASE}/candidat`, candidatRoutes);
 
 /* ----------------------- 404 & gestion erreurs -------------------- */
 app.use((req, res, next) => {

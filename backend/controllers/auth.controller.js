@@ -23,8 +23,13 @@ function setRefreshCookie(res, refreshToken) {
 // ---------- Register candidat ----------
 export async function registerUser(req, res) {
   try {
-    const { name, email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ message: "Champs requis manquants." });
+    const { nom, prenom, email } = req.body;
+    // Le frontend de connexion envoie "motdepasse" : on accepte aussi l'ancien nom "password".
+    const motdepasse = req.body.motdepasse ?? req.body.password;
+    if (!email || !motdepasse) return res.status(400).json({ message: "Champs requis manquants." });
+    if (String(motdepasse).length < 8) {
+      return res.status(400).json({ message: "Le mot de passe doit contenir au moins 8 caractères." });
+    }
 
     const { rows: existing } = await pool.query(
       "SELECT id FROM users WHERE lower(email) = lower($1) LIMIT 1",
@@ -32,11 +37,11 @@ export async function registerUser(req, res) {
     );
     if (existing.length > 0) return res.status(409).json({ message: "Email déjà utilisé." });
 
-    const hash = await bcrypt.hash(password, 10);
+    const hash = await bcrypt.hash(motdepasse, 10);
     const { rows } = await pool.query(
-      `INSERT INTO users (nom, email, password_hash, role)
-       VALUES ($1, $2, $3, 'candidat') RETURNING id, nom, email, role`,
-      [name || null, email.toLowerCase().trim(), hash]
+      `INSERT INTO users (nom, prenom, email, password_hash, role)
+       VALUES ($1, $2, $3, $4, 'candidat') RETURNING id, nom, prenom, email, role`,
+      [nom?.trim() || null, prenom?.trim() || null, email.toLowerCase().trim(), hash]
     );
     const user = rows[0];
 

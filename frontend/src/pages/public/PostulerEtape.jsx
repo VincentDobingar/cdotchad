@@ -5,10 +5,18 @@ import toast from "react-hot-toast";
 import api from "@/utils/api";
 import { useAuth } from "@/context/AuthContext";
 
+// Pièces demandées : clé = nom du champ envoyé au backend
+const PIECES = [
+  { cle: "cv", label: "CV" },
+  { cle: "lettre", label: "Lettre de motivation" },
+  { cle: "diplome", label: "Diplôme" },
+];
+
 export default function PostulerEtape() {
   const { id } = useParams(); // ID de l’offre depuis l’URL
   const navigate = useNavigate();
   const { user } = useAuth();
+  const estCandidat = user?.role === "candidat";
 
   const [offre, setOffre] = useState(null);
   const [formData, setFormData] = useState({
@@ -18,16 +26,8 @@ export default function PostulerEtape() {
     lien: "",
     commentaire: "",
   });
-
-  useEffect(() => {
-    if (user) {
-      setFormData((prev) => ({
-        ...prev,
-        nom: prev.nom || `${user.prenom || ""} ${user.nom || ""}`.trim(),
-        email: prev.email || user.email || "",
-      }));
-    }
-  }, [user]);
+  // Documents déjà enregistrés dans le profil du candidat, par type (cv, lettre, diplome)
+  const [documentsEnregistres, setDocumentsEnregistres] = useState({});
 
   const [files, setFiles] = useState({
     cv: null,
@@ -37,6 +37,45 @@ export default function PostulerEtape() {
 
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
+
+  // Pré-remplissage depuis le profil candidat (si connecté)
+  useEffect(() => {
+    if (!estCandidat) return;
+
+    api
+      .get("/candidat/profil")
+      .then(({ data }) => {
+        const p = data.profil || {};
+        setFormData((prev) => ({
+          ...prev,
+          nom: prev.nom || `${p.prenom || ""} ${p.nom || ""}`.trim(),
+          email: prev.email || p.email || "",
+          telephone: prev.telephone || p.telephone || "",
+        }));
+      })
+      .catch(() => {});
+
+    api
+      .get("/candidat/documents")
+      .then(({ data }) => {
+        const parType = {};
+        (data.documents || []).forEach((d) => {
+          if (!parType[d.type]) parType[d.type] = d; // le plus récent (tri côté serveur)
+        });
+        setDocumentsEnregistres(parType);
+      })
+      .catch(() => {});
+  }, [estCandidat]);
+
+  useEffect(() => {
+    if (user && !estCandidat) {
+      setFormData((prev) => ({
+        ...prev,
+        nom: prev.nom || `${user.prenom || ""} ${user.nom || ""}`.trim(),
+        email: prev.email || user.email || "",
+      }));
+    }
+  }, [user, estCandidat]);
 
   useEffect(() => {
     if (!id || isNaN(parseInt(id))) {
@@ -62,13 +101,18 @@ export default function PostulerEtape() {
     setFiles((prev) => ({ ...prev, [e.target.name]: e.target.files[0] }));
   };
 
+  // Une pièce est fournie si un fichier est joint ou si un document enregistré existe
+  const pieceFournie = (cle) => Boolean(files[cle] || documentsEnregistres[cle]);
+  const toutesLesPiecesFournies = PIECES.every((p) => pieceFournie(p.cle));
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
 
     const data = new FormData();
     Object.entries(formData).forEach(([k, v]) => data.append(k, v));
-    Object.entries(files).forEach(([k, v]) => data.append(k, v));
+    // Un fichier vide n'est pas envoyé : le backend utilisera le document enregistré
+    Object.entries(files).forEach(([k, v]) => v && data.append(k, v));
     data.append("offre_id", id);
 
     try {
@@ -103,21 +147,47 @@ export default function PostulerEtape() {
           <div className="space-y-4">
             <input type="text" name="nom" placeholder="Nom complet" required value={formData.nom} onChange={handleInput} className="w-full border p-2 rounded" />
             <input type="email" name="email" placeholder="Email" required value={formData.email} onChange={handleInput} className="w-full border p-2 rounded" />
-            <input type="tel" name="telephone" placeholder="Téléphone" required onChange={handleInput} className="w-full border p-2 rounded" />
-            <input type="url" name="lien" placeholder="Lien (LinkedIn, Portfolio...)" onChange={handleInput} className="w-full border p-2 rounded" />
-            <textarea name="commentaire" rows="3" placeholder="Commentaire (facultatif)" onChange={handleInput} className="w-full border p-2 rounded" />
+            <input type="tel" name="telephone" placeholder="Téléphone" required value={formData.telephone} onChange={handleInput} className="w-full border p-2 rounded" />
+            <input type="url" name="lien" placeholder="Lien (LinkedIn, Portfolio...)" value={formData.lien} onChange={handleInput} className="w-full border p-2 rounded" />
+            <textarea name="commentaire" rows="3" placeholder="Commentaire (facultatif)" value={formData.commentaire} onChange={handleInput} className="w-full border p-2 rounded" />
             <button type="button" onClick={() => setStep(2)} className="bg-red-600 text-white px-4 py-2 rounded">Suivant</button>
           </div>
         )}
 
         {step === 2 && (
-          <div className="space-y-4">
-            <input type="file" name="cv" accept=".pdf" required onChange={handleFile} className="w-full" />
-            <input type="file" name="lettre" accept=".pdf" required onChange={handleFile} className="w-full" />
-            <input type="file" name="diplome" accept=".pdf" required onChange={handleFile} className="w-full" />
+          <div className="space-y-6">
+            {PIECES.map(({ cle, label }) => {
+              const enregistre = documentsEnregistres[cle];
+              return (
+                <div key={cle} className="space-y-1">
+                  <label className="block text-sm font-medium">{label}</label>
+                  {enregistre && (
+                    <p className="text-sm text-green-700">
+                      Document enregistré : {enregistre.nom_original}. Laissez vide pour l'utiliser, ou joignez un
+                      autre PDF pour cette candidature seulement.
+                    </p>
+                  )}
+                  <input
+                    type="file"
+                    name={cle}
+                    accept=".pdf"
+                    required={!enregistre}
+                    onChange={handleFile}
+                    className="w-full"
+                  />
+                </div>
+              );
+            })}
             <div className="flex justify-between mt-4">
               <button type="button" onClick={() => setStep(1)} className="text-blue-600">Retour</button>
-              <button type="button" onClick={() => setStep(3)} className="bg-red-600 text-white px-4 py-2 rounded">Suivant</button>
+              <button
+                type="button"
+                disabled={!toutesLesPiecesFournies}
+                onClick={() => setStep(3)}
+                className="bg-red-600 text-white px-4 py-2 rounded disabled:opacity-50"
+              >
+                Suivant
+              </button>
             </div>
           </div>
         )}
@@ -129,9 +199,13 @@ export default function PostulerEtape() {
             <p><strong>Téléphone :</strong> {formData.telephone}</p>
             <p><strong>Lien :</strong> {formData.lien || "-"}</p>
             <p><strong>Commentaire :</strong> {formData.commentaire || "-"}</p>
-            <p><strong>CV :</strong> {files.cv?.name}</p>
-            <p><strong>Lettre :</strong> {files.lettre?.name}</p>
-            <p><strong>Diplôme :</strong> {files.diplome?.name}</p>
+            {PIECES.map(({ cle, label }) => (
+              <p key={cle}>
+                <strong>{label} :</strong>{" "}
+                {files[cle]?.name || documentsEnregistres[cle]?.nom_original || "-"}
+                {!files[cle] && documentsEnregistres[cle] && <span className="text-gray-500"> (enregistré)</span>}
+              </p>
+            ))}
 
             <div className="flex justify-between mt-4">
               <button type="button" onClick={() => setStep(2)} className="text-blue-600">Retour</button>

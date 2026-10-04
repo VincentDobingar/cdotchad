@@ -11,6 +11,7 @@ import Actualites from "@/pages/public/Actualites";
 import ActualiteDetail from "@/pages/public/ActualiteDetail";
 import Contact from "@/pages/public/Contact";
 import Login from "@/pages/public/Login";
+import Inscription from "@/pages/public/Inscription";
 import Profile from "@/pages/public/Profile";
 import MesCandidatures from "@/pages/public/MesCandidatures";
 import Galerie from "@/pages/public/Galerie";
@@ -41,6 +42,7 @@ const publicRoutes = [
   { path: "/actualites/:id", element: <ActualiteDetail /> },
   { path: "/contact", element: <Contact /> },
   { path: "/login", element: <Login /> },
+  { path: "/inscription", element: <Inscription /> },
   {
     path: "/profile",
     element: (

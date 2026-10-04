@@ -133,6 +133,9 @@ const changeMyPassword = async (req, res) => {
     const { oldPassword, newPassword } = req.body;
     if (!userId) return res.status(401).json({ message: "Non authentifié" });
     if (!oldPassword || !newPassword) return res.status(400).json({ message: "oldPassword et newPassword requis" });
+    if (String(newPassword).length < 8) {
+      return res.status(400).json({ message: "Le nouveau mot de passe doit contenir au moins 8 caractères." });
+    }
 
     const { rows } = await pool.query("SELECT password_hash FROM users WHERE id=$1", [userId]);
     const u = rows[0];

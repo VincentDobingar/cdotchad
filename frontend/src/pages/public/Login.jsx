@@ -1,7 +1,7 @@
 // src/pages/public/Login.jsx
 // Connexion candidat (l'espace admin a son propre écran : AdminLogin.jsx / /admin/login).
 import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import api from "@/utils/api";
 import { useAuth } from "@/context/AuthContext";
 
@@ -75,6 +75,13 @@ const Login = () => {
           {loading ? "Connexion..." : "Se connecter"}
         </button>
       </form>
+
+      <p className="text-sm mt-4 text-center">
+        Pas encore de compte ?{" "}
+        <Link to="/inscription" className="text-blue-600 hover:underline">
+          Créer un compte candidat
+        </Link>
+      </p>
     </div>
   );
 };
