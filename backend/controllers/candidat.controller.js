@@ -51,16 +51,12 @@ export const updateMonProfil = async (req, res) => {
   const userId = req.user.id;
   const body = req.body || {};
 
-  const valeurs = {
-    nom: nettoyer(body.nom),
-    prenom: nettoyer(body.prenom),
-    telephone: nettoyer(body.telephone),
-    ville: nettoyer(body.ville),
-    pays: nettoyer(body.pays),
-    lien_linkedin: nettoyer(body.lien_linkedin),
-    lien_portfolio: nettoyer(body.lien_portfolio),
-    resume: nettoyer(body.resume),
-  };
+  // Un champ absent du corps garde sa valeur actuelle ; un champ envoyé vide l'efface.
+  const actuel = (await lirePresentationProfil(userId)) || {};
+  const CHAMPS = ["nom", "prenom", "telephone", "ville", "pays", "lien_linkedin", "lien_portfolio", "resume"];
+  const valeurs = Object.fromEntries(
+    CHAMPS.map((c) => [c, Object.hasOwn(body, c) ? nettoyer(body[c]) : actuel[c] ?? null])
+  );
 
   for (const [champ, max] of Object.entries(LONGUEUR_MAX)) {
     if (valeurs[champ] && valeurs[champ].length > max) {
