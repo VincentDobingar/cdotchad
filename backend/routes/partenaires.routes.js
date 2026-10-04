@@ -6,6 +6,7 @@ import {
   listPartenaires,
   creerPartenaire,
   reinitialiserMotDePasse,
+  changerStatutPartenaire,
   supprimerPartenaire,
 } from "../controllers/partenaires.controller.js";
 
@@ -16,6 +17,7 @@ router.use(requireRole("admin", "superadmin"));
 router.get("/", listPartenaires);
 router.post("/", creerPartenaire);
 router.post("/:id/reinitialiser-mot-de-passe", reinitialiserMotDePasse);
+router.patch("/:id/statut", changerStatutPartenaire);
 router.delete("/:id", supprimerPartenaire);
 
 export default router;

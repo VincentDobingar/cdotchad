@@ -64,7 +64,8 @@ export async function loginUser(req, res) {
 
     // Comptes candidat et partenaire (les admins ont leur propre connexion, /admin/login)
     const { rows } = await pool.query(
-      "SELECT id, nom, email, password_hash, role FROM users WHERE role IN ('candidat', 'partenaire') AND lower(email) = lower($1) LIMIT 1",
+      `SELECT id, nom, email, password_hash, role, statut_compte, doit_changer_mdp
+       FROM users WHERE role IN ('candidat', 'partenaire') AND lower(email) = lower($1) LIMIT 1`,
       [email.toLowerCase().trim()]
     );
     const u = rows[0];
@@ -72,12 +73,18 @@ export async function loginUser(req, res) {
 
     const ok = await bcrypt.compare(motdepasse, u.password_hash);
     if (!ok) return res.status(401).json({ message: "Identifiants invalides" });
+    if (u.statut_compte !== "actif") {
+      return res.status(403).json({ message: "Ce compte est suspendu. Contactez l'administration." });
+    }
 
     const accessToken = jwt.sign({ id: u.id, email: u.email, role: u.role }, JWT_SECRET, { expiresIn: ACCESS_EXPIRES });
     const refreshToken = jwt.sign({ id: u.id }, REFRESH_SECRET, { expiresIn: REFRESH_EXPIRES });
     setRefreshCookie(res, refreshToken);
 
-    return res.json({ accessToken, utilisateur: { id: u.id, nom: u.nom, email: u.email, role: u.role } });
+    return res.json({
+      accessToken,
+      utilisateur: { id: u.id, nom: u.nom, email: u.email, role: u.role, doit_changer_mdp: u.doit_changer_mdp },
+    });
   } catch (err) {
     console.error("loginUser error:", err);
     return res.status(500).json({ message: "Erreur serveur" });
@@ -131,7 +138,7 @@ export async function getMe(req, res) {
     }
 
     const { rows } = await pool.query(
-      "SELECT id, nom, prenom, email, role FROM users WHERE id = $1 LIMIT 1",
+      "SELECT id, nom, prenom, email, role, doit_changer_mdp FROM users WHERE id = $1 LIMIT 1",
       [id]
     );
     const user = rows[0];

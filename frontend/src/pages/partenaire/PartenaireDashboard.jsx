@@ -1,10 +1,11 @@
 // src/pages/partenaire/PartenaireDashboard.jsx
 // Espace partenaire : suivi des avis de recrutement soumis et de leur validation.
 import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, Navigate, useLocation } from "react-router-dom";
 import api from "@/utils/api";
 import { useAuth } from "@/context/AuthContext";
 import { STATUTS_MODERATION, statutModerationLabel } from "@/utils/statutModeration";
+import { urlPieceJointe } from "@/utils/pieceJointe";
 
 export default function PartenaireDashboard() {
   const { user } = useAuth();
@@ -22,6 +23,9 @@ export default function PartenaireDashboard() {
   }, []);
 
   const formater = (date) => (date ? new Date(date).toLocaleDateString("fr-FR") : "-");
+
+  // Tant que le mot de passe provisoire n'est pas changé, l'espace partenaire reste fermé.
+  if (user?.doit_changer_mdp) return <Navigate to="/profile" replace />;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 pt-20 space-y-6">
@@ -69,6 +73,16 @@ export default function PartenaireDashboard() {
                 </div>
                 {a.statut_moderation === "refusee" && a.motif_refus && (
                   <div className="text-sm text-red-700">Motif : {a.motif_refus}</div>
+                )}
+                {a.document_url && (
+                  <a
+                    href={urlPieceJointe(a.document_url)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 hover:underline"
+                  >
+                    Pièce jointe (PDF)
+                  </a>
                 )}
               </div>
               <div className="flex items-center gap-3">

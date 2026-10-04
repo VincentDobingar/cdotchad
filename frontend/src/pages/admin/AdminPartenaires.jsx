@@ -42,6 +42,21 @@ export default function AdminPartenaires() {
     }
   };
 
+  const changerStatut = async (p) => {
+    const suspendre = p.statut_compte === "actif";
+    const question = suspendre
+      ? `Suspendre le compte de ${p.nom} ? Il ne pourra plus se connecter ni soumettre d'avis.`
+      : `Réactiver le compte de ${p.nom} ?`;
+    if (!window.confirm(question)) return;
+    try {
+      await api.patch(`/partenaires/${p.id}/statut`, { statut: suspendre ? "suspendu" : "actif" });
+      toast.success(suspendre ? "Compte suspendu" : "Compte réactivé");
+      charger();
+    } catch {
+      toast.error("Action impossible");
+    }
+  };
+
   const supprimer = async (p) => {
     if (!window.confirm(`Supprimer le compte de ${p.nom} ? Ses avis déjà soumis seront conservés.`)) return;
     try {
@@ -80,7 +95,7 @@ export default function AdminPartenaires() {
               <Copy size={14} /> Copier
             </button>
           </p>
-          <p className="text-xs text-gray-700">Ce mot de passe ne sera plus affiché. Transmettez-le au partenaire, il pourra le changer depuis son profil.</p>
+          <p className="text-xs text-gray-700">Ce mot de passe ne sera plus affiché. Transmettez-le au partenaire : il devra le remplacer à sa première connexion.</p>
           <button type="button" onClick={() => setDernierAcces(null)} className="text-sm text-gray-600 underline">
             Fermer
           </button>
@@ -103,6 +118,7 @@ export default function AdminPartenaires() {
                 <th className="py-2 px-3 text-left">Ville</th>
                 <th className="py-2 px-3 text-left">Avis en attente</th>
                 <th className="py-2 px-3 text-left">Avis total</th>
+                <th className="py-2 px-3 text-left">Statut</th>
                 <th className="py-2 px-3 text-right">Actions</th>
               </tr>
             </thead>
@@ -118,7 +134,15 @@ export default function AdminPartenaires() {
                   <td className="py-2 px-3">{p.avis_en_attente}</td>
                   <td className="py-2 px-3">{p.avis_total}</td>
                   <td className="py-2 px-3">
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${p.statut_compte === "actif" ? "bg-green-100 text-green-800" : "bg-gray-200 text-gray-700"}`}>
+                      {p.statut_compte === "actif" ? "Actif" : "Suspendu"}
+                    </span>
+                  </td>
+                  <td className="py-2 px-3">
                     <div className="flex justify-end gap-3">
+                      <button type="button" onClick={() => changerStatut(p)} className="text-xs text-gray-700 underline self-center">
+                        {p.statut_compte === "actif" ? "Suspendre" : "Réactiver"}
+                      </button>
                       <button type="button" onClick={() => reinitialiser(p)} title="Nouveau mot de passe" className="text-indigo-600 hover:text-indigo-800">
                         <KeyRound size={18} />
                       </button>

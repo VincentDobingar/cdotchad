@@ -145,7 +145,7 @@ const changeMyPassword = async (req, res) => {
     if (!ok) return res.status(400).json({ message: "Mot de passe actuel invalide" });
 
     const hash = await bcrypt.hash(newPassword, 10);
-    await pool.query("UPDATE users SET password_hash=$1 WHERE id=$2", [hash, userId]);
+    await pool.query("UPDATE users SET password_hash=$1, doit_changer_mdp=false WHERE id=$2", [hash, userId]);
 
     return res.json({ message: "Mot de passe changé" });
   } catch (err) {

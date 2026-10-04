@@ -39,7 +39,12 @@ export default function Profile() {
 
       <section>
         <h3 className="text-lg font-semibold mb-3">Changer de mot de passe</h3>
-        <PasswordForm />
+        {user?.doit_changer_mdp && (
+          <p className="mb-3 text-sm text-yellow-900 bg-yellow-50 border border-yellow-300 rounded p-2">
+            Votre mot de passe est provisoire. Choisissez-en un nouveau pour accéder à votre espace.
+          </p>
+        )}
+        <PasswordForm onChanged={refreshMe} />
       </section>
     </div>
   );
@@ -257,7 +262,7 @@ function DocumentsEnregistres() {
   );
 }
 
-function PasswordForm() {
+function PasswordForm({ onChanged }) {
   const [ancien, setAncien] = useState("");
   const [nouveau, setNouveau] = useState("");
   const [msg, setMsg] = useState(null);
@@ -270,6 +275,7 @@ function PasswordForm() {
       setMsg({ type: "succes", texte: "Mot de passe changé." });
       setAncien("");
       setNouveau("");
+      await onChanged?.();
     } catch (err) {
       setMsg({ type: "erreur", texte: err?.response?.data?.message || "Impossible de changer le mot de passe." });
     }

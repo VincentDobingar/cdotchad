@@ -61,8 +61,8 @@ export const creerPartenaire = async (req, res) => {
     }
 
     const { rows: userRows } = await client.query(
-      `INSERT INTO users (nom, email, password_hash, role)
-       VALUES ($1, $2, $3, 'partenaire') RETURNING id`,
+      `INSERT INTO users (nom, email, password_hash, role, doit_changer_mdp)
+       VALUES ($1, $2, $3, 'partenaire', true) RETURNING id`,
       [nom, email, await bcrypt.hash(motdepasse, 10)]
     );
     const { rows } = await client.query(
@@ -91,7 +91,7 @@ export const reinitialiserMotDePasse = async (req, res) => {
   const motdepasse = motDePasseProvisoire();
   try {
     const { rows } = await pool.query(
-      `UPDATE users SET password_hash = $1
+      `UPDATE users SET password_hash = $1, doit_changer_mdp = true
        WHERE id = (SELECT user_id FROM partenaires WHERE id = $2) AND role = 'partenaire'
        RETURNING id`,
       [await bcrypt.hash(motdepasse, 10), req.params.id]
@@ -100,6 +100,28 @@ export const reinitialiserMotDePasse = async (req, res) => {
     res.json({ motdepasse_provisoire: motdepasse });
   } catch (err) {
     console.error("reinitialiserMotDePasse:", err);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+};
+
+// ⏸️ Suspension ou réactivation : le compte ne peut plus se connecter ni agir tant qu'il est suspendu.
+// Les avis déjà soumis restent dans la file de modération, et les offres déjà publiées restent en ligne.
+export const changerStatutPartenaire = async (req, res) => {
+  const statut = req.body?.statut;
+  if (!["actif", "suspendu"].includes(statut)) {
+    return res.status(400).json({ message: "Statut invalide (actif ou suspendu)." });
+  }
+  try {
+    const { rows } = await pool.query(
+      `UPDATE users SET statut_compte = $1
+       WHERE id = (SELECT user_id FROM partenaires WHERE id = $2) AND role = 'partenaire'
+       RETURNING statut_compte`,
+      [statut, req.params.id]
+    );
+    if (rows.length === 0) return res.status(404).json({ message: "Partenaire introuvable" });
+    res.json({ statut_compte: rows[0].statut_compte });
+  } catch (err) {
+    console.error("changerStatutPartenaire:", err);
     res.status(500).json({ message: "Erreur serveur" });
   }
 };

@@ -4,14 +4,18 @@ import { useEffect, useState } from "react";
 import api from "@/utils/api";
 import toast from "react-hot-toast";
 import { STATUTS_MODERATION, statutModerationLabel } from "@/utils/statutModeration";
+import { urlPieceJointe } from "@/utils/pieceJointe";
 
 const ONGLETS = ["en_attente", "validee", "refusee"];
+const MOTIF_MIN = 5;
 
 export default function AdminModerationAvis() {
   const [statut, setStatut] = useState("en_attente");
   const [avis, setAvis] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [ouvert, setOuvert] = useState(null); // id de l'avis dont on détaille la description
+  const [ouvert, setOuvert] = useState(null); // id de l'avis dont on affiche le détail
+  const [refus, setRefus] = useState(null); // { id, motif } : refus en cours de rédaction
+  const [envoi, setEnvoi] = useState(false);
 
   const charger = (s = statut) => {
     setLoading(true);
@@ -23,25 +27,22 @@ export default function AdminModerationAvis() {
   };
 
   useEffect(() => {
+    setRefus(null);
     charger(statut);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statut]);
 
-  const decider = async (a, decision) => {
-    let motif = null;
-    if (decision === "refusee") {
-      motif = window.prompt(`Motif du refus pour « ${a.titre} » (visible par le partenaire) :`);
-      if (!motif || motif.trim().length < 5) {
-        if (motif !== null) toast.error("Le motif doit contenir au moins 5 caractères.");
-        return;
-      }
-    }
+  const decider = async (a, decision, motif = null) => {
+    setEnvoi(true);
     try {
       await api.patch(`/offres/${a.id}/moderation`, { decision, motif });
       toast.success(decision === "validee" ? "Avis publié" : "Avis refusé");
+      setRefus(null);
       charger();
     } catch (err) {
       toast.error(err.response?.data?.message || "Décision impossible");
+    } finally {
+      setEnvoi(false);
     }
   };
 
@@ -95,9 +96,16 @@ export default function AdminModerationAvis() {
 
               {a.motif_refus && <p className="text-sm text-red-700">Motif : {a.motif_refus}</p>}
 
-              <button type="button" onClick={() => setOuvert(ouvert === a.id ? null : a.id)} className="text-sm text-blue-600 hover:underline">
-                {ouvert === a.id ? "Masquer le détail" : "Voir le détail"}
-              </button>
+              <div className="flex flex-wrap gap-4 text-sm">
+                <button type="button" onClick={() => setOuvert(ouvert === a.id ? null : a.id)} className="text-blue-600 hover:underline">
+                  {ouvert === a.id ? "Masquer le détail" : "Voir le détail"}
+                </button>
+                {a.document_url && (
+                  <a href={urlPieceJointe(a.document_url)} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                    Pièce jointe (PDF)
+                  </a>
+                )}
+              </div>
               {ouvert === a.id && (
                 <div className="text-sm space-y-2 border-t pt-2">
                   <p><strong>Résumé :</strong> {a.resume}</p>
@@ -106,18 +114,56 @@ export default function AdminModerationAvis() {
                 </div>
               )}
 
-              <div className="flex gap-3 pt-1">
-                {statut !== "validee" && (
-                  <button type="button" onClick={() => decider(a, "validee")} className="bg-green-600 text-white px-3 py-1 rounded text-sm">
-                    Valider et publier
-                  </button>
-                )}
-                {statut !== "refusee" && (
-                  <button type="button" onClick={() => decider(a, "refusee")} className="bg-red-600 text-white px-3 py-1 rounded text-sm">
-                    Refuser
-                  </button>
-                )}
-              </div>
+              {refus?.id === a.id ? (
+                <div className="space-y-2 border-t pt-3">
+                  <label className="block text-sm font-medium">
+                    Motif du refus (visible par le partenaire, {MOTIF_MIN} caractères minimum)
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={refus.motif}
+                    onChange={(e) => setRefus({ id: a.id, motif: e.target.value })}
+                    className="w-full border rounded p-2 text-sm"
+                    autoFocus
+                  />
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      disabled={envoi || refus.motif.trim().length < MOTIF_MIN}
+                      onClick={() => decider(a, "refusee", refus.motif.trim())}
+                      className="bg-red-600 text-white px-3 py-1 rounded text-sm disabled:opacity-50"
+                    >
+                      Confirmer le refus
+                    </button>
+                    <button type="button" onClick={() => setRefus(null)} className="text-sm text-gray-600 underline">
+                      Annuler
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex gap-3 pt-1">
+                  {statut !== "validee" && (
+                    <button
+                      type="button"
+                      disabled={envoi}
+                      onClick={() => decider(a, "validee")}
+                      className="bg-green-600 text-white px-3 py-1 rounded text-sm disabled:opacity-50"
+                    >
+                      Valider et publier
+                    </button>
+                  )}
+                  {statut !== "refusee" && (
+                    <button
+                      type="button"
+                      disabled={envoi}
+                      onClick={() => setRefus({ id: a.id, motif: "" })}
+                      className="bg-red-600 text-white px-3 py-1 rounded text-sm disabled:opacity-50"
+                    >
+                      Refuser
+                    </button>
+                  )}
+                </div>
+              )}
             </li>
           ))}
         </ul>

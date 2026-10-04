@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import api from "@/utils/api";
+import { urlPieceJointe } from "@/utils/pieceJointe";
 
 const CHAMPS_TEXTE = ["lieu", "diplome", "experience", "langue"];
 const CHAMPS_LONGS = [
@@ -51,6 +52,8 @@ export default function PartenaireAvisForm() {
   const [message, setMessage] = useState(null);
   const [chargement, setChargement] = useState(modification);
   const [envoi, setEnvoi] = useState(false);
+  const [piece, setPiece] = useState(null); // nouveau PDF choisi
+  const [docActuel, setDocActuel] = useState(null); // nom du PDF déjà joint à l'avis
 
   useEffect(() => {
     if (!modification) return;
@@ -62,6 +65,7 @@ export default function PartenaireAvisForm() {
           Object.keys(VIDE).map((k) => [k, k === "date_limite" ? (a[k] || "").slice(0, 10) : a[k] || VIDE[k]])
         );
         setForm(valeurs);
+        setDocActuel(a.document_url || null);
       })
       .catch(() => setMessage({ type: "erreur", texte: "Avis introuvable." }))
       .finally(() => setChargement(false));
@@ -75,8 +79,11 @@ export default function PartenaireAvisForm() {
     setErreurs({});
     setMessage(null);
     try {
-      if (modification) await api.put(`/partenaire/avis/${id}`, form);
-      else await api.post("/partenaire/avis", form);
+      const data = new FormData();
+      Object.entries(form).forEach(([k, v]) => data.append(k, v ?? ""));
+      if (piece) data.append("document", piece);
+      if (modification) await api.put(`/partenaire/avis/${id}`, data);
+      else await api.post("/partenaire/avis", data);
       navigate("/partenaire", {
         state: { message: "Avis soumis. Il sera publié après validation par l'administration." },
       });
@@ -153,6 +160,30 @@ export default function PartenaireAvisForm() {
             <ErreurChamp erreurs={erreurs} nom={name} />
           </div>
         ))}
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Document PDF (facultatif)</label>
+          <p className="text-sm text-gray-600 mb-2">
+            Si vous avez une version mise en forme de l'avis, joignez-la : elle sera proposée en téléchargement avec l'offre.
+            PDF uniquement, 10 Mo maximum.
+          </p>
+          {docActuel && !piece && (
+            <p className="text-sm mb-2">
+              Pièce actuelle :{" "}
+              <a href={urlPieceJointe(docActuel)} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                télécharger
+              </a>{" "}
+              (sera conservée si vous n'en choisissez pas une nouvelle)
+            </p>
+          )}
+          <input
+            type="file"
+            accept="application/pdf,.pdf"
+            onChange={(e) => setPiece(e.target.files[0] || null)}
+            className="w-full"
+          />
+          <ErreurChamp erreurs={erreurs} nom="document" />
+        </div>
 
         <div className="flex items-center gap-4">
           <button type="submit" disabled={envoi} className="bg-red-600 text-white px-4 py-2 rounded disabled:opacity-50">

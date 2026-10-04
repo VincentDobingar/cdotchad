@@ -562,7 +562,7 @@ export async function getOffresModeration(req, res) {
   try {
     const { rows } = await pool.query(
       `SELECT o.id, o.titre, o.resume, o.description, o.attributions, o.lieu, o.type_contrat,
-              o.employeur, o.date_publication, o.date_limite, o.statut_moderation, o.motif_refus,
+              o.employeur, o.date_publication, o.date_limite, o.statut_moderation, o.motif_refus, o.document_url,
               o.created_at, o.updated_at,
               p.id AS partenaire_id, p.nom AS partenaire_nom, p.ville AS partenaire_ville
        FROM offres o
