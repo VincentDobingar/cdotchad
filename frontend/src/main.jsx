@@ -9,6 +9,7 @@ import { ThemeProvider } from './context/ThemeContext'; // 👉 ajouter ici
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Toaster } from "react-hot-toast"; // toast.success/error utilisés par les pages (react-hot-toast)
 
 // --- Safe Storage Shim: évite DOMException si storage est bloqué --- //
 (function () {
@@ -52,6 +53,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <AuthProvider>
           <App />
           <ToastContainer position="top-right" autoClose={3000} />
+          <Toaster position="top-right" />
         </AuthProvider>
       </ThemeProvider>
     </BrowserRouter>

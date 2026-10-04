@@ -59,9 +59,11 @@ export default function AdminSidebar({ email, onLogout }) {
             "galerie",
             "services",
             "offres",
+            "moderation",
             "candidatures",
             "utilisateurs",
             "messages",
+            "partenaires",
           ].includes(r.path)
       ),
     },
