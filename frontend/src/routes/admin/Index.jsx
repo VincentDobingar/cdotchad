@@ -6,6 +6,8 @@ import candidaturesRoutes from "./CandidaturesRoutes";
 import galerieRoutes from "./GalerieRoutes";
 import utilisateursRoutes from "./UtilisateursRoutes";
 import messagesRoutes from "./MessagesRoutes";
+import partenairesRoutes from "./PartenairesRoutes";
+import moderationRoutes from "./ModerationRoutes";
 import Unauthorized from "@/pages/admin/Unauthorized";
 import ServicesRoutes from "./ServicesRoutes";
 import NotFound from "@/pages/NotFound";
@@ -21,6 +23,8 @@ const adminRoutes = [
   ...ServicesRoutes,
   ...debugRoutes,
   ...messagesRoutes,
+  ...partenairesRoutes,
+  ...moderationRoutes,
   { path: "*", element: <NotFound /> },
   { path: "unauthorized", element: <Unauthorized />, },
 ];

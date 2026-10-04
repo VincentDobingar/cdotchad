@@ -62,8 +62,9 @@ export async function loginUser(req, res) {
     const { email, motdepasse } = req.body;
     if (!email || !motdepasse) return res.status(400).json({ message: "Champs requis manquants." });
 
+    // Comptes candidat et partenaire (les admins ont leur propre connexion, /admin/login)
     const { rows } = await pool.query(
-      "SELECT id, nom, email, password_hash, role FROM users WHERE role = 'candidat' AND lower(email) = lower($1) LIMIT 1",
+      "SELECT id, nom, email, password_hash, role FROM users WHERE role IN ('candidat', 'partenaire') AND lower(email) = lower($1) LIMIT 1",
       [email.toLowerCase().trim()]
     );
     const u = rows[0];

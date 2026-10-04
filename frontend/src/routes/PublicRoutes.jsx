@@ -12,6 +12,8 @@ import ActualiteDetail from "@/pages/public/ActualiteDetail";
 import Contact from "@/pages/public/Contact";
 import Login from "@/pages/public/Login";
 import Inscription from "@/pages/public/Inscription";
+import PartenaireDashboard from "@/pages/partenaire/PartenaireDashboard";
+import PartenaireAvisForm from "@/pages/partenaire/PartenaireAvisForm";
 import Profile from "@/pages/public/Profile";
 import MesCandidatures from "@/pages/public/MesCandidatures";
 import Galerie from "@/pages/public/Galerie";
@@ -56,6 +58,30 @@ const publicRoutes = [
     element: (
       <RequireRole roles={["candidat"]} redirectTo="/login">
         <MesCandidatures />
+      </RequireRole>
+    ),
+  },
+  {
+    path: "/partenaire",
+    element: (
+      <RequireRole roles={["partenaire"]} redirectTo="/login">
+        <PartenaireDashboard />
+      </RequireRole>
+    ),
+  },
+  {
+    path: "/partenaire/avis/nouveau",
+    element: (
+      <RequireRole roles={["partenaire"]} redirectTo="/login">
+        <PartenaireAvisForm />
+      </RequireRole>
+    ),
+  },
+  {
+    path: "/partenaire/avis/:id/modifier",
+    element: (
+      <RequireRole roles={["partenaire"]} redirectTo="/login">
+        <PartenaireAvisForm />
       </RequireRole>
     ),
   },

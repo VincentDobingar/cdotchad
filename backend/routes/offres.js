@@ -12,9 +12,12 @@ import {
   ajouterOffre,
   modifierOffre,
   supprimerOffre,
+  getOffresModeration,
+  modererOffre,
 } from "../controllers/offres.controller.js";
 
 import { requireRole } from "../middlewares/requireRole.js";
+import { optionalAuth } from "../middlewares/optionalAuth.js";
 
 const router = express.Router();
 
@@ -58,10 +61,15 @@ const documentUpload = multer({
   },
 });
 
-// Public
-router.get("/", getAllOffres);
+// Public (optionalAuth : un admin connecté voit aussi les avis en attente)
+router.get("/", optionalAuth, getAllOffres);
 router.get("/export/pdf", exportOffresPDF);
-router.get("/:id", getOffreById);
+
+// Modération des avis partenaires (admin) — déclarées avant "/:id"
+router.get("/moderation", requireRole("admin", "superadmin"), getOffresModeration);
+router.patch("/:id/moderation", requireRole("admin", "superadmin"), modererOffre);
+
+router.get("/:id", optionalAuth, getOffreById);
 
 const offreFiles = documentUpload.fields([
   { name: "document", maxCount: 1 },

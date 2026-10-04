@@ -46,7 +46,7 @@ export default function AdminSidebar({ email, onLogout }) {
     {
       title: "Utilisateurs",
       routes: visibleLinks.filter((r) =>
-        ["offres", "candidatures", "referents", "utilisateurs"].includes(r.path)
+        ["offres", "moderation", "candidatures", "referents", "utilisateurs"].includes(r.path)
       ),
     },
     {

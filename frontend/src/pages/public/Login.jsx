@@ -1,5 +1,5 @@
 // src/pages/public/Login.jsx
-// Connexion candidat (l'espace admin a son propre écran : AdminLogin.jsx / /admin/login).
+// Connexion candidat et partenaire (l'espace admin a son propre écran : AdminLogin.jsx / /admin/login).
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import api from "@/utils/api";
@@ -30,7 +30,8 @@ const Login = () => {
         roleHint: "candidat",
       });
 
-      navigate(searchParams.get("next") || "/profile");
+      const accueil = data.utilisateur?.role === "partenaire" ? "/partenaire" : "/profile";
+      navigate(searchParams.get("next") || accueil);
     } catch (err) {
       setErr(err?.response?.data?.message || "Identifiants invalides");
     } finally {
@@ -40,7 +41,7 @@ const Login = () => {
 
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
-      <h2 className="text-xl font-semibold mb-4">Connexion candidat</h2>
+      <h2 className="text-xl font-semibold mb-4">Connexion</h2>
 
       {err && (
         <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded p-2 mb-4">

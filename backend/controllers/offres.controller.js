@@ -75,7 +75,11 @@ function safeTrim(value) {
   return v === "" ? null : v;
 }
 
-function toOffrePayload(body = {}) {
+// Les offres en attente ou refusées ne sont visibles que de l'admin.
+export const estAdmin = (req) => ["admin", "superadmin"].includes(req.user?.role);
+const FILTRE_PUBLIC = `COALESCE(statut_moderation, 'validee') = 'validee'`;
+
+export function toOffrePayload(body = {}) {
   return {
     titre: safeTrim(body.titre),
     resume: safeTrim(body.resume),
@@ -99,7 +103,7 @@ function toOffrePayload(body = {}) {
   };
 }
 
-function validateOffre(payload) {
+export function validateOffre(payload) {
   const errors = {};
 
   if (!payload.titre || payload.titre.length < 3) {
@@ -192,6 +196,7 @@ export async function getAllOffres(req, res) {
     if (statut) pushCondition(`LOWER(statut) = LOWER(?)`, statut);
     if (date_min) pushCondition(`date_publication >= ?`, date_min);
     if (date_max) pushCondition(`date_publication <= ?`, date_max);
+    if (!estAdmin(req)) where.push(FILTRE_PUBLIC);
 
     const whereClause = where.length ? `WHERE ${where.join(" AND ")}` : "";
     const { field: sortField, dir: sortDir } = normalizeSort(sort);
@@ -260,6 +265,7 @@ export async function getOffreById(req, res) {
   try {
     const { id } = req.params;
 
+    const filtre = estAdmin(req) ? "" : `AND ${FILTRE_PUBLIC}`;
     const result = await pool.query(
       `
       SELECT
@@ -269,6 +275,7 @@ export async function getOffreById(req, res) {
         description,
         attributions,
         statut,
+        statut_moderation,
         date_publication,
         date_limite,
         lieu,
@@ -287,7 +294,7 @@ export async function getOffreById(req, res) {
         autre_fichier_url,
         ${buildEtatSql()}
       FROM offres
-      WHERE id = $1
+      WHERE id = $1 ${filtre}
       `,
       [id]
     );
@@ -544,6 +551,60 @@ export async function supprimerOffre(req, res) {
       code: error?.code || null,
       detail: error?.detail || null,
     });
+  }
+}
+
+// 🛡️ Modération (admin) : avis soumis par les partenaires
+const STATUTS_MODERATION = ["en_attente", "validee", "refusee"];
+
+export async function getOffresModeration(req, res) {
+  const statut = STATUTS_MODERATION.includes(req.query.statut) ? req.query.statut : "en_attente";
+  try {
+    const { rows } = await pool.query(
+      `SELECT o.id, o.titre, o.resume, o.description, o.attributions, o.lieu, o.type_contrat,
+              o.employeur, o.date_publication, o.date_limite, o.statut_moderation, o.motif_refus,
+              o.created_at, o.updated_at,
+              p.id AS partenaire_id, p.nom AS partenaire_nom, p.ville AS partenaire_ville
+       FROM offres o
+       LEFT JOIN partenaires p ON p.id = o.partenaire_id
+       WHERE o.statut_moderation = $1
+       ORDER BY COALESCE(o.updated_at, o.created_at) DESC`,
+      [statut]
+    );
+    res.json({ avis: rows, statut });
+  } catch (err) {
+    console.error("getOffresModeration:", err);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+}
+
+export async function modererOffre(req, res) {
+  const { id } = req.params;
+  const decision = req.body?.decision;
+  const motif = safeTrim(req.body?.motif);
+
+  if (!["validee", "refusee"].includes(decision)) {
+    return res.status(400).json({ message: "Décision invalide (validee ou refusee)." });
+  }
+  if (decision === "refusee" && (!motif || motif.length < 5)) {
+    return res.status(400).json({ message: "Un motif de refus (5 caractères minimum) est requis." });
+  }
+
+  try {
+    const { rows } = await pool.query(
+      `UPDATE offres
+       SET statut_moderation = $1,
+           motif_refus = $2,
+           updated_at = NOW()
+       WHERE id = $3
+       RETURNING id, titre, statut_moderation, motif_refus`,
+      [decision, decision === "refusee" ? motif : null, id]
+    );
+    if (rows.length === 0) return res.status(404).json({ message: "Offre introuvable" });
+    res.json({ message: "Décision enregistrée", data: rows[0] });
+  } catch (err) {
+    console.error("modererOffre:", err);
+    res.status(500).json({ message: "Erreur serveur" });
   }
 }
 

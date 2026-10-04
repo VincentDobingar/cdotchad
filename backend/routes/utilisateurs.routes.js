@@ -26,7 +26,7 @@ router.delete('/:id', requireRole("admin", "superadmin"), supprimerUtilisateur);
 
 // User-protected routes
 router.put('/me', requireRole("candidat"), updateMe);
-router.put('/me/password', requireRole("candidat"), changeMyPassword);
+router.put('/me/password', requireRole("candidat", "partenaire"), changeMyPassword);
 
 // Protected profile
 router.get("/profil", requireRole("candidat"), getProfilUtilisateur);
