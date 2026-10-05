@@ -32,6 +32,13 @@ export default function Profile() {
             </Link>
           </p>
         )}
+        {user?.role === "partenaire" && !user?.doit_changer_mdp && (
+          <p className="mt-2 text-sm">
+            <Link to="/partenaire" className="text-blue-600 hover:underline">
+              Aller à mon espace partenaire (mes avis de recrutement)
+            </Link>
+          </p>
+        )}
       </header>
 
       {estCandidat && <InformationsPersonnelles onSaved={refreshMe} />}

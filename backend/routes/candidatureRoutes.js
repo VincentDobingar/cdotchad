@@ -4,7 +4,6 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { requireRole } from "../middlewares/requireRole.js";
-import { optionalAuth } from "../middlewares/optionalAuth.js";
 import {
   getAllCandidatures,
   postCandidature,
@@ -42,10 +41,10 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 
-// 📥 POSTULER : Ajout de candidature
+// 📥 POSTULER : réservé aux comptes candidats, la candidature est toujours liée au compte
 router.post(
   "/",
-  optionalAuth,
+  requireRole("candidat"),
   upload.fields([
     { name: "cv", maxCount: 1 },
     { name: "lettre", maxCount: 1 },

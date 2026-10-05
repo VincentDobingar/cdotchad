@@ -109,6 +109,14 @@ export default function Navbar() {
   const activeUnderline =
     "relative after:absolute after:-bottom-1 after:left-0 after:h-[2px] after:w-full after:rounded-full after:bg-current";
 
+  // Lien vers l'espace propre au rôle connecté (candidat ou partenaire)
+  const lienEspace =
+    user?.role === "candidat"
+      ? { to: "/mes-candidatures", label: "Mes candidatures" }
+      : user?.role === "partenaire"
+      ? { to: "/partenaire", label: "Espace partenaire" }
+      : null;
+
   const handleLogout = () => {
     if (typeof logout === "function") logout();
     navigate("/");
@@ -122,6 +130,11 @@ export default function Navbar() {
     if (status === "authenticated" && user) {
       return (
         <div className="flex items-center gap-3">
+          {lienEspace && (
+            <Link to={lienEspace.to} className={`${linkBase} ${linkOnOther}`}>
+              {lienEspace.label}
+            </Link>
+          )}
           <Link to="/profile" className={`${linkBase} ${linkOnOther}`}>
             {user.avatar_url ? (
               <img
@@ -145,7 +158,19 @@ export default function Navbar() {
       );
     }
 
-    return null;
+    return (
+      <div className="flex items-center gap-4">
+        <Link to="/login" className={`${linkBase} ${linkOnOther}`}>
+          Se connecter
+        </Link>
+        <Link
+          to="/inscription"
+          className="inline-flex items-center px-3 py-1 rounded-md bg-white/10 hover:bg-white/20 text-sm whitespace-nowrap"
+        >
+          Créer un compte
+        </Link>
+      </div>
+    );
   })();
 
   const authMobile = (() => {
@@ -156,6 +181,15 @@ export default function Navbar() {
     if (status === "authenticated" && user) {
       return (
         <div className="px-3 py-2 space-y-2">
+          {lienEspace && (
+            <Link
+              to={lienEspace.to}
+              className="block px-3 py-2 rounded-lg hover:bg-white/10"
+              onClick={() => setMenuOpen(false)}
+            >
+              {lienEspace.label}
+            </Link>
+          )}
           <Link
             to="/profile"
             className="block px-3 py-2 rounded-lg hover:bg-white/10"
@@ -177,7 +211,24 @@ export default function Navbar() {
       );
     }
 
-    return null;
+    return (
+      <div className="px-3 py-2 space-y-2">
+        <Link
+          to="/login"
+          className="block px-3 py-2 rounded-lg hover:bg-white/10"
+          onClick={() => setMenuOpen(false)}
+        >
+          Se connecter
+        </Link>
+        <Link
+          to="/inscription"
+          className="block px-3 py-2 rounded-lg hover:bg-white/10"
+          onClick={() => setMenuOpen(false)}
+        >
+          Créer un compte
+        </Link>
+      </div>
+    );
   })();
 
   return (

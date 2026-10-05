@@ -39,7 +39,14 @@ const publicRoutes = [
   { path: "/offres/:id", element: <OffreDetail /> },
   { path: "/offre/:id", element: <RedirectOffre /> },
 
-  { path: "/postuler/:id", element: <PostulerEtape /> },
+  {
+    path: "/postuler/:id",
+    element: (
+      <RequireRole roles={["candidat"]} redirectTo="/login">
+        <PostulerEtape />
+      </RequireRole>
+    ),
+  },
   { path: "/actualites", element: <Actualites /> },
   { path: "/actualites/:id", element: <ActualiteDetail /> },
   { path: "/contact", element: <Contact /> },
