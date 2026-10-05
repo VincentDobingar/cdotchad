@@ -6,8 +6,16 @@ import path from "path";
 import dotenv from "dotenv";
 import { Parser } from "json2csv";
 import { getDocumentEnregistre } from "./candidat.controller.js";
+import { creerNotification } from "./notifications.controller.js";
 
 const STATUTS_VALIDES = ["recue", "en_cours", "entretien", "acceptee", "refusee"];
+const LIBELLES_STATUT = {
+  recue: "reçue",
+  en_cours: "en cours d'examen",
+  entretien: "entretien",
+  acceptee: "acceptée",
+  refusee: "non retenue",
+};
 
 dotenv.config();
 
@@ -79,13 +87,23 @@ export const updateStatutCandidature = async (req, res) => {
 
   try {
     const result = await pool.query(
-      "UPDATE candidatures SET statut = $1 WHERE id = $2 RETURNING id, statut",
+      "UPDATE candidatures SET statut = $1 WHERE id = $2 RETURNING id, statut, user_id",
       [statut, id]
     );
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Candidature introuvable" });
     }
-    res.json(result.rows[0]);
+    const { user_id, ...candidature } = result.rows[0];
+    // Candidature envoyée sans compte : personne à prévenir dans l'application
+    if (user_id) {
+      await creerNotification(
+        user_id,
+        "statut_candidature",
+        `Le statut de votre candidature a changé : ${LIBELLES_STATUT[statut]}.`,
+        "/mes-candidatures"
+      );
+    }
+    res.json(candidature);
   } catch (err) {
     console.error("Erreur mise à jour statut candidature :", err);
     res.status(500).json({ error: "Erreur serveur" });

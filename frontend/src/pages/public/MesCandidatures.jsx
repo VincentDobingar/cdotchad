@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "@/utils/api";
+import NotificationsCloche from "@/components/NotificationsCloche";
 import { STATUTS, statutLabel } from "@/utils/statutCandidature";
 
 export default function MesCandidatures() {
@@ -19,7 +20,10 @@ export default function MesCandidatures() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 pt-20">
-      <h2 className="text-xl font-bold text-red-600 mb-4">Mes candidatures</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-bold text-red-600">Mes candidatures</h2>
+        <NotificationsCloche />
+      </div>
       <p className="mb-4 text-sm">
         <Link to="/profile" className="text-blue-600 hover:underline">
           Modifier mon profil

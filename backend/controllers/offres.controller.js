@@ -4,6 +4,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import PDFDocument from "pdfkit";
 import { pool } from "../config/db.js";
+import { creerNotification } from "./notifications.controller.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -597,11 +598,26 @@ export async function modererOffre(req, res) {
            motif_refus = $2,
            updated_at = NOW()
        WHERE id = $3
-       RETURNING id, titre, statut_moderation, motif_refus`,
+       RETURNING id, titre, statut_moderation, motif_refus, partenaire_id`,
       [decision, decision === "refusee" ? motif : null, id]
     );
     if (rows.length === 0) return res.status(404).json({ message: "Offre introuvable" });
-    res.json({ message: "Décision enregistrée", data: rows[0] });
+
+    const { partenaire_id, ...offre } = rows[0];
+    // Avis créé directement par l'admin (sans partenaire) : rien à notifier
+    if (partenaire_id) {
+      const { rows: compte } = await pool.query(
+        "SELECT user_id FROM partenaires WHERE id = $1",
+        [partenaire_id]
+      );
+      const userId = compte[0]?.user_id;
+      const message =
+        decision === "validee"
+          ? `Votre avis de recrutement « ${offre.titre} » a été validé et publié.`
+          : `Votre avis de recrutement « ${offre.titre} » a été refusé : ${motif}`;
+      await creerNotification(userId, "moderation_avis", message, "/partenaire");
+    }
+    res.json({ message: "Décision enregistrée", data: offre });
   } catch (err) {
     console.error("modererOffre:", err);
     res.status(500).json({ message: "Erreur serveur" });

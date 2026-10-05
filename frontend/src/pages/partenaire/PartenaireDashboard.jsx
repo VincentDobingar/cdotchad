@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Link, Navigate, useLocation } from "react-router-dom";
 import api from "@/utils/api";
+import NotificationsCloche from "@/components/NotificationsCloche";
 import { useAuth } from "@/context/AuthContext";
 import { STATUTS_MODERATION, statutModerationLabel } from "@/utils/statutModeration";
 import { urlPieceJointe } from "@/utils/pieceJointe";
@@ -34,7 +35,8 @@ export default function PartenaireDashboard() {
           <h2 className="text-xl font-bold text-red-600">Espace partenaire</h2>
           <p className="text-sm text-gray-600">{user?.email}</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 items-center">
+          <NotificationsCloche />
           <Link to="/profile" className="text-sm text-blue-600 hover:underline self-center">
             Mot de passe
           </Link>

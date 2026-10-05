@@ -130,6 +130,7 @@ import candidatureRoutes from "./routes/candidatureRoutes.js";
 import candidatRoutes from "./routes/candidat.routes.js";
 import partenairesRoutes from "./routes/partenaires.routes.js";
 import partenaireRoutes from "./routes/partenaire.routes.js";
+import notificationsRoutes from "./routes/notifications.routes.js";
 
 
 /* ------------------- Montage des routers -------------------------- */
@@ -147,6 +148,7 @@ app.use(`${BASE}/candidatures`, candidatureRoutes);
 app.use(`${BASE}/candidat`, candidatRoutes);
 app.use(`${BASE}/partenaires`, partenairesRoutes);
 app.use(`${BASE}/partenaire`, partenaireRoutes);
+app.use(`${BASE}/notifications`, notificationsRoutes);
 
 /* ----------------------- 404 & gestion erreurs -------------------- */
 app.use((req, res, next) => {
