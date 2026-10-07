@@ -21,6 +21,7 @@ import CandidatureConfirmation from "@/pages/public/CandidatureConfirmation";
 import TestQuill from "@/components/public/TestQuill";
 import NotFound from "@/pages/NotFound";
 import RequireRole from "@/routes/RequireRole";
+import EspaceLayout from "@/components/espace/EspaceLayout";
 import { Navigate, useParams } from "react-router-dom";
 
 function RedirectOffre() {
@@ -56,7 +57,9 @@ const publicRoutes = [
     path: "/profile",
     element: (
       <RequireRole roles={[]} redirectTo="/login">
-        <Profile />
+        <EspaceLayout>
+          <Profile />
+        </EspaceLayout>
       </RequireRole>
     ),
   },
@@ -64,7 +67,9 @@ const publicRoutes = [
     path: "/mes-candidatures",
     element: (
       <RequireRole roles={["candidat"]} redirectTo="/login">
-        <MesCandidatures />
+        <EspaceLayout>
+          <MesCandidatures />
+        </EspaceLayout>
       </RequireRole>
     ),
   },
@@ -72,7 +77,9 @@ const publicRoutes = [
     path: "/partenaire",
     element: (
       <RequireRole roles={["partenaire"]} redirectTo="/login">
-        <PartenaireDashboard />
+        <EspaceLayout>
+          <PartenaireDashboard />
+        </EspaceLayout>
       </RequireRole>
     ),
   },
@@ -80,7 +87,9 @@ const publicRoutes = [
     path: "/partenaire/avis/nouveau",
     element: (
       <RequireRole roles={["partenaire"]} redirectTo="/login">
-        <PartenaireAvisForm />
+        <EspaceLayout>
+          <PartenaireAvisForm />
+        </EspaceLayout>
       </RequireRole>
     ),
   },
@@ -88,7 +97,9 @@ const publicRoutes = [
     path: "/partenaire/avis/:id/modifier",
     element: (
       <RequireRole roles={["partenaire"]} redirectTo="/login">
-        <PartenaireAvisForm />
+        <EspaceLayout>
+          <PartenaireAvisForm />
+        </EspaceLayout>
       </RequireRole>
     ),
   },

@@ -2,8 +2,18 @@
 // Création d'un compte candidat. Connecte automatiquement le candidat à la fin.
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { CheckCircle2, FileText, Bell, UserRound } from "lucide-react";
 import api from "@/utils/api";
 import { useAuth } from "@/context/AuthContext";
+
+const AVANTAGES = [
+  { icone: UserRound, texte: "Un profil unique, réutilisé pour toutes vos candidatures." },
+  { icone: FileText, texte: "Vos CV, lettres et diplômes enregistrés en lieu sûr." },
+  { icone: Bell, texte: "Un suivi clair : chaque changement de statut vous est signalé." },
+];
+
+const champ =
+  "w-full border border-slate-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-red-600";
 
 export default function Inscription() {
   const navigate = useNavigate();
@@ -48,60 +58,101 @@ export default function Inscription() {
     }
   };
 
-  const champ = "w-full border p-2 rounded";
-
   return (
-    <div className="max-w-md mx-auto px-4 py-8 pt-20">
-      <h2 className="text-xl font-bold text-red-600 mb-2">Créer mon compte candidat</h2>
-      <p className="text-sm text-gray-600 mb-6">
-        Votre compte vous permet d'enregistrer vos documents et de suivre vos candidatures.
-      </p>
+    <div className="min-h-screen bg-slate-50 pt-16 grid lg:grid-cols-2">
+      {/* Panneau de présentation */}
+      <aside className="hidden lg:flex flex-col justify-center px-16 bg-gradient-to-br from-red-900 via-red-800 to-red-700 text-white">
+        <p className="text-sm uppercase tracking-[0.2em] text-red-200">CDO Tchad</p>
+        <h1 className="mt-4 text-4xl font-bold leading-tight">Candidater en quelques clics</h1>
+        <p className="mt-4 text-red-100 max-w-md">
+          Créez votre compte candidat une fois, puis postulez aux offres sans rien ressaisir.
+        </p>
+        <ul className="mt-10 space-y-5">
+          {AVANTAGES.map(({ icone: Icone, texte }) => (
+            <li key={texte} className="flex gap-4">
+              <span className="shrink-0 w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+                <Icone className="w-5 h-5" />
+              </span>
+              <span className="text-red-50">{texte}</span>
+            </li>
+          ))}
+        </ul>
+      </aside>
 
-      {err && (
-        <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded p-2 mb-4">{err}</div>
-      )}
+      {/* Formulaire */}
+      <main className="flex items-center justify-center px-4 py-12">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-200 p-8">
+          <h2 className="text-2xl font-bold tracking-tight">Créer mon compte candidat</h2>
+          <p className="mt-1 text-sm text-slate-500">Votre compte vous permet d'enregistrer vos documents et de suivre vos candidatures.</p>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-2 gap-3">
-          <input name="prenom" placeholder="Prénom" value={form.prenom} onChange={handleChange} className={champ} />
-          <input name="nom" placeholder="Nom" value={form.nom} onChange={handleChange} className={champ} />
+          {err && (
+            <div className="mt-6 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-3">{err}</div>
+          )}
+
+          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <label className="block">
+                <span className="text-sm font-medium text-slate-700">Prénom</span>
+                <input name="prenom" value={form.prenom} onChange={handleChange} autoComplete="given-name" className={`${champ} mt-1`} />
+              </label>
+              <label className="block">
+                <span className="text-sm font-medium text-slate-700">Nom</span>
+                <input name="nom" value={form.nom} onChange={handleChange} autoComplete="family-name" className={`${champ} mt-1`} />
+              </label>
+            </div>
+
+            <label className="block">
+              <span className="text-sm font-medium text-slate-700">Adresse e-mail</span>
+              <input type="email" name="email" required value={form.email} onChange={handleChange} autoComplete="email" className={`${champ} mt-1`} />
+            </label>
+
+            <label className="block">
+              <span className="text-sm font-medium text-slate-700">Mot de passe</span>
+              <input
+                type="password"
+                name="motdepasse"
+                required
+                minLength={8}
+                value={form.motdepasse}
+                onChange={handleChange}
+                autoComplete="new-password"
+                className={`${champ} mt-1`}
+              />
+              <span className="mt-1 block text-xs text-slate-500">8 caractères minimum.</span>
+            </label>
+
+            <label className="block">
+              <span className="text-sm font-medium text-slate-700">Confirmer le mot de passe</span>
+              <input
+                type="password"
+                name="confirmation"
+                required
+                minLength={8}
+                value={form.confirmation}
+                onChange={handleChange}
+                autoComplete="new-password"
+                className={`${champ} mt-1`}
+              />
+            </label>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full inline-flex items-center justify-center gap-2 bg-red-700 hover:bg-red-800 text-white py-2.5 rounded-lg font-medium shadow-sm disabled:opacity-60"
+            >
+              {loading ? "Création…" : "Créer mon compte"}
+              {!loading && <CheckCircle2 className="w-4 h-4" />}
+            </button>
+          </form>
+
+          <p className="mt-8 border-t border-slate-100 pt-6 text-sm text-center text-slate-600">
+            Déjà inscrit ?{" "}
+            <Link to="/login" className="font-medium text-red-700 hover:underline">
+              Se connecter
+            </Link>
+          </p>
         </div>
-        <input type="email" name="email" placeholder="Email" required value={form.email} onChange={handleChange} className={champ} />
-        <input
-          type="password"
-          name="motdepasse"
-          placeholder="Mot de passe (8 caractères minimum)"
-          required
-          minLength={8}
-          value={form.motdepasse}
-          onChange={handleChange}
-          className={champ}
-        />
-        <input
-          type="password"
-          name="confirmation"
-          placeholder="Confirmer le mot de passe"
-          required
-          minLength={8}
-          value={form.confirmation}
-          onChange={handleChange}
-          className={champ}
-        />
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-red-600 text-white px-4 py-2 rounded disabled:opacity-50"
-        >
-          {loading ? "Création…" : "Créer mon compte"}
-        </button>
-      </form>
-
-      <p className="text-sm mt-6 text-center">
-        Déjà inscrit ?{" "}
-        <Link to="/login" className="text-blue-600 hover:underline">
-          Se connecter
-        </Link>
-      </p>
+      </main>
     </div>
   );
 }

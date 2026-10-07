@@ -58,14 +58,14 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 px-4">
-      <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow w-full max-w-md space-y-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-red-900 px-4">
+      <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-2xl w-full max-w-md space-y-5 border border-white/10">
         <div className="flex justify-center mb-2">
           <img src={logoLight} alt="Logo CDO" className="h-16 block dark:hidden" />
           <img src={logoDark} alt="Logo CDO (dark)" className="h-16 hidden dark:block" />
         </div>
 
-        <h2 className="text-2xl font-bold text-center text-red-600 dark:text-white">Connexion Admin</h2>
+        <div className="text-center"><h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Espace administration</h2><p className="text-sm text-slate-500 mt-1">Réservé à l’équipe CDO</p></div>
 
         {err && (
           <div className="text-sm text-red-600 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded p-2">
@@ -78,7 +78,7 @@ export default function AdminLogin() {
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full p-2 border rounded dark:bg-gray-700 dark:text-white"
+          className="w-full px-3 py-2.5 border border-slate-300 rounded-lg dark:bg-slate-800 dark:border-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
           required
         />
 
@@ -88,7 +88,7 @@ export default function AdminLogin() {
             placeholder="Mot de passe"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-2 border rounded dark:bg-gray-700 dark:text-white pr-10"
+            className="w-full px-3 py-2.5 border border-slate-300 rounded-lg dark:bg-slate-800 dark:border-slate-700 dark:text-white pr-10 focus:outline-none focus:ring-2 focus:ring-red-600"
             required
           />
           <button
@@ -110,7 +110,7 @@ export default function AdminLogin() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded transition disabled:opacity-60"
+          className="w-full bg-red-700 hover:bg-red-800 text-white font-semibold py-2.5 px-4 rounded-lg shadow-sm transition disabled:opacity-60"
         >
           {loading ? "Connexion…" : "Se connecter"}
         </button>

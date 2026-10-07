@@ -1,8 +1,9 @@
 // src/pages/public/MesCandidatures.jsx
+// Suivi des candidatures du candidat connecté, dans la coque de l'espace candidat.
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { Briefcase, CalendarDays } from "lucide-react";
 import api from "@/utils/api";
-import NotificationsCloche from "@/components/NotificationsCloche";
 import { STATUTS, statutLabel } from "@/utils/statutCandidature";
 
 export default function MesCandidatures() {
@@ -18,55 +19,44 @@ export default function MesCandidatures() {
       .finally(() => setLoading(false));
   }, []);
 
-  return (
-    <div className="max-w-3xl mx-auto px-4 py-8 pt-20">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-red-600">Mes candidatures</h2>
-        <NotificationsCloche />
-      </div>
-      <p className="mb-4 text-sm">
-        <Link to="/profile" className="text-blue-600 hover:underline">
-          Modifier mon profil
+  if (loading) return <p className="text-slate-500">Chargement…</p>;
+  if (error) return <p className="text-red-600">{error}</p>;
+
+  if (candidatures.length === 0) {
+    return (
+      <div className="bg-white rounded-2xl border border-slate-200 p-10 text-center shadow-sm">
+        <Briefcase className="w-10 h-10 mx-auto text-slate-300" />
+        <p className="mt-3 font-medium">Vous n'avez encore soumis aucune candidature.</p>
+        <Link to="/offres" className="mt-4 inline-block text-sm text-red-700 font-medium hover:underline">
+          Découvrir les offres
         </Link>
-      </p>
+      </div>
+    );
+  }
 
-      {loading && <p>Chargement…</p>}
-      {error && <p className="text-red-600">{error}</p>}
-
-      {!loading && !error && candidatures.length === 0 && (
-        <p>Vous n'avez encore soumis aucune candidature.</p>
-      )}
-
-      {!loading && !error && candidatures.length > 0 && (
-        <table className="min-w-full border text-sm">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="py-2 px-4 text-left">Offre</th>
-              <th className="py-2 px-4 text-left">Date</th>
-              <th className="py-2 px-4 text-left">Statut</th>
-            </tr>
-          </thead>
-          <tbody>
-            {candidatures.map((c) => (
-              <tr key={c.id} className="border-t">
-                <td className="py-2 px-4">{c.titre_offre || "Offre supprimée"}</td>
-                <td className="py-2 px-4">
-                  {new Date(c.date_candidature).toLocaleDateString()}
-                </td>
-                <td className="py-2 px-4">
-                  <span
-                    className={`px-2 py-1 rounded text-xs font-medium ${
-                      STATUTS[c.statut]?.className || "bg-gray-100 text-gray-700"
-                    }`}
-                  >
-                    {statutLabel(c.statut)}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-    </div>
+  return (
+    <ul className="grid gap-4">
+      {candidatures.map((c) => (
+        <li
+          key={c.id}
+          className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-wrap items-center justify-between gap-4"
+        >
+          <div className="min-w-0">
+            <p className="font-semibold truncate">{c.titre_offre || "Offre supprimée"}</p>
+            <p className="mt-1 flex items-center gap-1.5 text-sm text-slate-500">
+              <CalendarDays className="w-3.5 h-3.5" />
+              Candidature du {new Date(c.date_candidature).toLocaleDateString("fr-FR")}
+            </p>
+          </div>
+          <span
+            className={`px-3 py-1 rounded-full text-xs font-semibold ${
+              STATUTS[c.statut]?.className || "bg-slate-100 text-slate-700"
+            }`}
+          >
+            {statutLabel(c.statut)}
+          </span>
+        </li>
+      ))}
+    </ul>
   );
 }

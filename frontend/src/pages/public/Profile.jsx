@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "@/utils/api";
 import { useAuth } from "@/context/AuthContext";
+import ProfilPartenaire from "@/pages/partenaire/ProfilPartenaire";
 
 const TYPES_DOCUMENTS = [
   { value: "cv", label: "CV" },
@@ -14,17 +15,17 @@ const TYPES_DOCUMENTS = [
 
 const CHAMPS_PROFIL = ["prenom", "nom", "telephone", "ville", "pays", "lien_linkedin", "lien_portfolio", "resume"];
 
-const champ = "w-full border p-2 rounded";
+const champ = "w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-600";
+const CARTE = "bg-white rounded-2xl border border-slate-200 shadow-sm p-6";
 
 export default function Profile() {
   const { user, refreshMe } = useAuth();
   const estCandidat = user?.role === "candidat";
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8 pt-20 space-y-10">
+    <div className="space-y-6">
       <header>
-        <h2 className="text-xl font-bold text-red-600">Mon espace</h2>
-        <p className="text-sm text-gray-600">{user?.email}</p>
+        <p className="text-sm text-slate-500">Vos informations de connexion et votre profil.</p>
         {estCandidat && (
           <p className="mt-2 text-sm">
             <Link to="/mes-candidatures" className="text-blue-600 hover:underline">
@@ -43,9 +44,10 @@ export default function Profile() {
 
       {estCandidat && <InformationsPersonnelles onSaved={refreshMe} />}
       {estCandidat && <DocumentsEnregistres />}
+      {user?.role === "partenaire" && !user?.doit_changer_mdp && <ProfilPartenaire />}
 
-      <section>
-        <h3 className="text-lg font-semibold mb-3">Changer de mot de passe</h3>
+      <section className={CARTE}>
+        <h3 className="text-lg font-semibold mb-4">Changer de mot de passe</h3>
         {user?.doit_changer_mdp && (
           <p className="mb-3 text-sm text-yellow-900 bg-yellow-50 border border-yellow-300 rounded p-2">
             Votre mot de passe est provisoire. Choisissez-en un nouveau pour accéder à votre espace.
@@ -94,8 +96,8 @@ function InformationsPersonnelles({ onSaved }) {
   if (chargement) return <p className="text-gray-500">Chargement de votre profil…</p>;
 
   return (
-    <section>
-      <h3 className="text-lg font-semibold mb-3">Mes informations</h3>
+    <section className={CARTE}>
+      <h3 className="text-lg font-semibold mb-4">Mes informations</h3>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <input name="prenom" placeholder="Prénom" value={form.prenom} onChange={handleChange} className={champ} />
@@ -198,7 +200,7 @@ function DocumentsEnregistres() {
   };
 
   return (
-    <section>
+    <section className={CARTE}>
       <h3 className="text-lg font-semibold mb-1">Mes documents</h3>
       <p className="text-sm text-gray-600 mb-4">
         Enregistrez vos pièces une fois : elles seront proposées automatiquement à chaque candidature.

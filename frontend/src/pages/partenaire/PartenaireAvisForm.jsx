@@ -36,7 +36,7 @@ const VIDE = {
   affiliations: "",
 };
 
-const champ = "w-full border p-2 rounded";
+const champ = "w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-600";
 
 function ErreurChamp({ erreurs, nom }) {
   return erreurs[nom] ? <p className="text-sm text-red-600 mt-1">{erreurs[nom]}</p> : null;
@@ -96,10 +96,10 @@ export default function PartenaireAvisForm() {
     }
   };
 
-  if (chargement) return <p className="max-w-3xl mx-auto px-4 py-8 pt-20 text-gray-500">Chargement…</p>;
+  if (chargement) return <p className="text-slate-500">Chargement…</p>;
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8 pt-20 space-y-6">
+    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 space-y-6">
       <header>
         <Link to="/partenaire" className="text-sm text-blue-600 hover:underline">
           ← Retour à mes avis
@@ -186,7 +186,7 @@ export default function PartenaireAvisForm() {
         </div>
 
         <div className="flex items-center gap-4">
-          <button type="submit" disabled={envoi} className="bg-red-600 text-white px-4 py-2 rounded disabled:opacity-50">
+          <button type="submit" disabled={envoi} className="bg-red-700 hover:bg-red-800 text-white px-5 py-2.5 rounded-lg font-medium shadow-sm disabled:opacity-60">
             {envoi ? "Envoi…" : modification ? "Enregistrer et soumettre à nouveau" : "Soumettre l'avis"}
           </button>
         </div>

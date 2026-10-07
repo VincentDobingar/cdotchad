@@ -86,8 +86,8 @@ export default function AdminSidebar({ email, onLogout }) {
           ${sidebarCollapsed ? "w-20" : "w-64"} p-4
           ${
             darkMode
-              ? "bg-gradient-to-b from-gray-900 to-gray-800 text-white"
-              : "bg-gradient-to-b from-white via-red-50 to-white text-gray-800"
+              ? "bg-slate-900 text-slate-100 border-slate-800"
+              : "bg-white text-slate-800 border-slate-200"
           }`}
       >
         <div className="flex justify-between items-center mb-4">
@@ -124,7 +124,7 @@ export default function AdminSidebar({ email, onLogout }) {
             section.routes.length > 0 ? (
               <div key={idx}>
                 {!sidebarCollapsed && (
-                  <h4 className="text-xs uppercase text-gray-500 dark:text-gray-400 px-2 mb-2">
+                  <h4 className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 px-3 mb-2">
                     {section.title}
                   </h4>
                 )}
@@ -137,8 +137,8 @@ export default function AdminSidebar({ email, onLogout }) {
                         `flex items-center gap-2 px-3 py-2 rounded transition-all duration-200 group
                         ${
                           isActive
-                            ? "bg-red-100 text-red-700 dark:bg-red-900 dark:text-white font-semibold"
-                            : "hover:bg-red-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"
+                            ? "bg-red-700 text-white font-medium shadow-sm"
+                            : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
                         }`
                       }
                     >
@@ -155,7 +155,7 @@ export default function AdminSidebar({ email, onLogout }) {
         </nav>
 
         {!sidebarCollapsed && (
-          <div className="mt-10 text-xs text-gray-600 dark:text-gray-400 border-t pt-4 flex items-center gap-2">
+          <div className="mt-10 text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 rounded-xl p-3 flex items-center gap-3">
             <img src={avatar} alt="Admin" className="w-8 h-8 rounded-full" />
             <div className="flex-1">
               <p className="font-medium">
@@ -168,7 +168,7 @@ export default function AdminSidebar({ email, onLogout }) {
               </p>
               <button
                 onClick={() => (onLogout ? onLogout() : logout?.())}
-                className="flex items-center text-red-600 hover:underline text-xs mt-1"
+                className="flex items-center text-red-700 hover:underline text-xs mt-1"
               >
                 <LogOut size={14} className="mr-1" />
                 Déconnexion

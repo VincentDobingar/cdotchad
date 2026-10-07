@@ -5,6 +5,7 @@
 import { pool } from "../config/db.js";
 import { toOffrePayload, validateOffre } from "./offres.controller.js";
 import { supprimerFichierAvis } from "../middlewares/uploadAvis.js";
+import { supprimerLogo } from "../middlewares/uploadLogoPartenaire.js";
 
 // La date de publication d'un avis est celle de sa soumission (ou de sa dernière modification).
 const aujourdhui = () => new Date().toISOString().slice(0, 10);
@@ -26,7 +27,7 @@ export const getMonProfilPartenaire = async (req, res) => {
   try {
     const { rows } = await pool.query(
       `SELECT p.id, p.nom, p.contact_nom, p.telephone, p.secteur, p.ville, p.site_web,
-              u.email
+              p.logo_url, u.email
        FROM partenaires p JOIN users u ON u.id = p.user_id
        WHERE u.id = $1`,
       [req.user.id]
@@ -35,6 +36,66 @@ export const getMonProfilPartenaire = async (req, res) => {
     res.json({ partenaire: rows[0] });
   } catch (err) {
     console.error("getMonProfilPartenaire:", err);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+};
+
+// ✏️ Modifier la fiche partenaire (le nom reste obligatoire, les autres champs sont facultatifs)
+const CHAMPS_FICHE = { nom: 150, contact_nom: 150, telephone: 30, secteur: 100, ville: 100, site_web: 200 };
+
+export const modifierMonProfilPartenaire = async (req, res) => {
+  const valeurs = {};
+  const errors = {};
+  for (const [champ, max] of Object.entries(CHAMPS_FICHE)) {
+    const brut = req.body?.[champ];
+    const valeur = typeof brut === "string" ? brut.trim() : "";
+    if (valeur.length > max) errors[champ] = `${max} caractères maximum.`;
+    valeurs[champ] = valeur || null;
+  }
+  if (!valeurs.nom) errors.nom = "Le nom du partenaire est obligatoire.";
+  if (valeurs.site_web && !/^https?:\/\//i.test(valeurs.site_web)) {
+    errors.site_web = "Le site doit commencer par http:// ou https://.";
+  }
+  if (Object.keys(errors).length > 0) {
+    return res.status(400).json({ message: "Validation échouée", errors });
+  }
+
+  try {
+    const { rows } = await pool.query(
+      `UPDATE partenaires
+       SET nom = $1, contact_nom = $2, telephone = $3, secteur = $4, ville = $5, site_web = $6
+       WHERE user_id = $7
+       RETURNING id, nom, contact_nom, telephone, secteur, ville, site_web, logo_url`,
+      [valeurs.nom, valeurs.contact_nom, valeurs.telephone, valeurs.secteur, valeurs.ville, valeurs.site_web, req.user.id]
+    );
+    if (rows.length === 0) return res.status(404).json({ message: "Fiche partenaire introuvable" });
+    res.json({ partenaire: rows[0] });
+  } catch (err) {
+    console.error("modifierMonProfilPartenaire:", err);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+};
+
+// 🖼️ Téléverser le logo (remplace le précédent)
+export const televerserMonLogo = async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: "Aucun logo reçu.", errors: { logo: "Aucun logo reçu." } });
+  }
+  try {
+    const partenaire = await partenaireDuCompte(req.user.id);
+    if (!partenaire) {
+      supprimerLogo(req.file.filename);
+      return res.status(404).json({ message: "Fiche partenaire introuvable" });
+    }
+    const { rows } = await pool.query("SELECT logo_url FROM partenaires WHERE id = $1", [partenaire.id]);
+    const ancien = rows[0]?.logo_url;
+
+    await pool.query("UPDATE partenaires SET logo_url = $1 WHERE id = $2", [req.file.filename, partenaire.id]);
+    if (ancien) supprimerLogo(ancien);
+    res.json({ logo_url: req.file.filename });
+  } catch (err) {
+    console.error("televerserMonLogo:", err);
+    supprimerLogo(req.file.filename);
     res.status(500).json({ message: "Erreur serveur" });
   }
 };

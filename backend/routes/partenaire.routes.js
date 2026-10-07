@@ -4,8 +4,11 @@ import express from "express";
 import { requireRole } from "../middlewares/requireRole.js";
 import { verifierComptePartenaire } from "../middlewares/comptePartenaire.js";
 import { recevoirPieceJointe, verifierPdf } from "../middlewares/uploadAvis.js";
+import { recevoirLogo } from "../middlewares/uploadLogoPartenaire.js";
 import {
   getMonProfilPartenaire,
+  modifierMonProfilPartenaire,
+  televerserMonLogo,
   listMesAvis,
   getMonAvis,
   soumettreAvis,
@@ -19,6 +22,8 @@ router.use(requireRole("partenaire"));
 router.use(verifierComptePartenaire);
 
 router.get("/profil", getMonProfilPartenaire);
+router.put("/profil", modifierMonProfilPartenaire);
+router.post("/logo", recevoirLogo, televerserMonLogo);
 router.get("/avis", listMesAvis);
 router.get("/avis/:id", getMonAvis);
 router.post("/avis", recevoirPieceJointe, verifierPdf, soumettreAvis);
