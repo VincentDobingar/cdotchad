@@ -6,7 +6,7 @@ export async function getAdminStats(_req, res) {
     const [offres, cands, users, news] = await Promise.all([
       pool.query("SELECT COUNT(*)::int AS n FROM offres"),
       pool.query("SELECT COUNT(*)::int AS n FROM candidatures"),
-      pool.query("SELECT COUNT(*)::int AS n FROM utilisateurs"),
+      pool.query("SELECT COUNT(*)::int AS n FROM users WHERE role NOT IN ('admin','superadmin')"),
       pool.query("SELECT COUNT(*)::int AS n FROM actualites"),
     ]);
     res.json({
@@ -52,7 +52,7 @@ export async function getAdminStatsResume(req, res) {
 
     const [totalCands, totalUsers, totalOffres, totalNews] = await Promise.all([
       pool.query("SELECT COUNT(*)::int AS n FROM candidatures"),
-      pool.query("SELECT COUNT(*)::int AS n FROM utilisateurs"),
+      pool.query("SELECT COUNT(*)::int AS n FROM users WHERE role NOT IN ('admin','superadmin')"),
       pool.query("SELECT COUNT(*)::int AS n FROM offres"),
       pool.query("SELECT COUNT(*)::int AS n FROM actualites"),
     ]);

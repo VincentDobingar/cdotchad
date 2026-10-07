@@ -20,8 +20,8 @@ export default function Contact() {
 
   const recaptchaKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 
-  // URL backend : en production l'API est sur cdotchad.com/api, en développement elle passe par le proxy /backend
-  const backendUrl = import.meta.env.PROD ? "https://cdotchad.com/api" : "/backend";
+  // URL backend : même origine que la page en production, proxy /backend en développement
+  const backendUrl = import.meta.env.PROD ? "https://cdotchad.com/backend" : "/backend";
 
   // ✅ Injecter le script reCAPTCHA une seule fois
   useEffect(() => {

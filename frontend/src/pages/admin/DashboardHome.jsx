@@ -165,188 +165,206 @@ export default function DashboardHome() {
   }
 
   return (
-    <div className="p-4 space-y-6">
-      <h1 className="text-2xl font-bold text-gray-800">Tableau de bord</h1>
-
-      {/* Filtres */}
-      <div className="flex flex-wrap items-center gap-3">
-        <label className="text-sm text-muted-foreground">Année :</label>
-        <select
-          value={year}
-          onChange={(e) => setYear(Number(e.target.value))}
-          className="border rounded px-2 py-1 text-sm"
-        >
-          {[new Date().getFullYear(), 2024, 2023, 2022].map(y => (
-            <option key={y} value={y}>{y}</option>
-          ))}
-        </select>
-
-        <label className="text-sm text-muted-foreground">Mois :</label>
-        <select
-          value={month}
-          onChange={(e) => setMonth(e.target.value)}
-          className="border rounded px-2 py-1 text-sm"
-        >
-          <option value="">Tous</option>
-          {["01","02","03","04","05","06","07","08","09","10","11","12"].map(m => (
-            <option key={m} value={m}>{m}</option>
-          ))}
-        </select>
-
+    <div className="space-y-8">
+      {/* En-tête */}
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Tableau de bord</h1>
+          <p className="mt-1 text-sm text-slate-500">
+            Vue d'ensemble de l'activité — {year}
+            {month ? ` · ${month}` : " · toute l'année"}
+          </p>
+        </div>
         <ExportButtons
           onPdf={() => exportPDF()}
           onCsv={() => exportCSV(csvRows, `stats-resume-${year}${month ? `-${month}` : ""}`)}
         />
       </div>
 
+      {/* Filtres */}
+      <div className="flex flex-wrap items-center gap-3 bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-sm">
+        <label className="text-sm font-medium text-slate-600">Année</label>
+        <select
+          value={year}
+          onChange={(e) => setYear(Number(e.target.value))}
+          className="border border-slate-300 bg-white rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+        >
+          {[new Date().getFullYear(), 2024, 2023, 2022].map(y => (
+            <option key={y} value={y}>{y}</option>
+          ))}
+        </select>
+
+        <label className="text-sm font-medium text-slate-600">Mois</label>
+        <select
+          value={month}
+          onChange={(e) => setMonth(e.target.value)}
+          className="border border-slate-300 bg-white rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+        >
+          <option value="">Tous</option>
+          {["01","02","03","04","05","06","07","08","09","10","11","12"].map(m => (
+            <option key={m} value={m}>{m}</option>
+          ))}
+        </select>
+      </div>
+
       {/* Résumé tuiles */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="dashboard">
         {loading ? (
-          <div className="col-span-4 flex justify-center items-center py-10">
-            <Loader2 className="animate-spin h-6 w-6 text-gray-500" />
+          <div className="col-span-full flex justify-center items-center py-10 text-slate-500">
+            <Loader2 className="animate-spin h-6 w-6" />
             <span className="ml-2">Chargement des statistiques…</span>
           </div>
         ) : (
           <>
-            <StatCard title="Offres"       icon={<Briefcase className="text-blue-500" />}  value={d.total_offres ?? 0} />
-            <StatCard title="Candidatures" icon={<FileText  className="text-green-500" />} value={d.total_candidatures ?? 0} />
-            <StatCard title="Utilisateurs" icon={<UserPlus  className="text-yellow-500" />} value={d.total_utilisateurs ?? 0} />
-            <StatCard title="Actualités"   icon={<FileText  className="text-rose-500" />}   value={d.total_actualites ?? 0} />
+            <StatCard title="Offres"       tone="rouge" icon={<Briefcase className="w-5 h-5" />} value={d.total_offres ?? 0} />
+            <StatCard title="Candidatures" tone="bleu"  icon={<FileText  className="w-5 h-5" />} value={d.total_candidatures ?? 0} />
+            <StatCard title="Utilisateurs" tone="vert"  icon={<UserPlus  className="w-5 h-5" />} value={d.total_utilisateurs ?? 0} />
+            <StatCard title="Actualités"   tone="jaune" icon={<FileText  className="w-5 h-5" />} value={d.total_actualites ?? 0} />
           </>
         )}
       </div>
 
       {/* Contenu exportable */}
-      <div ref={exportRef} className="space-y-10">
-        {/* Candidatures par mois */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border">
-          <h2 className="text-lg font-semibold mb-2">Candidatures par mois — {year}</h2>
-          {candidaturesParMois.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <RBarChart data={candidaturesParMois}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="mois" />
-                <YAxis allowDecimals={false} />
-                <Tooltip />
-                <Bar dataKey="total" />
-              </RBarChart>
-            </ResponsiveContainer>
-          ) : (
-            <p className="text-gray-500">Aucune donnée disponible.</p>
-          )}
+      <div ref={exportRef} className="space-y-6">
+        <div className="grid lg:grid-cols-2 gap-6">
+          {/* Candidatures par mois */}
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+            <h2 className="text-base font-semibold mb-4 text-slate-800">Candidatures par mois — {year}</h2>
+            {candidaturesParMois.length > 0 ? (
+              <ResponsiveContainer width="100%" height={280}>
+                <RBarChart data={candidaturesParMois}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis dataKey="mois" tick={{ fontSize: 12, fill: "#64748b" }} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: "#64748b" }} />
+                  <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid #e2e8f0" }} />
+                  <Bar dataKey="total" fill="#b91c1c" radius={[4, 4, 0, 0]} />
+                </RBarChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-slate-500 text-sm">Aucune donnée disponible.</p>
+            )}
+          </div>
+
+          {/* Répartition par type de contrat */}
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+            <h2 className="text-base font-semibold mb-4 text-slate-800">Répartition par type de contrat</h2>
+            {parTypeContrat.length > 0 ? (
+              <ResponsiveContainer width="100%" height={280}>
+                <RBarChart data={parTypeContrat}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis dataKey="type_contrat" tick={{ fontSize: 12, fill: "#64748b" }} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: "#64748b" }} />
+                  <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid #e2e8f0" }} />
+                  <Bar dataKey="total" fill="#1e293b" radius={[4, 4, 0, 0]} />
+                </RBarChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-slate-500 text-sm">Aucune donnée disponible.</p>
+            )}
+          </div>
         </div>
 
         {/* Candidatures par offre */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border">
-          <h2 className="text-lg font-semibold mb-2">Candidatures par offre</h2>
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+          <h2 className="text-base font-semibold mb-4 text-slate-800">Candidatures par offre</h2>
           {candidaturesParOffre.length > 0 ? (
-            <table className="w-full text-sm border-collapse">
-              <thead>
-                <tr className="bg-gray-100 text-left">
-                  <th className="p-2 border-b">Offre</th>
-                  <th className="p-2 border-b">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {candidaturesParOffre.map((row, i) => (
-                  <tr key={`${row.titre}-${i}`} className="border-b hover:bg-gray-50">
-                    <td className="p-2">{row.titre}</td>
-                    <td className="p-2">{row.total}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <p className="text-gray-500">Aucune donnée disponible.</p>
-          )}
-        </div>
-
-        {/* Répartition par type de contrat */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border">
-          <h2 className="text-lg font-semibold mb-2">Répartition par type de contrat</h2>
-          {parTypeContrat.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <RBarChart data={parTypeContrat}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="type_contrat" />
-                <YAxis allowDecimals={false} />
-                <Tooltip />
-                <Bar dataKey="total" />
-              </RBarChart>
-            </ResponsiveContainer>
-          ) : (
-            <p className="text-gray-500">Aucune donnée disponible.</p>
-          )}
-        </div>
-
-        {/* Top 5 régions */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border">
-          <h2 className="text-lg font-semibold mb-2">Top 5 régions avec le plus d’offres</h2>
-          {parLieu.length > 0 ? (
-            <ul className="text-sm">
-              {parLieu.map((item, i) => (
-                <li key={`${item.lieu}-${i}`} className="flex justify-between border-b py-1">
-                  <span>{item.lieu}</span>
-                  <span className="font-semibold">{item.total}</span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-gray-500">Aucune donnée disponible.</p>
-          )}
-        </div>
-
-        {/* Évolution multi-années */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border">
-          <h2 className="text-lg font-semibold mb-2">
-            Évolution mensuelle ({year} vs {Number(year) + 1})
-          </h2>
-          {multiYearData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={Math.max(220, candidaturesParOffre.length * 40)}>
               <RBarChart
-                data={Array.from({ length: 12 }, (_, i) => {
-                  const m = String(i + 1).padStart(2, "0");
-                  const y2 = String(Number(year) + 1);
-                  return {
-                    mois: m,
-                    [year]: multiYearData.find((d) => d.annee === String(year) && d.mois === m)?.total || 0,
-                    [y2]:   multiYearData.find((d) => d.annee === y2 && d.mois === m)?.total || 0,
-                  };
-                })}
+                data={candidaturesParOffre}
+                layout="vertical"
+                margin={{ top: 4, right: 24, bottom: 4, left: 4 }}
               >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="mois" />
-                <YAxis allowDecimals={false} />
-                <Tooltip />
-                <Bar dataKey={String(year)} />
-                <Bar dataKey={String(Number(year) + 1)} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" horizontal={false} />
+                <XAxis type="number" allowDecimals={false} tick={{ fontSize: 12, fill: "#64748b" }} />
+                <YAxis
+                  type="category"
+                  dataKey="titre"
+                  width={200}
+                  tick={{ fontSize: 12, fill: "#334155" }}
+                  tickFormatter={(titre) => (titre.length > 26 ? `${titre.slice(0, 26)}…` : titre)}
+                />
+                <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid #e2e8f0" }} />
+                <Bar dataKey="total" fill="#b91c1c" radius={[0, 4, 4, 0]} barSize={18} />
               </RBarChart>
             </ResponsiveContainer>
           ) : (
-            <p className="text-gray-500">Aucune donnée disponible.</p>
+            <p className="text-slate-500 text-sm">Aucune donnée disponible.</p>
           )}
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-6">
+          {/* Top 5 régions */}
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+            <h2 className="text-base font-semibold mb-4 text-slate-800">Top 5 régions avec le plus d'offres</h2>
+            {parLieu.length > 0 ? (
+              <ul className="space-y-1">
+                {parLieu.map((item, i) => (
+                  <li key={`${item.lieu}-${i}`} className="flex items-center gap-3 py-2 border-b border-slate-100 last:border-0">
+                    <span className="w-6 h-6 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold flex items-center justify-center shrink-0">
+                      {i + 1}
+                    </span>
+                    <span className="flex-1 text-sm text-slate-700 truncate">{item.lieu}</span>
+                    <span className="font-semibold tabular-nums">{item.total}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-slate-500 text-sm">Aucune donnée disponible.</p>
+            )}
+          </div>
+
+          {/* Évolution multi-années */}
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+            <h2 className="text-base font-semibold mb-4 text-slate-800">
+              Évolution mensuelle ({year} vs {Number(year) + 1})
+            </h2>
+            {multiYearData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={260}>
+                <RBarChart
+                  data={Array.from({ length: 12 }, (_, i) => {
+                    const m = String(i + 1).padStart(2, "0");
+                    const y2 = String(Number(year) + 1);
+                    return {
+                      mois: m,
+                      [year]: multiYearData.find((d) => d.annee === String(year) && d.mois === m)?.total || 0,
+                      [y2]:   multiYearData.find((d) => d.annee === y2 && d.mois === m)?.total || 0,
+                    };
+                  })}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis dataKey="mois" tick={{ fontSize: 12, fill: "#64748b" }} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: "#64748b" }} />
+                  <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid #e2e8f0" }} />
+                  <Bar dataKey={String(year)} fill="#b91c1c" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey={String(Number(year) + 1)} fill="#94a3b8" radius={[4, 4, 0, 0]} />
+                </RBarChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-slate-500 text-sm">Aucune donnée disponible.</p>
+            )}
+          </div>
         </div>
 
         {/* Actualités par catégorie (si exposé) */}
         {actualitesParCategorie.length > 0 && (
-          <div className="bg-white rounded-xl p-4 shadow-sm border">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-lg font-semibold">Actualités par catégorie</h2>
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base font-semibold text-slate-800">Actualités par catégorie</h2>
               {actualitesScope === "all" ? (
-                <span className="text-xs text-gray-500">
-                  ⚠️ Aucune actualité pour {actualitesYear} — affichage toutes années confondues.
+                <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1">
+                  Aucune actualité pour {actualitesYear} — toutes années confondues
                 </span>
               ) : (
-                <span className="text-xs text-gray-500">Année {actualitesYear}</span>
+                <span className="text-xs text-slate-500">Année {actualitesYear}</span>
               )}
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4">
-              <ul className="text-sm">
+            <div className="grid md:grid-cols-2 gap-6">
+              <ul className="space-y-1">
                 {actualitesParCategorie.map((item, i) => (
-                  <li key={`${item.categorie}-${i}`} className="flex justify-between border-b py-1">
-                    <span>{item.categorie}</span>
-                    <span className="font-semibold">{item.total}</span>
+                  <li key={`${item.categorie}-${i}`} className="flex justify-between py-2 border-b border-slate-100 last:border-0 text-sm">
+                    <span className="text-slate-700">{item.categorie}</span>
+                    <span className="font-semibold tabular-nums">{item.total}</span>
                   </li>
                 ))}
               </ul>
@@ -354,11 +372,11 @@ export default function DashboardHome() {
               <div className="h-56">
                 <ResponsiveContainer width="100%" height="100%">
                   <RBarChart data={actualitesParCategorie.map(a => ({ name: a.categorie, total: a.total }))}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis allowDecimals={false} />
-                    <Tooltip />
-                    <Bar dataKey="total" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                    <XAxis dataKey="name" tick={{ fontSize: 12, fill: "#64748b" }} />
+                    <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: "#64748b" }} />
+                    <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid #e2e8f0" }} />
+                    <Bar dataKey="total" fill="#b91c1c" radius={[4, 4, 0, 0]} />
                   </RBarChart>
                 </ResponsiveContainer>
               </div>

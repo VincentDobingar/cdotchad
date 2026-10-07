@@ -1,15 +1,22 @@
 // 📁 src/components/admin/StatCard.jsx
 import React from "react";
 
-export default function StatCard({ title, icon, value }) {
+const TONS = {
+  rouge: "bg-red-50 text-red-700",
+  bleu: "bg-blue-50 text-blue-700",
+  vert: "bg-emerald-50 text-emerald-700",
+  jaune: "bg-amber-50 text-amber-700",
+};
+
+export default function StatCard({ title, icon, value, tone = "rouge" }) {
   return (
-    <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-4 flex items-center gap-4">
-      <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-full">
+    <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 flex items-center gap-4">
+      <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${TONS[tone] || TONS.rouge}`}>
         {icon}
       </div>
-      <div>
-        <h2 className="text-sm text-gray-500 dark:text-gray-300">{title}</h2>
-        <p className="text-xl font-bold text-gray-900 dark:text-white">{value}</p>
+      <div className="min-w-0">
+        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 truncate">{title}</p>
+        <p className="text-2xl font-bold text-slate-900 tabular-nums">{value}</p>
       </div>
     </div>
   );

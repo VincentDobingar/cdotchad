@@ -35,23 +35,23 @@ export default function CandidatureTable({ candidatures, onDelete, onSelect, onS
 
   return (
     <div>
-      <table className="min-w-full border text-sm">
-        <thead className="bg-gray-100">
+      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm"><table className="min-w-full text-sm">
+        <thead className="bg-slate-50 text-left text-xs uppercase tracking-wider text-slate-500">
           <tr>
-            <th className="py-2 px-4 cursor-pointer" onClick={() => onSort("nom")}>Nom {getSortIndicator("nom")}</th>
-            <th className="py-2 px-4 cursor-pointer" onClick={() => onSort("titre_offre")}>Offre</th>
-            <th className="py-2 px-4 cursor-pointer" onClick={() => onSort("date_candidature")}>Date {getSortIndicator("date_candidature")}</th>
-            <th className="py-2 px-4">Statut</th>
-            <th className="py-2 px-4">Actions</th>
+            <th className="py-3 px-4 font-semibold cursor-pointer" onClick={() => onSort("nom")}>Nom {getSortIndicator("nom")}</th>
+            <th className="py-3 px-4 font-semibold cursor-pointer" onClick={() => onSort("titre_offre")}>Offre</th>
+            <th className="py-3 px-4 font-semibold cursor-pointer" onClick={() => onSort("date_candidature")}>Date {getSortIndicator("date_candidature")}</th>
+            <th className="py-3 px-4 font-semibold">Statut</th>
+            <th className="py-3 px-4 font-semibold">Actions</th>
           </tr>
         </thead>
         <tbody>
           {currentItems.map((c) => (
-            <tr key={c.id} className="border-t hover:bg-gray-50">
-              <td className="py-2 px-4">{c.nom}</td>
-              <td className="py-2 px-4">{c.titre_offre}</td>
-              <td className="py-2 px-4">{new Date(c.date_candidature).toLocaleDateString()}</td>
-              <td className="py-2 px-4 text-center">
+            <tr key={c.id} className="border-t border-slate-100 hover:bg-slate-50">
+              <td className="py-3 px-4">{c.nom}</td>
+              <td className="py-3 px-4">{c.titre_offre}</td>
+              <td className="py-3 px-4">{new Date(c.date_candidature).toLocaleDateString()}</td>
+              <td className="py-3 px-4 text-center">
                 <select
                   value={c.statut || "recue"}
                   onChange={(e) => onStatutChange(c.id, e.target.value)}
@@ -64,22 +64,22 @@ export default function CandidatureTable({ candidatures, onDelete, onSelect, onS
                   ))}
                 </select>
               </td>
-              <td className="py-2 px-4 space-x-2">
+              <td className="py-3 px-4 space-x-3">
                 <button
                   onClick={() => onSelect(c)}
-                  className="text-blue-600 hover:underline"
+                  className="text-slate-700 font-medium hover:text-red-700"
                 >
                   Voir détails
                 </button>
                 <button
                   onClick={() => onDelete(c.id)}
-                  className="text-red-600 hover:underline"
+                  className="text-red-700 font-medium hover:underline"
                 >
                   Supprimer
                 </button>
                 <button
                   onClick={() => telechargerPiecesJointes(c)}
-                  className="text-gray-600 hover:text-black"
+                  className="text-slate-500 hover:text-slate-900"
                   title="Télécharger pièces"
                 >
                   <Download className="inline w-4 h-4" />
@@ -88,13 +88,13 @@ export default function CandidatureTable({ candidatures, onDelete, onSelect, onS
             </tr>
           ))}
         </tbody>
-      </table>
+      </table></div>
 
       <div className="flex justify-between items-center mt-4">
         <button
           onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
           disabled={currentPage === 1}
-          className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+          className="px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 disabled:opacity-50"
         >
           ◀ Précédent
         </button>
@@ -104,7 +104,7 @@ export default function CandidatureTable({ candidatures, onDelete, onSelect, onS
         <button
           onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
           disabled={currentPage === totalPages}
-          className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+          className="px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 disabled:opacity-50"
         >
           Suivant ▶
         </button>

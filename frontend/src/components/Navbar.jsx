@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { NavLink, Link, useLocation, useNavigate } from "react-router-dom";
-import logo from "/images/logo-cdotchad.png";
+import logo from "/images/logo-cdo-navbar.png";
 import { useAuth } from "@/context/AuthContext";
 
 // Menu
@@ -236,9 +236,9 @@ export default function Navbar() {
       className={`fixed top-0 inset-x-0 z-50 transition-colors duration-300 ${headerClasses}`}
       style={{ "--brand-red": BRAND_RED_HEX }}
     >
-      <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-3">
-          <img src={logo} alt="CDO Tchad" className="h-10 w-auto select-none" draggable={false} />
+      <div className="w-full pl-1 pr-4 md:pl-2 md:pr-6 h-16 flex items-center justify-between">
+        <Link to="/" className="flex items-center">
+          <img src={logo} alt="CDO Consulting" className="h-14 w-auto select-none" draggable={false} />
         </Link>
 
         <nav className="hidden md:flex items-center gap-6">

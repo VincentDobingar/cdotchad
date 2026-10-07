@@ -12,7 +12,16 @@ const user = process.env.DB_USER || "";
 const host = process.env.DB_HOST || "";
 const database = process.env.DB_NAME || "";
 const password = process.env.DB_PASSWORD || "";
-const ssl = process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false;
+// DB_SSL permet de forcer explicitement true/false (utile si la base de prod est en local
+// et refuse le SSL). Sans réglage, on garde le comportement historique : SSL en production.
+const ssl =
+  process.env.DB_SSL === "true"
+    ? { rejectUnauthorized: false }
+    : process.env.DB_SSL === "false"
+    ? false
+    : process.env.NODE_ENV === "production"
+    ? { rejectUnauthorized: false }
+    : false;
 
 if (!user || !host || !database) {
   console.error("⚠️ DB config missing. Vérifie DB_USER, DB_HOST, DB_NAME dans .env");

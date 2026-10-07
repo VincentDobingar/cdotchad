@@ -50,7 +50,7 @@ export default function AdminModerationAvis() {
 
   return (
     <div className="p-6 space-y-6">
-      <h2 className="text-2xl font-bold text-indigo-700">Modération des avis</h2>
+      <h2 className="text-2xl font-bold tracking-tight text-slate-900">Modération des avis</h2>
       <p className="text-sm text-gray-600">
         Un avis validé est publié sur le site. Un avis refusé retourne au partenaire avec votre motif.
       </p>
@@ -77,7 +77,7 @@ export default function AdminModerationAvis() {
       ) : (
         <ul className="space-y-3">
           {avis.map((a) => (
-            <li key={a.id} className="border rounded p-4 bg-white dark:bg-gray-800 space-y-2">
+            <li key={a.id} className="rounded-2xl border border-slate-200 bg-white shadow-sm p-5 space-y-3 dark:bg-slate-900">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <div className="font-semibold">{a.titre}</div>
@@ -97,11 +97,11 @@ export default function AdminModerationAvis() {
               {a.motif_refus && <p className="text-sm text-red-700">Motif : {a.motif_refus}</p>}
 
               <div className="flex flex-wrap gap-4 text-sm">
-                <button type="button" onClick={() => setOuvert(ouvert === a.id ? null : a.id)} className="text-blue-600 hover:underline">
+                <button type="button" onClick={() => setOuvert(ouvert === a.id ? null : a.id)} className="text-red-700 font-medium hover:underline">
                   {ouvert === a.id ? "Masquer le détail" : "Voir le détail"}
                 </button>
                 {a.document_url && (
-                  <a href={urlPieceJointe(a.document_url)} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                  <a href={urlPieceJointe(a.document_url)} target="_blank" rel="noopener noreferrer" className="text-red-700 font-medium hover:underline">
                     Pièce jointe (PDF)
                   </a>
                 )}
@@ -123,7 +123,7 @@ export default function AdminModerationAvis() {
                     rows={3}
                     value={refus.motif}
                     onChange={(e) => setRefus({ id: a.id, motif: e.target.value })}
-                    className="w-full border rounded p-2 text-sm"
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
                     autoFocus
                   />
                   <div className="flex gap-3">
@@ -131,7 +131,7 @@ export default function AdminModerationAvis() {
                       type="button"
                       disabled={envoi || refus.motif.trim().length < MOTIF_MIN}
                       onClick={() => decider(a, "refusee", refus.motif.trim())}
-                      className="bg-red-600 text-white px-3 py-1 rounded text-sm disabled:opacity-50"
+                      className="bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
                     >
                       Confirmer le refus
                     </button>
@@ -147,7 +147,7 @@ export default function AdminModerationAvis() {
                       type="button"
                       disabled={envoi}
                       onClick={() => decider(a, "validee")}
-                      className="bg-green-600 text-white px-3 py-1 rounded text-sm disabled:opacity-50"
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
                     >
                       Valider et publier
                     </button>
@@ -157,7 +157,7 @@ export default function AdminModerationAvis() {
                       type="button"
                       disabled={envoi}
                       onClick={() => setRefus({ id: a.id, motif: "" })}
-                      className="bg-red-600 text-white px-3 py-1 rounded text-sm disabled:opacity-50"
+                      className="bg-red-700 hover:bg-red-800 text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
                     >
                       Refuser
                     </button>

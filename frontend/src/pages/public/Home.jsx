@@ -10,7 +10,6 @@ import HomePartenaires from "@/components/HomePartenaires";
 import HomeCTA from '@/components/HomeCTA';
 import HomeGalerie from "@/components/HomeGalerie";
 import HomeHero from "@/components/HomeHero";
-import Footer from "@/components/Footer"; 
 import ScrollToTop from "@/components/ScrollToTop";
 import HomeActualites from "@/components/HomeActualites";
 import HomeClients from "@/components/HomeClients";
@@ -61,8 +60,6 @@ export default function Home() {
       {/* CTA FINAL */}
           <HomeCTA />
 
-      {/* Section Footer */}          
-          <Footer />
           
       <ScrollToTop />
     </main>
