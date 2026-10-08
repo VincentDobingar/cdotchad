@@ -1,22 +1,37 @@
 # DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
 PassengerAppRoot "/home/cp1740442p04/public_html/backend"
 PassengerBaseURI "/backend"
-PassengerNodejs "/home/cp1740442p04/nodevenv/public_html/backend/18/bin/node"
+PassengerNodejs "/home/cp1740442p04/nodevenv/public_html/backend/20/bin/node"
 PassengerAppType node
 PassengerStartupFile index.cjs
 # DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
-# ~/public_html/backend/.htaccess
-PassengerEnabled on
-PassengerAppEnv production
-PassengerAppRoot "/home/cp1740442p04/public_html/backend"
-PassengerAppType node
-PassengerStartupFile index.cjs
-PassengerBaseURI "/backend"
-PassengerNodejs "/home/cp1740442p04/nodevenv/public_html/backend/18/bin/node"
 
-# 👇 add this line
+# Contourne le chargement WebAssembly d'undici (mémoire limitée sur l'hébergement mutualisé)
 SetEnv UNDICI_NO_WASM 1
 
 <IfModule Litespeed>
   SetEnv NODE_OPTIONS="--max-old-space-size=256"
+</IfModule>
+
+# ---------------------------------------------------------------------------
+# Protection des fichiers du backend
+# Ce dossier est dans public_html : sans ces règles, le serveur web sert tel
+# quel tout fichier qui s'y trouve (sources, journaux, documents privés des
+# candidats), sans passer par l'application ni par son authentification.
+# Les routes de l'API ne sont pas des fichiers : elles ne sont pas concernées.
+# ---------------------------------------------------------------------------
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # 1) Dossiers internes : jamais accessibles par le web, que le fichier existe ou non.
+  #    Les documents privés restent téléchargeables par l'API (connexion requise).
+  RewriteRule ^(uploads_prives|logs|sql|node_modules)(/|$) - [F,L]
+
+  # 2) Fichiers et dossiers cachés (.env, .git, .htaccess.bak...).
+  RewriteRule (^|/)\. - [F,L]
+
+  # 3) Tout autre fichier présent sur le disque est interdit, sauf les médias
+  #    publics (uploads/) et les images statiques (public/).
+  RewriteCond %{REQUEST_FILENAME} -f
+  RewriteRule !^(uploads|public)/ - [F,L]
 </IfModule>

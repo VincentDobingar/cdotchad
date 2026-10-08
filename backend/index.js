@@ -172,13 +172,13 @@ pool.query("SELECT NOW()", (err, r) => {
 });
 
 /* --------------------------- Démarrage ---------------------------- */
-// Sur Passenger (cPanel), NODE_ENV=production => pas d’app.listen nécessaire.
-// En local, on lance le serveur.
+// app.listen() est obligatoire partout, y compris sur Passenger (cPanel) :
+// Passenger intercepte cet appel pour brancher l'application sur son propre socket
+// (le numéro de port est alors ignoré) et c'est ce qui lui signale que l'application
+// est prête. Sans lui, le démarrage expire (« Web application could not be started »).
 const PORT = process.env.PORT || process.env.NODE_PORT || 3000;
-if (process.env.NODE_ENV !== "production") {
-  app.listen(PORT, () => {
-    console.log(`➡️  API démarrée sur http://localhost:${PORT}${BASE}`);
-  });
-}
+app.listen(PORT, () => {
+  console.log(`➡️  API démarrée (port ${PORT}, base ${BASE}, NODE_ENV=${process.env.NODE_ENV || "non défini"})`);
+});
 
 export default app;
