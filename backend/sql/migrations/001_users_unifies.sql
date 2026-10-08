@@ -35,10 +35,26 @@ FROM administrateurs a
 WHERE NOT EXISTS (SELECT 1 FROM users u WHERE u.email = a.email);
 
 -- Migration des comptes candidats existants (normalise "utilisateur"/"user" -> "candidat").
-INSERT INTO users (nom, prenom, email, password_hash, role, cree_le)
-SELECT ut.nom, ut.prenom, ut.email, ut.motdepasse, 'candidat', now()
-FROM utilisateurs ut
-WHERE NOT EXISTS (SELECT 1 FROM users u WHERE u.email = ut.email);
+-- `utilisateurs.prenom` existe dans le dump versionné mais pas sur toutes les
+-- installations réelles (schéma qui a dérivé du dump au fil du temps) : on
+-- s'adapte à la colonne réellement présente plutôt que de supposer sa présence.
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'utilisateurs' AND column_name = 'prenom'
+    ) THEN
+        INSERT INTO users (nom, prenom, email, password_hash, role, cree_le)
+        SELECT ut.nom, ut.prenom, ut.email, ut.motdepasse, 'candidat', now()
+        FROM utilisateurs ut
+        WHERE NOT EXISTS (SELECT 1 FROM users u WHERE u.email = ut.email);
+    ELSE
+        INSERT INTO users (nom, prenom, email, password_hash, role, cree_le)
+        SELECT ut.nom, NULL, ut.email, ut.motdepasse, 'candidat', now()
+        FROM utilisateurs ut
+        WHERE NOT EXISTS (SELECT 1 FROM users u WHERE u.email = ut.email);
+    END IF;
+END $$;
 
 -- Table d'appui pour "mot de passe oublié" (tokens à usage unique, courte durée de vie).
 CREATE TABLE IF NOT EXISTS password_resets (
