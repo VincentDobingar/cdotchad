@@ -13,7 +13,9 @@ import {
   getCandidaturesStats,
   getMesCandidatures,
   updateStatutCandidature,
-  envoyerEmailsCandidature
+  envoyerEmailsCandidature,
+  getMaCandidature,
+  getSuiviParCode
 } from "../controllers/candidatures.controller.js";
 
 const router = express.Router();
@@ -61,6 +63,12 @@ router.post("/envoyer-mails", requireRole("admin", "superadmin"), envoyerEmailsC
 
 // 🙋 Mes candidatures (candidat connecté)
 router.get("/mes-candidatures", requireRole("candidat"), getMesCandidatures);
+
+// 🔎 Détail d'une de MES candidatures (candidat connecté) — #2
+router.get("/mes-candidatures/:id", requireRole("candidat"), getMaCandidature);
+
+// 🌐 Suivi public d'une candidature par code (sans connexion) — #15
+router.get("/suivi/:code", getSuiviParCode);
 
 // 📄 Récupérer toutes les candidatures
 router.get("/", requireRole("admin", "superadmin"), getAllCandidatures);

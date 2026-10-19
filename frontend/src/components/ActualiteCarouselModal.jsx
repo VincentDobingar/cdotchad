@@ -18,7 +18,7 @@ export default function ActualiteCarouselModal({ isOpen, onRequestClose }) {
     const fetchActualites = async () => {
       try {
         const res = await api.get("/actualites");
-        setActualites(Array.isArray(res.data) ? res.data : []);
+        setActualites(Array.isArray(res.data) ? res.data : Array.isArray(res.data?.data) ? res.data.data : []);
       } catch (error) {
         console.error("Erreur lors du chargement des actualités :", error);
       }

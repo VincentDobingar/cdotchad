@@ -112,7 +112,7 @@ export default function Navbar() {
   // Lien vers l'espace propre au rôle connecté (candidat ou partenaire)
   const lienEspace =
     user?.role === "candidat"
-      ? { to: "/mes-candidatures", label: "Mes candidatures" }
+      ? { to: "/mes-candidatures", label: "Tableau de bord" }
       : user?.role === "partenaire"
       ? { to: "/partenaire", label: "Espace partenaire" }
       : null;
@@ -124,7 +124,7 @@ export default function Navbar() {
 
   const authDesktop = (() => {
     if (status === "checking") {
-      return <span className="text-sm text-white/80">Loading…</span>;
+      return <span className="text-sm text-white/80">Chargement…</span>;
     }
 
     if (status === "authenticated" && user) {
@@ -152,7 +152,7 @@ export default function Navbar() {
             onClick={handleLogout}
             className="hidden md:inline-flex items-center px-3 py-1 rounded-md bg-white/10 hover:bg-white/20 text-sm"
           >
-            Logout
+            Déconnexion
           </button>
         </div>
       );
@@ -175,7 +175,7 @@ export default function Navbar() {
 
   const authMobile = (() => {
     if (status === "checking") {
-      return <div className="px-3 py-2 text-sm">Loading…</div>;
+      return <div className="px-3 py-2 text-sm">Chargement…</div>;
     }
 
     if (status === "authenticated" && user) {
@@ -205,7 +205,7 @@ export default function Navbar() {
             }}
             className="w-full text-left px-3 py-2 rounded-lg hover:bg-white/10"
           >
-            Logout
+            Déconnexion
           </button>
         </div>
       );

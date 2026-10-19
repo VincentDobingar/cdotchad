@@ -1,5 +1,6 @@
 // components/ObjectifsSection.jsx
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import {
   ShieldCheck,
   HandHeart,
@@ -14,28 +15,28 @@ const objectifsData = [
     title: "Favoriser l’employabilité",
     description: "Développer les compétences des jeunes pour un marché du travail compétitif.",
     icon: ShieldCheck,
-    link: "#employabilite",
+    link: "/services",
   },
   {
     id: "chomage",
     title: "Réduire le chômage",
     description: "Créer des ponts entre les chercheurs d’emploi et les recruteurs.",
     icon: HandHeart,
-    link: "#chomage",
+    link: "/offres",
   },
   {
     id: "innovation",
     title: "Encourager l’innovation",
     description: "Soutenir des initiatives innovantes et technologiques dans le domaine RH.",
     icon: Lightbulb,
-    link: "#innovation",
+    link: "/activites",
   },
   {
     id: "impact-social",
     title: "Atteindre l’impact social",
     description: "Contribuer à une société équitable et économiquement active.",
     icon: Target,
-    link: "#impact-social",
+    link: "/presentation",
   },
 ];
 
@@ -77,13 +78,13 @@ export default function ObjectifsSection() {
                 <p className="text-sm sm:text-base text-gray-700 text-center mb-4">{objectif.description}</p>
 
                 <div className="text-center">
-                  <a
-                    href={objectif.link}
-                    className="inline-flex items-center gap-1 text-primary text-sm font-medium hover:underline transition"
+                  <Link
+                    to={objectif.link}
+                    className="inline-flex items-center gap-1 text-red-700 text-sm font-medium hover:underline transition"
                   >
-                    En savoir plus
+                    Voir le détail
                     <ArrowRight className="w-4 h-4" />
-                  </a>
+                  </Link>
                 </div>
               </motion.div>
             );

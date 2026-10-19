@@ -8,6 +8,7 @@ import logo from "@/assets/logo-cdotchad.png";
 import avatar from "@/assets/avatar.png";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
+import api from "@/utils/api";
 
 export default function AdminSidebar({ email, onLogout }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -27,6 +28,24 @@ export default function AdminSidebar({ email, onLogout }) {
     setSidebarOpen(false);
   }, [location.pathname]);
 
+  // Nombre de notifications non lues, affiché sur l'entrée « Notifications » :
+  // relu à chaque changement d'écran, puis toutes les minutes.
+  const [notificationsNonLues, setNotificationsNonLues] = useState(0);
+  useEffect(() => {
+    let actif = true;
+    const charger = () =>
+      api
+        .get("/notifications")
+        .then(({ data }) => actif && setNotificationsNonLues(data?.non_lues || 0))
+        .catch(() => {});
+    charger();
+    const minuteur = setInterval(charger, 60000);
+    return () => {
+      actif = false;
+      clearInterval(minuteur);
+    };
+  }, [location.pathname]);
+
   // Liens visibles selon rôle (route.superAdmin => réservé)
   const visibleLinks = adminRoutes.filter(
     (route) => route.label && route.path && (!route.superAdmin || isSuperAdmin)
@@ -35,7 +54,7 @@ export default function AdminSidebar({ email, onLogout }) {
   const sections = [
     {
       title: "Tableau de bord",
-      routes: visibleLinks.filter((r) => ["dashboard", "statistiques"].includes(r.path)),
+      routes: visibleLinks.filter((r) => ["dashboard", "analyse", "statistiques"].includes(r.path)),
     },
     {
       title: "Contenu",
@@ -55,6 +74,7 @@ export default function AdminSidebar({ email, onLogout }) {
         (r) =>
           ![
             "dashboard",
+            "analyse",
             "actualites",
             "galerie",
             "services",
@@ -146,6 +166,14 @@ export default function AdminSidebar({ email, onLogout }) {
                         {icon}
                       </span>
                       {!sidebarCollapsed && <span>{label}</span>}
+                      {path === "notifications" && notificationsNonLues > 0 && (
+                        <span
+                          className="ml-auto min-w-[1.25rem] h-5 px-1 rounded-full bg-red-600 text-white text-xs flex items-center justify-center"
+                          aria-label={`${notificationsNonLues} non lues`}
+                        >
+                          {notificationsNonLues > 9 ? "9+" : notificationsNonLues}
+                        </span>
+                      )}
                     </RouterLink>
                   ))}
                 </div>

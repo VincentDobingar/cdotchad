@@ -242,9 +242,13 @@ export default function Offres() {
 
       setOffres(sorted);
 
-      const safeTotal = sorted.length;
+      // Le serveur ne renvoie qu'une page (6 offres) : le nombre total d'offres et de pages
+      // vient de sa réponse, pas de la longueur de la page reçue. Sinon le compteur reste à 6
+      // et les boutons « Précédent » / « Suivant » ne s'activent jamais.
+      const totalServeur = Number(data?.total);
+      const safeTotal = Number.isFinite(totalServeur) && totalServeur >= sorted.length ? totalServeur : sorted.length;
       setTotalCount(safeTotal);
-      setTotalPages(Math.max(1, Math.ceil(safeTotal / limit)));
+      setTotalPages(Math.max(1, Number(data?.totalPages) || Math.ceil(safeTotal / limit)));
     } catch (err) {
       console.error("Erreur chargement des offres :", err);
       setOffres([]);
@@ -339,7 +343,7 @@ export default function Offres() {
         </p>
       </div>
 
-      <form onSubmit={onSubmitSearch} className="mb-4 flex gap-2">
+      <form onSubmit={onSubmitSearch} className="mb-4">
         <input
           type="text"
           value={searchInput}
@@ -347,12 +351,6 @@ export default function Offres() {
           placeholder="Rechercher un titre, un employeur ou un lieu..."
           className="border px-3 py-2 rounded-xl w-full"
         />
-        <button
-          type="submit"
-          className="shrink-0 bg-red-600 text-white px-4 py-2 rounded-xl hover:bg-red-700"
-        >
-          Rechercher
-        </button>
       </form>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -508,7 +506,7 @@ export default function Offres() {
                     to={`/offres/${offre.id}`}
                     className="inline-flex items-center text-red-700 font-medium hover:underline"
                   >
-                    Voir les détails
+                    Voir le détail
                   </Link>
                 </article>
               );

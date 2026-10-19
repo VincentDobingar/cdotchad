@@ -5,37 +5,83 @@ const teamMembers = [
   {
     name: "SOUGNABE Oualoumi",
     role: "Directeur Général",
-    image: "/images/ceo-cdotchad.jpg",
+    image: "/images/ceo-cdotchad.jpg?v=4",
     bio: "Expert en gestion de projets et leadership féminin, Sougnabé Oulami pilote CDOTCHAD avec une vision inclusive et durable.",
   },
   {
     name: "Alain PATENGOUH",
     role: "Directeur Associé - PATKA",
-    image: "/images/alain-cdotchad.jpg",
+    image: "/images/alain-cdotchad.jpg?v=4",
     bio: "Spécialiste en stratégie et développement, Alain apporte son expertise pour renforcer l'impact du cabinet dans la sous-région.",
   },
   {
     name: "Guy PIAM",
     role: "Partenaire Nimba Conseil",
-    image: "/images/guy-cdotchad.jpg",
+    image: "/images/guy-cdotchad.jpg?v=4",
     bio: "Expert en accompagnement stratégique et développement organisationnel, Guy contribue à la vision et la croissance de CDOTCHAD.",
   },
   {
     name: "MALKONBE Mbaïoundkom",
     role: "Directeur Général / 2BM",
-    image: "/images/malkonbe-cdotchad.jpg",
+    image: "/images/malkonbe-cdotchad.jpg?v=4",
     bio: "Ingénieur polyvalent et entrepreneur, Malkonbé assure la coordination technique et technologique des projets numériques.",
   },
   {
     name: "DOBINGAR G. Vincent",
-    role: "Developpeur Full Stack et Consultant Data Analyste",
-    image: "/images/vincent.png",
+    role: "Fondateur & Directeur Général / DBS Africa",
+    lien: "https://dbs-africa.org",
+    image: "/images/vincent.jpg?v=4",
     bio: "Passionné par les solutions numériques innovantes et l’impact des données dans la prise de décision. Fort d’une solide expérience dans le développement web (frontend & backend), il accompagne les organisations dans la création d'applications robustes, évolutives et orientées utilisateurs. Spécialisé en intégration de systèmes, visualisation de données et automatisation de processus, il intervient aussi bien sur des projets techniques que stratégiques, en mettant les technologies au service du développement durable et de la performance organisationnelle.",
   },
 ];
 
 export default function Presentation() {
   const [activeMember, setActiveMember] = useState(null);
+
+  // Carte d'un membre dans l'organigramme (photo, nom, rôle, bio dépliable au clic).
+  const Carte = ({ index }) => {
+    const member = teamMembers[index];
+    return (
+      <motion.div
+        className="flex flex-col items-center bg-white rounded-xl shadow-md p-4 cursor-pointer w-64 max-w-full z-10"
+        whileHover={{ scale: 1.03 }}
+        onClick={() => setActiveMember(activeMember === index ? null : index)}
+      >
+        <img
+          src={member.image}
+          alt={member.name}
+          className="w-32 h-32 rounded-full object-cover mb-3 shadow"
+        />
+        <p className="font-semibold text-gray-800 text-center">{member.name}</p>
+        <p className="text-sm text-red-700 text-center">{member.role}</p>
+        {member.lien && (
+          <a
+            href={member.lien}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="mt-1 text-xs font-medium text-red-600 hover:underline"
+          >
+            {member.lien.replace(/^https?:\/\//, "")}
+          </a>
+        )}
+
+        <AnimatePresence>
+          {activeMember === index && (
+            <motion.div
+              className="mt-3 text-sm text-gray-600 text-center overflow-hidden"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.4 }}
+            >
+              <p>{member.bio}</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+    );
+  };
 
   return (
     <main className="text-gray-800">
@@ -83,7 +129,7 @@ export default function Presentation() {
           viewport={{ once: true }}
         >
           <img
-            src="/images/dg-cdotchad.jpg"
+            src="/images/dg-cdotchad.jpg?v=4"
             alt="Équipe CDOTCHAD"
             className="rounded-2xl shadow-xl w-full"
           />
@@ -162,39 +208,27 @@ export default function Presentation() {
             Une équipe passionnée et engagée, composée de professionnels aux parcours variés, unis par la même vision.
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-            {teamMembers.map((member, index) => (
-              <motion.div
-                key={index}
-                className="flex flex-col items-center bg-white rounded-xl shadow-md p-4 cursor-pointer"
-                whileHover={{ scale: 1.05 }}
-                onClick={() =>
-                  setActiveMember(activeMember === index ? null : index)
-                }
-              >
-                <img
-                  src={member.image}
-                  alt={member.name}
-                  className="w-32 h-32 rounded-full object-cover mb-3 shadow"
-                />
-                <p className="font-semibold text-gray-800">{member.name}</p>
-                <p className="text-sm text-gray-500">{member.role}</p>
+          {/* Organigramme vertical : hiérarchie du haut vers le bas (#22).
+              Niveau 1 : Direction générale — Niveau 2 : associés & partenaires — Niveau 3 : équipe technique.
+              Chaque carte se déplie au clic pour révéler la bio. */}
+          <div className="flex flex-col items-center">
+            <Carte index={0} />
 
-                <AnimatePresence>
-                  {activeMember === index && (
-                    <motion.div
-                      className="mt-4 text-sm text-gray-600"
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.4 }}
-                    >
-                      <p>{member.bio}</p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            ))}
+            {/* connecteur vertical */}
+            <div className="w-px h-8 bg-red-300" aria-hidden="true" />
+            <p className="text-xs uppercase tracking-wider text-gray-400 mb-3">Associés & partenaires</p>
+
+            <div className="flex flex-wrap justify-center gap-6">
+              <Carte index={1} />
+              <Carte index={2} />
+              <Carte index={3} />
+            </div>
+
+            {/* connecteur vertical */}
+            <div className="w-px h-8 bg-red-300 mt-2" aria-hidden="true" />
+            <p className="text-xs uppercase tracking-wider text-gray-400 mb-3">Équipe technique</p>
+
+            <Carte index={4} />
           </div>
         </motion.div>
       </section>

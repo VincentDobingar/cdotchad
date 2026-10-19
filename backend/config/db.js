@@ -5,7 +5,14 @@ import dotenv from "dotenv";
 
 dotenv.config(); // pas de path relatif pour éviter problème de CWD
 
-const { Pool } = pkg;
+const { Pool, types } = pkg;
+
+// Les colonnes DATE (date de publication et date limite des offres) sont renvoyées telles
+// qu'elles sont stockées, "AAAA-MM-JJ". Sans cela, pg les convertit en minuit heure du
+// serveur puis en UTC : un visiteur situé dans un autre fuseau (le Tchad, en été) voyait
+// la veille, et les formulaires de modification reculaient la date d'un jour à chaque
+// enregistrement.
+types.setTypeParser(1082, (valeur) => valeur);
 
 const port = Number(process.env.DB_PORT) || 5432;
 const user = process.env.DB_USER || "";

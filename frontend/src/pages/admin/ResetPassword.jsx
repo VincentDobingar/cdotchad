@@ -20,7 +20,7 @@ export default function ResetPassword() {
 
     setLoading(true);
     try {
-      await api.post(`/admin/reset-password/${token}`, { motdepasse: password });
+      await api.post(`/admin/reset-password/${token}`, { newPassword: password });
       toast.success("Mot de passe réinitialisé !");
       navigate("/admin/login");
     } catch (err) {

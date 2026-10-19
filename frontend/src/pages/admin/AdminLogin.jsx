@@ -1,6 +1,6 @@
 // 📁 src/pages/admin/AdminLogin.jsx
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import api from "@/utils/api";
 import { useAuth } from "@/context/AuthContext";
 import toast from "react-hot-toast";
@@ -114,6 +114,12 @@ export default function AdminLogin() {
         >
           {loading ? "Connexion…" : "Se connecter"}
         </button>
+
+        <div className="text-center">
+          <Link to="/admin/mot-de-passe-oublie" className="text-sm text-red-600 hover:underline dark:text-red-400">
+            Mot de passe oublié ?
+          </Link>
+        </div>
       </form>
     </div>
   );

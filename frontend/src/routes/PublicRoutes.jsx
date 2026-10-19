@@ -18,6 +18,10 @@ import Profile from "@/pages/public/Profile";
 import MesCandidatures from "@/pages/public/MesCandidatures";
 import Galerie from "@/pages/public/Galerie";
 import CandidatureConfirmation from "@/pages/public/CandidatureConfirmation";
+import MotDePasseOublie from "@/pages/public/MotDePasseOublie";
+import ResetPassword from "@/pages/public/ResetPassword";
+import SuiviCandidature from "@/pages/public/SuiviCandidature";
+import MesCandidatureDetail from "@/pages/public/MesCandidatureDetail";
 import TestQuill from "@/components/public/TestQuill";
 import NotFound from "@/pages/NotFound";
 import RequireRole from "@/routes/RequireRole";
@@ -53,6 +57,9 @@ const publicRoutes = [
   { path: "/contact", element: <Contact /> },
   { path: "/login", element: <Login /> },
   { path: "/inscription", element: <Inscription /> },
+  { path: "/mot-de-passe-oublie", element: <MotDePasseOublie /> },
+  { path: "/reset-password/:token", element: <ResetPassword /> },
+  { path: "/suivi", element: <SuiviCandidature /> },
   {
     path: "/profile",
     element: (
@@ -69,6 +76,16 @@ const publicRoutes = [
       <RequireRole roles={["candidat"]} redirectTo="/login">
         <EspaceLayout>
           <MesCandidatures />
+        </EspaceLayout>
+      </RequireRole>
+    ),
+  },
+  {
+    path: "/mes-candidatures/:id",
+    element: (
+      <RequireRole roles={["candidat"]} redirectTo="/login">
+        <EspaceLayout>
+          <MesCandidatureDetail />
         </EspaceLayout>
       </RequireRole>
     ),

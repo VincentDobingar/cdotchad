@@ -117,10 +117,10 @@ export default function PostulerEtape() {
     data.append("offre_id", id);
 
     try {
-      await api.post("/candidatures", data);
+      const reponse = await api.post("/candidatures", data);
 
       toast.success("Candidature envoyée avec succès !");
-      navigate("/candidature/success");
+      navigate("/candidature/success", { state: { code: reponse?.data?.code_suivi } });
     } catch (err) {
       toast.error(err.response?.data?.error || "Erreur lors de l'envoi de la candidature.");
     } finally {

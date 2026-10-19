@@ -38,6 +38,9 @@ const getUtilisateurById = async (req, res) => {
 const ajouterUtilisateur = async (req, res) => {
   const { nom, prenom, email, motdepasse } = req.body;
   if (!email || !motdepasse) return res.status(400).json({ erreur: "email et motdepasse requis" });
+  if (String(motdepasse).length < 8) {
+    return res.status(400).json({ erreur: "Le mot de passe doit contenir au moins 8 caractères." });
+  }
   try {
     const hash = await bcrypt.hash(motdepasse, 10);
     const { rows } = await pool.query(

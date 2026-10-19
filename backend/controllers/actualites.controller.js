@@ -21,6 +21,15 @@ const buildImageUrl = (raw, req) => {
   return `${req.protocol}://${req.get("host")}${BASE}/${v}`;
 };
 
+// La date de publication est stockée sans fuseau horaire. On la renvoie en "AAAA-MM-JJ"
+// pour que tous les visiteurs voient le même jour, quel que soit leur fuseau (sinon un
+// visiteur au Tchad voyait la veille pendant l'heure d'été du serveur).
+const jourPublication = (d) => {
+  if (!(d instanceof Date) || Number.isNaN(d.getTime())) return d ?? null;
+  const deux = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${deux(d.getMonth() + 1)}-${deux(d.getDate())}`;
+};
+
 /* ---------------- STATS ------------------ */
 
 // ✅ Statistiques (catégories et mois)
@@ -82,6 +91,7 @@ export const getActualiteById = async (req, res) => {
 
     const a = result.rows[0];
     a.image = buildImageUrl(a.image, req); // normalise l'URL d'image
+    a.date_publication = jourPublication(a.date_publication);
     res.json(a);
   } catch (error) {
     console.error("Erreur getActualiteById :", error);
@@ -89,27 +99,88 @@ export const getActualiteById = async (req, res) => {
   }
 };
 
-// ✅ Obtenir toutes les actualités avec pagination (image normalisée)
+// â Obtenir toutes les actualitÃ©s : filtrage, tri et pagination cÃ´tÃ© serveur.
+// Avant, l'API ignorait les critÃ¨res et renvoyait toujours les plus rÃ©centes ; le tri/filtre
+// ne s'appliquait alors qu'Ã  la page reÃ§ue cÃ´tÃ© navigateur. On applique ici recherche,
+// catÃ©gorie, annÃ©e et mois, un tri sur liste blanche, puis une vraie pagination avec total.
 export const getActualites = async (req, res) => {
   try {
-    const limit = Number.isFinite(parseInt(req.query.limit, 10))
-      ? parseInt(req.query.limit, 10)
-      : 10;
-    const offset = Number.isFinite(parseInt(req.query.offset, 10))
-      ? parseInt(req.query.offset, 10)
+    // Pagination : soit "page" (1-based), soit "offset" direct.
+    const limitRaw = parseInt(req.query.limit, 10);
+    const limit = Number.isFinite(limitRaw) ? Math.min(Math.max(limitRaw, 1), 50) : 10;
+
+    const pageRaw = parseInt(req.query.page, 10);
+    const page = Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : null;
+
+    const offsetRaw = parseInt(req.query.offset, 10);
+    const offset = page
+      ? (page - 1) * limit
+      : Number.isFinite(offsetRaw) && offsetRaw >= 0
+      ? offsetRaw
       : 0;
 
-    const result = await pool.query(
-      "SELECT * FROM actualites ORDER BY date_publication DESC, id DESC LIMIT $1 OFFSET $2",
-      [limit, offset]
+    // Filtres (on accepte les alias franÃ§ais "mois"/"annee" utilisÃ©s cÃ´tÃ© administration).
+    const search = String(req.query.search || "").trim();
+    const categorie = String(req.query.categorie || "").trim();
+    const year = parseInt(req.query.year ?? req.query.annee, 10);
+    const month = parseInt(req.query.month ?? req.query.mois, 10);
+
+    const where = [];
+    const values = [];
+
+    if (search) {
+      values.push(`%${search}%`);
+      const i = values.length;
+      where.push(`(titre ILIKE $${i} OR contenu ILIKE $${i} OR COALESCE(categorie, '') ILIKE $${i})`);
+    }
+    if (categorie) {
+      values.push(categorie);
+      where.push(`LOWER(categorie) = LOWER($${values.length})`);
+    }
+    if (Number.isFinite(year)) {
+      values.push(year);
+      where.push(`EXTRACT(YEAR FROM date_publication) = $${values.length}`);
+    }
+    if (Number.isFinite(month) && month >= 1 && month <= 12) {
+      values.push(month);
+      where.push(`EXTRACT(MONTH FROM date_publication) = $${values.length}`);
+    }
+
+    const whereClause = where.length ? `WHERE ${where.join(" AND ")}` : "";
+
+    // Tri sur liste blanche : seuls ces champs sont autorisÃ©s (le reste retombe sur la date).
+    const sortField = String(req.query.sort_by) === "titre" ? "titre" : "date_publication";
+    const sortDir = String(req.query.sort || "desc").toLowerCase() === "asc" ? "ASC" : "DESC";
+
+    const countResult = await pool.query(
+      `SELECT COUNT(*)::int AS total FROM actualites ${whereClause}`,
+      values
+    );
+    const total = countResult.rows[0]?.total || 0;
+
+    // Le tri se termine par l'identifiant : sans lui, deux actualitÃ©s de mÃªme date pourraient
+    // changer d'ordre d'une page Ã  l'autre (doublon d'un cÃ´tÃ©, oubli de l'autre).
+    const dataResult = await pool.query(
+      `SELECT * FROM actualites
+       ${whereClause}
+       ORDER BY ${sortField} ${sortDir} NULLS LAST, id DESC
+       LIMIT $${values.length + 1} OFFSET $${values.length + 2}`,
+      [...values, limit, offset]
     );
 
-    const data = result.rows.map((a) => ({
+    const data = dataResult.rows.map((a) => ({
       ...a,
       image: buildImageUrl(a.image, req),
+      date_publication: jourPublication(a.date_publication),
     }));
 
-    res.json(data);
+    res.json({
+      data,
+      total,
+      page: page || Math.floor(offset / limit) + 1,
+      limit,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
+    });
   } catch (error) {
     console.error("Erreur getActualites :", error);
     res.status(500).json({ error: "Erreur serveur" });
@@ -133,6 +204,7 @@ export const createActualite = async (req, res) => {
 
     const a = rows[0];
     a.image = buildImageUrl(a.image, req);
+    a.date_publication = jourPublication(a.date_publication);
     res.status(201).json(a);
   } catch (err) {
     console.error("Erreur ajout actualité:", err);
@@ -201,6 +273,7 @@ export const updateActualite = async (req, res) => {
 
     const a = rows[0];
     a.image = buildImageUrl(a.image, req);
+    a.date_publication = jourPublication(a.date_publication);
     res.json(a);
   } catch (err) {
     await client.query("ROLLBACK");

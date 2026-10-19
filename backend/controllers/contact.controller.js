@@ -7,6 +7,7 @@ import {
   buildClientMailOptions,
 } from "../services/email.service.js";
 import { enregistrerMessage } from "../services/contact.service.js";
+import { notifierAdmins } from "./notifications.controller.js";
 
 dotenv.config();
 
@@ -67,6 +68,7 @@ export const envoyerMessageContact = async (req, res) => {
     try {
       await enregistrerMessage({ nom: user_name, email: user_email, message });
       console.log("✅ Message enregistré en base");
+      await notifierAdmins("message_contact", `Nouveau message de ${user_name} reçu par le formulaire de contact.`, "/admin/messages");
     } catch (err) {
       console.error("❌ Erreur enregistrement message :", err);
       return res.status(500).json({ message: "Erreur enregistrement en base", error: err.message });

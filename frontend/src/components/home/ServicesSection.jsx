@@ -58,9 +58,9 @@ export default function ServicesSection() {
               <p className="text-gray-600 mb-4">{item.description}</p>
               <Link
                 to={`/services${item.anchor}`}
-                className="text-red-600 font-medium hover:underline"
+                className="text-red-700 font-medium hover:underline"
               >
-                En savoir plus
+                Voir le détail
               </Link>
             </motion.div>
           ))}

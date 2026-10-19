@@ -1,12 +1,13 @@
 import { pool } from "../config/db.js";
 import nodemailer from "nodemailer";
+import { transporter } from "../services/email.service.js";
 import PDFDocument from "pdfkit";
 import fs from "fs";
 import path from "path";
 import dotenv from "dotenv";
 import { Parser } from "json2csv";
 import { getDocumentEnregistre } from "./candidat.controller.js";
-import { creerNotification } from "./notifications.controller.js";
+import { creerNotification, notifierAdmins } from "./notifications.controller.js";
 
 const STATUTS_VALIDES = ["recue", "en_cours", "entretien", "acceptee", "refusee"];
 const LIBELLES_STATUT = {
@@ -18,6 +19,18 @@ const LIBELLES_STATUT = {
 };
 
 dotenv.config();
+
+// Génère un code de suivi unique (format CDO-XXXXXXXX), en réessayant en cas de collision.
+async function genererCodeSuivi() {
+  const { randomBytes } = await import("crypto");
+  for (let essai = 0; essai < 6; essai++) {
+    const code = "CDO-" + randomBytes(5).toString("hex").toUpperCase().slice(0, 8);
+    const { rows } = await pool.query("SELECT 1 FROM candidatures WHERE code_suivi = $1 LIMIT 1", [code]);
+    if (!rows.length) return code;
+  }
+  // Dernier recours : suffixe horodaté (extrêmement improbable d'arriver ici).
+  return "CDO-" + Date.now().toString(36).toUpperCase();
+}
 
 // 🔐 Récupérer toutes les candidatures (avec filtres)
 export const getAllCandidatures = async (req, res) => {
@@ -62,7 +75,7 @@ export const getAllCandidatures = async (req, res) => {
 export const getMesCandidatures = async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT c.id, c.statut, c.date_candidature, o.titre AS titre_offre
+      `SELECT c.id, c.statut, c.date_candidature, c.code_suivi, o.titre AS titre_offre
        FROM candidatures c
        LEFT JOIN offres o ON c.offre_id = o.id
        WHERE c.user_id = $1
@@ -148,27 +161,30 @@ export const postCandidature = async (req, res) => {
     }
     const { cv: cv_path, lettre: lettre_path, diplome: diplome_path } = pieces;
 
+    const codeSuivi = await genererCodeSuivi();
+
     await pool.query(
-      `INSERT INTO candidatures (nom, email, telephone, lien, commentaire, cv_path, lettre_path, diplome_path, offre_id, user_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-      [nom, email, telephone, lien, commentaire, cv_path, lettre_path, diplome_path, offre_id, userId]
+      `INSERT INTO candidatures (nom, email, telephone, lien, commentaire, cv_path, lettre_path, diplome_path, offre_id, user_id, code_suivi)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+      [nom, email, telephone, lien, commentaire, cv_path, lettre_path, diplome_path, offre_id, userId, codeSuivi]
     );
 
     const offreResult = await pool.query("SELECT titre FROM offres WHERE id = $1", [offre_id]);
     const offreTitre = offreResult.rows[0]?.titre || "Offre inconnue";
 
-    // ✅ Transporteur SMTP cohérent avec mail.cdotchad.com
-    const transporter = nodemailer.createTransport({
-      host: "mail.cdotchad.com",
-      port: 465,
-      secure: true,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
+    await notifierAdmins(
+      "nouvelle_candidature",
+      `Nouvelle candidature de ${nom} pour « ${offreTitre} ».`,
+      "/admin/candidatures"
+    );
 
-    // 🔔 Email à l'admin
+    // La candidature est enregistrée : on répond tout de suite avec le code de suivi.
+    // L'envoi d'e-mail (ci-dessous) ne doit JAMAIS faire échouer la soumission : si la
+    // configuration SMTP est indisponible, la candidature reste valide et le candidat a
+    // son code de suivi à l'écran.
+    res.status(201).json({ message: "Candidature enregistrée avec succès.", code_suivi: codeSuivi });
+
+    const base = process.env.PUBLIC_BASE_URL || process.env.BASE_URL || "https://www.cdotchad.com";
     const mailToAdmin = {
       from: process.env.EMAIL_USER,
       to: process.env.EMAIL_ADMIN,
@@ -179,14 +195,14 @@ export const postCandidature = async (req, res) => {
         <p><strong>Email :</strong> ${email}</p>
         <p><strong>Téléphone :</strong> ${telephone}</p>
         <p><strong>Poste :</strong> ${offreTitre}</p>
+        <p><strong>Code de suivi :</strong> ${codeSuivi}</p>
         <p><strong>Commentaire :</strong> ${commentaire || "-"}</p>
-        <p><strong>CV :</strong> <a href="https://cdotchad.com/${cv_path}">Voir</a></p>
-        <p><strong>Lettre :</strong> <a href="https://cdotchad.com/${lettre_path}">Voir</a></p>
-        <p><strong>Diplôme :</strong> <a href="https://cdotchad.com/${diplome_path}">Voir</a></p>
+        <p><strong>CV :</strong> <a href="${base}/${cv_path}">Voir</a></p>
+        <p><strong>Lettre :</strong> <a href="${base}/${lettre_path}">Voir</a></p>
+        <p><strong>Diplôme :</strong> <a href="${base}/${diplome_path}">Voir</a></p>
       `,
     };
 
-    // ✅ Email de confirmation au candidat
     const mailToCandidat = {
       from: process.env.EMAIL_USER,
       to: email,
@@ -194,15 +210,22 @@ export const postCandidature = async (req, res) => {
       html: `
         <p>Bonjour ${nom},</p>
         <p>Nous avons bien reçu votre candidature pour le poste de <strong>${offreTitre}</strong>.</p>
+        <p>Votre code de suivi est : <strong>${codeSuivi}</strong></p>
+        <p>Vous pouvez suivre l'avancement de votre candidature, sans vous connecter, à l'adresse :
+           <a href="${base}/suivi">${base}/suivi</a> (en saisissant ce code).</p>
         <p>Merci de l'intérêt que vous portez à notre organisation.</p>
         <p>Bien cordialement,<br>L’équipe CDO Tchad</p>
       `,
     };
 
-    await transporter.sendMail(mailToAdmin);
-    await transporter.sendMail(mailToCandidat);
-
-    res.status(201).json({ message: "Candidature enregistrée avec succès." });
+    try {
+      await transporter.sendMail(mailToAdmin);
+      await transporter.sendMail(mailToCandidat);
+    } catch (mailErr) {
+      // On n'échoue pas la candidature pour un problème d'e-mail : on journalise seulement.
+      console.error("⚠️ Envoi e-mail candidature échoué (candidature tout de même enregistrée) :", mailErr?.message || mailErr);
+    }
+    return;
   } catch (err) {
     console.error("Erreur lors de l'enregistrement :", err.message);
     res.status(500).json({ error: "Erreur serveur lors de la soumission de candidature." });
@@ -368,3 +391,49 @@ export const exportCandidaturesCSV = async (req, res) => {
   }
 };
 
+
+// 🔎 Détail d'une candidature du candidat connecté (#2)
+export const getMaCandidature = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query(
+      `SELECT c.id, c.nom, c.email, c.telephone, c.lien, c.commentaire,
+              c.cv_path, c.lettre_path, c.diplome_path, c.statut, c.code_suivi, c.date_candidature,
+              o.id AS offre_id, o.titre AS titre_offre, o.lieu, o.employeur
+       FROM candidatures c
+       LEFT JOIN offres o ON c.offre_id = o.id
+       WHERE c.id = $1 AND c.user_id = $2
+       LIMIT 1`,
+      [id, req.user.id]
+    );
+    if (!result.rows.length) return res.status(404).json({ error: "Candidature introuvable" });
+    res.json({ candidature: result.rows[0] });
+  } catch (err) {
+    console.error("Erreur détail candidature :", err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+};
+
+// 🌐 Suivi public d'une candidature par code de suivi (#15), sans authentification.
+// Ne renvoie que des informations non nominatives (statut, intitulé du poste, date).
+export const getSuiviParCode = async (req, res) => {
+  try {
+    const code = String(req.params.code || "").trim().toUpperCase();
+    if (!code) return res.status(400).json({ error: "Code requis" });
+    const result = await pool.query(
+      `SELECT c.statut, c.date_candidature, o.titre AS titre_offre
+       FROM candidatures c
+       LEFT JOIN offres o ON c.offre_id = o.id
+       WHERE UPPER(c.code_suivi) = $1
+       LIMIT 1`,
+      [code]
+    );
+    if (!result.rows.length) {
+      return res.status(404).json({ error: "Aucune candidature ne correspond à ce code." });
+    }
+    res.json({ suivi: result.rows[0] });
+  } catch (err) {
+    console.error("Erreur suivi par code :", err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+};

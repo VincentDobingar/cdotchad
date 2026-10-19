@@ -8,7 +8,8 @@ const TONS = {
   jaune: "bg-amber-50 text-amber-700",
 };
 
-export default function StatCard({ title, icon, value, tone = "rouge" }) {
+// hint : précision facultative sous le chiffre (ex. « sur 22 au total »)
+export default function StatCard({ title, icon, value, tone = "rouge", hint }) {
   return (
     <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 flex items-center gap-4">
       <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${TONS[tone] || TONS.rouge}`}>
@@ -17,6 +18,7 @@ export default function StatCard({ title, icon, value, tone = "rouge" }) {
       <div className="min-w-0">
         <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 truncate">{title}</p>
         <p className="text-2xl font-bold text-slate-900 tabular-nums">{value}</p>
+        {hint && <p className="mt-0.5 text-xs text-slate-500">{hint}</p>}
       </div>
     </div>
   );

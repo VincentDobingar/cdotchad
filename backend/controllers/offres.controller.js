@@ -78,7 +78,8 @@ function safeTrim(value) {
 
 // Les offres en attente ou refusées ne sont visibles que de l'admin.
 export const estAdmin = (req) => ["admin", "superadmin"].includes(req.user?.role);
-const FILTRE_PUBLIC = `COALESCE(statut_moderation, 'validee') = 'validee'`;
+// Public = offre parue (pas un brouillon) ET validée par la modération.
+const FILTRE_PUBLIC = `LOWER(COALESCE(statut, 'publiee')) <> 'brouillon' AND COALESCE(statut_moderation, 'validee') = 'validee'`;
 
 export function toOffrePayload(body = {}) {
   return {
@@ -235,7 +236,10 @@ export async function getAllOffres(req, res) {
         ${buildEtatSql()}
       FROM offres
       ${whereClause}
-      ORDER BY ${sortField} ${sortDir} NULLS LAST
+      -- Le tri se termine par l'identifiant : sans lui, des offres de même date changent
+      -- d'ordre d'une page à l'autre et l'une d'elles peut apparaître deux fois pendant
+      -- qu'une autre n'apparaît jamais.
+      ORDER BY ${sortField} ${sortDir} NULLS LAST, id DESC
       LIMIT $${values.length + 1}
       OFFSET $${values.length + 2}
     `;
@@ -266,7 +270,17 @@ export async function getOffreById(req, res) {
   try {
     const { id } = req.params;
 
-    const filtre = estAdmin(req) ? "" : `AND ${FILTRE_PUBLIC}`;
+    // Admin : tout voir. Partenaire : ses propres offres (y compris brouillons). Public : offres parues.
+    const params = [id];
+    let filtre = "";
+    if (!estAdmin(req)) {
+      if (req.user?.role === "partenaire") {
+        params.push(req.user.id);
+        filtre = `AND (partenaire_id = $2 OR (${FILTRE_PUBLIC}))`;
+      } else {
+        filtre = `AND ${FILTRE_PUBLIC}`;
+      }
+    }
     const result = await pool.query(
       `
       SELECT
@@ -297,7 +311,7 @@ export async function getOffreById(req, res) {
       FROM offres
       WHERE id = $1 ${filtre}
       `,
-      [id]
+      params
     );
 
     if (result.rows.length === 0) {
@@ -307,11 +321,7 @@ export async function getOffreById(req, res) {
     return res.json({ data: result.rows[0] });
   } catch (error) {
     console.error("Erreur getOffreById:", error);
-    return res.status(500).json({
-      message: error?.message || "Erreur serveur",
-      code: error?.code || null,
-      detail: error?.detail || null,
-    });
+    return res.status(500).json({ message: "Erreur serveur" });
   }
 }
 

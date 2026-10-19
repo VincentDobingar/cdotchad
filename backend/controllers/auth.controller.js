@@ -4,16 +4,22 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "../lib/bcryptAdapter.js";
 import { pool } from "../config/db.js";
+import crypto from "crypto";
+import { transporter } from "../services/email.service.js";
 
 const ACCESS_EXPIRES = process.env.ACCESS_EXPIRES || "15m";
 const REFRESH_EXPIRES = process.env.REFRESH_EXPIRES || "7d";
 const JWT_SECRET = process.env.JWT_SECRET;
 const REFRESH_SECRET = process.env.REFRESH_SECRET || JWT_SECRET;
+const PUBLIC_BASE_URL = process.env.PUBLIC_BASE_URL || process.env.BASE_URL || "https://www.cdotchad.com";
+const RESET_TOKEN_TTL_MIN = 30;
+const hashToken = (raw) => crypto.createHash("sha256").update(raw).digest("hex");
 
 function setRefreshCookie(res, refreshToken) {
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    // Le site est servi en HTTPS : cookie Secure par défaut, désactivé seulement en dev local.
+    secure: process.env.NODE_ENV !== "development",
     sameSite: "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000,
     path: "/backend/auth",
@@ -148,5 +154,93 @@ export async function getMe(req, res) {
   } catch (err) {
     console.error("getMe error:", err);
     return res.status(500).json({ message: "Erreur serveur" });
+  }
+}
+
+
+// ---------- Mot de passe oublié (candidat & partenaire) ----------
+// POST /backend/auth/forgot-password  { email }
+export async function forgotPassword(req, res) {
+  const reponseGenerique = { message: "Si ce compte existe, un email de réinitialisation a été envoyé." };
+  try {
+    const email = String(req.body?.email || "").trim().toLowerCase();
+    if (!email) return res.status(400).json({ message: "Email requis." });
+
+    const { rows } = await pool.query(
+      `SELECT id, email FROM users WHERE role IN ('candidat','partenaire') AND lower(email) = lower($1) LIMIT 1`,
+      [email]
+    );
+    // Réponse identique que le compte existe ou non (pas d'énumération de comptes).
+    if (!rows.length) return res.json(reponseGenerique);
+
+    const user = rows[0];
+    const rawToken = crypto.randomBytes(32).toString("hex");
+    const expireLe = new Date(Date.now() + RESET_TOKEN_TTL_MIN * 60 * 1000);
+
+    await pool.query(
+      `INSERT INTO password_resets (user_id, token_hash, expire_le) VALUES ($1, $2, $3)`,
+      [user.id, hashToken(rawToken), expireLe]
+    );
+
+    const resetLink = `${PUBLIC_BASE_URL}/reset-password/${rawToken}`;
+    try {
+      await transporter.sendMail({
+        from: `"CDO TCHAD" <${process.env.EMAIL_USER}>`,
+        to: user.email,
+        subject: "Réinitialisation de votre mot de passe",
+        html: `
+          <p>Une demande de réinitialisation de mot de passe a été effectuée pour ce compte.</p>
+          <p><a href="${resetLink}">Cliquez ici pour définir un nouveau mot de passe</a> (valable ${RESET_TOKEN_TTL_MIN} minutes).</p>
+          <p>Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.</p>
+        `,
+      });
+    } catch (mailErr) {
+      // On ne révèle pas l'échec d'envoi (anti-énumération) ; on journalise seulement.
+      console.error("⚠️ forgotPassword (candidat/partenaire) envoi e-mail échoué :", mailErr?.message || mailErr);
+    }
+    return res.json(reponseGenerique);
+  } catch (err) {
+    console.error("❌ forgotPassword (candidat/partenaire) :", err);
+    return res.json(reponseGenerique);
+  }
+}
+
+// POST /backend/auth/reset-password/:token  { newPassword }
+export async function resetPassword(req, res) {
+  try {
+    const { token } = req.params;
+    const { newPassword } = req.body || {};
+    if (!token || !newPassword) {
+      return res.status(400).json({ message: "Token et nouveau mot de passe requis." });
+    }
+    if (String(newPassword).length < 8) {
+      return res.status(400).json({ message: "Le nouveau mot de passe doit contenir au moins 8 caractères." });
+    }
+
+    const { rows } = await pool.query(
+      `SELECT pr.id, pr.user_id FROM password_resets pr
+         JOIN users u ON u.id = pr.user_id
+        WHERE pr.token_hash = $1 AND pr.utilise = false AND pr.expire_le > now()
+          AND u.role IN ('candidat','partenaire')
+        LIMIT 1`,
+      [hashToken(token)]
+    );
+    if (!rows.length) {
+      return res.status(400).json({ message: "Lien de réinitialisation invalide ou expiré." });
+    }
+
+    const { id: resetId, user_id } = rows[0];
+    const newHash = await bcrypt.hash(newPassword, 10);
+
+    await pool.query("BEGIN");
+    await pool.query("UPDATE users SET password_hash = $1 WHERE id = $2", [newHash, user_id]);
+    await pool.query("UPDATE password_resets SET utilise = true WHERE id = $1", [resetId]);
+    await pool.query("COMMIT");
+
+    return res.json({ message: "Mot de passe réinitialisé avec succès." });
+  } catch (err) {
+    await pool.query("ROLLBACK").catch(() => {});
+    console.error("❌ resetPassword (candidat/partenaire) :", err);
+    return res.status(500).json({ message: "Erreur serveur." });
   }
 }

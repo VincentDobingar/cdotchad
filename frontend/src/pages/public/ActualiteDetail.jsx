@@ -7,6 +7,22 @@ import jsPDF from "jspdf";
 
 const FALLBACK = "/images/default-news.jpg";
 
+// Feuille de style dédiée à l'impression : on masque la navigation, le pied de page et
+// les boutons d'action, on élargit la zone de contenu et on laisse l'image s'afficher
+// entièrement (sans recadrage) en évitant les coupures de page au milieu d'un bloc.
+const PRINT_CSS = `
+@media print {
+  nav, footer, .no-print, .print\\:hidden { display: none !important; }
+  .actu-print-zone { width: 100% !important; max-width: 100% !important; }
+  .actu-print-zone img {
+    max-height: none !important; height: auto !important; width: 100% !important;
+    object-fit: contain !important; page-break-inside: avoid;
+  }
+  a[href]::after { content: ""; }
+  body { background: #fff !important; }
+}
+`;
+
 function buildCandidates(raw, cacheKey) {
   if (!raw) return [FALLBACK];
   let v = String(raw).trim();
@@ -89,9 +105,13 @@ export default function ActualiteDetail() {
 
     const fetchSimilar = async () => {
       try {
-        const res = await api.get("/actualites", { params: { limit: 3, sort: "desc" } });
-        const autres = Array.isArray(res.data?.data) ? res.data.data.filter((a) => a.id != id) : [];
-        setSimilar(autres.slice(0, 3));
+        const res = await api.get("/actualites", { params: { limit: 4, sort: "desc" } });
+        const liste = Array.isArray(res.data?.data)
+          ? res.data.data
+          : Array.isArray(res.data)
+          ? res.data
+          : [];
+        setSimilar(liste.filter((a) => String(a.id) !== String(id)).slice(0, 3));
       } catch (err) {
         console.error("Erreur fetch similaires:", err.message);
       }
@@ -107,40 +127,104 @@ export default function ActualiteDetail() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const pageUrl = typeof window !== "undefined" ? window.location.href : "";
+  const shareTitre = actu?.titre || "Actualité CDO Tchad";
+
   const handleCopyLink = () => {
-    const url = window.location.href;
-    navigator.clipboard.writeText(url).then(() => {
+    navigator.clipboard?.writeText(pageUrl).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
   };
 
+  // Partage natif (mobile / navigateurs compatibles) ; sinon on garde les liens réseaux.
+  const handleNativeShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: shareTitre, url: pageUrl });
+      } catch {
+        /* partage annulé : on ignore */
+      }
+    } else {
+      handleCopyLink();
+    }
+  };
+
+  const liensPartage = {
+    whatsapp: `https://wa.me/?text=${encodeURIComponent(`${shareTitre} ${pageUrl}`)}`,
+    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}`,
+    x: `https://twitter.com/intent/tweet?url=${encodeURIComponent(pageUrl)}&text=${encodeURIComponent(shareTitre)}`,
+    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(pageUrl)}`,
+  };
+
+  // PDF paginé : le rendu est découpé sur plusieurs pages A4 au lieu d'être écrasé sur une
+  // seule, et le ratio de l'image est conservé (largeur page, hauteur proportionnelle).
   const handleDownloadPDF = async () => {
     const content = document.querySelector(".actu-print-zone");
     if (!content) return;
-    const canvas = await html2canvas(content, { scale: 2 });
+    const canvas = await html2canvas(content, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
     const imgData = canvas.toDataURL("image/png");
     const pdf = new jsPDF("p", "mm", "a4");
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const ratio = pageWidth / canvas.width;
-    pdf.addImage(imgData, "PNG", 0, 10, pageWidth, canvas.height * ratio);
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    const margin = 10;
+    const imgW = pageW - margin * 2;
+    const imgH = (canvas.height * imgW) / canvas.width;
+    const usableH = pageH - margin * 2;
+
+    let heightLeft = imgH;
+    let position = margin;
+    pdf.addImage(imgData, "PNG", margin, position, imgW, imgH);
+    heightLeft -= usableH;
+    while (heightLeft > 0) {
+      pdf.addPage();
+      position = margin - (imgH - heightLeft);
+      pdf.addImage(imgData, "PNG", margin, position, imgW, imgH);
+      heightLeft -= usableH;
+    }
     pdf.save(`${(actu?.titre || "actualite").slice(0, 50)}.pdf`);
   };
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
-  const SideActions = () => (
-    <div className="hidden lg:flex flex-col gap-3 sticky top-28 ml-6 print:hidden">
-      <button onClick={handleCopyLink} className="text-sm text-gray-600 hover:text-red-600">
-        {copied ? "Lien copié ✅" : "Partager"}
+  // Pastilles réseaux sociaux (libellés texte, sans dépendance d'icônes de marque)
+  const ReseauxSociaux = ({ className = "" }) => (
+    <div className={`flex flex-wrap items-center gap-2 ${className}`}>
+      <a href={liensPartage.whatsapp} target="_blank" rel="noopener noreferrer"
+         className="text-xs px-2.5 py-1 rounded-full bg-green-600 text-white hover:bg-green-700">WhatsApp</a>
+      <a href={liensPartage.facebook} target="_blank" rel="noopener noreferrer"
+         className="text-xs px-2.5 py-1 rounded-full bg-blue-700 text-white hover:bg-blue-800">Facebook</a>
+      <a href={liensPartage.x} target="_blank" rel="noopener noreferrer"
+         className="text-xs px-2.5 py-1 rounded-full bg-gray-900 text-white hover:bg-black">X</a>
+      <a href={liensPartage.linkedin} target="_blank" rel="noopener noreferrer"
+         className="text-xs px-2.5 py-1 rounded-full bg-sky-700 text-white hover:bg-sky-800">LinkedIn</a>
+    </div>
+  );
+
+  const BoutonsAction = ({ stacked = false }) => (
+    <div className={stacked ? "flex flex-col gap-3" : "flex flex-wrap items-center gap-4"}>
+      <button onClick={handleCopyLink} className="text-sm text-gray-600 hover:text-red-700">
+        {copied ? "Lien copié ✅" : "Copier le lien"}
       </button>
-      <button onClick={() => window.print()} className="text-sm text-gray-600 hover:text-red-600">
+      {typeof navigator !== "undefined" && navigator.share && (
+        <button onClick={handleNativeShare} className="text-sm text-gray-600 hover:text-red-700">
+          Partager…
+        </button>
+      )}
+      <button onClick={() => window.print()} className="text-sm text-gray-600 hover:text-red-700">
         Imprimer
       </button>
-      <button onClick={handleDownloadPDF} className="text-sm text-gray-600 hover:text-red-600">
+      <button onClick={handleDownloadPDF} className="text-sm text-gray-600 hover:text-red-700">
         Télécharger PDF
       </button>
-      <button onClick={scrollToTop} className="text-sm text-gray-600 hover:text-red-600">
+    </div>
+  );
+
+  const SideActions = () => (
+    <div className="hidden lg:flex flex-col gap-3 sticky top-28 ml-6 print:hidden">
+      <BoutonsAction stacked />
+      <ReseauxSociaux className="flex-col !items-start" />
+      <button onClick={scrollToTop} className="text-sm text-gray-600 hover:text-red-700 text-left">
         Haut de page ↑
       </button>
     </div>
@@ -153,35 +237,34 @@ export default function ActualiteDetail() {
 
   return (
     <div className="flex flex-col lg:flex-row gap-8 max-w-7xl mx-auto px-4 pt-24 pb-28 relative">
+      <style>{PRINT_CSS}</style>
+
       {/* Colonne principale */}
       <div className="w-full lg:w-3/4">
-        <div className="flex justify-between items-center mb-4 print:hidden">
-          <button onClick={() => navigate(-1)} className="text-sm text-red-600 hover:underline">
-            ← Retour
-          </button>
-          <div className="flex gap-4">
-            <button onClick={handleCopyLink} className="text-sm text-gray-600 hover:text-red-600">
-              {copied ? "Lien copié ✅" : "Partager"}
+        <div className="flex flex-col gap-3 mb-4 print:hidden">
+          <div className="flex justify-between items-center">
+            <button onClick={() => navigate(-1)} className="text-sm text-red-700 hover:underline">
+              ← Retour
             </button>
-            <button onClick={() => window.print()} className="text-sm text-gray-600 hover:text-red-600">
-              Imprimer
-            </button>
-            <button onClick={handleDownloadPDF} className="text-sm text-gray-600 hover:text-red-600">
-              Télécharger PDF
-            </button>
+            <BoutonsAction />
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-500">Partager :</span>
+            <ReseauxSociaux />
           </div>
         </div>
 
         <div className="actu-print-zone">
+          {/* Image affichée en entier (non recadrée) sur un fond neutre */}
           <SmartImg
             raw={mainImgRaw}
             cacheKey={mainKey}
             alt={actu.titre}
-            className="w-full h-64 md:h-80 object-cover rounded-lg shadow mb-6"
+            className="w-full max-h-[70vh] object-contain rounded-lg shadow mb-6 bg-gray-50"
           />
 
           <div className="mb-4">
-            <span className="text-xs font-medium text-red-500 uppercase">
+            <span className="text-xs font-medium text-red-600 uppercase">
               {actu.categorie || "Non classée"}
             </span>
             <p className="text-sm text-gray-500 mt-1">
@@ -239,7 +322,7 @@ export default function ActualiteDetail() {
       {showTopBtn && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-6 right-6 bg-red-600 text-white p-2 rounded-full shadow-lg hover:bg-red-700 z-50 print:hidden"
+          className="fixed bottom-6 right-6 bg-red-700 text-white p-2 rounded-full shadow-lg hover:bg-red-800 z-50 print:hidden"
           title="Remonter en haut"
         >
           ↑

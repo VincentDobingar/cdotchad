@@ -19,6 +19,21 @@ export async function creerNotification(userId, type, message, lien = null) {
   }
 }
 
+// Crée la même notification pour tous les comptes d'administration actifs
+// (admin et superadmin). Comme creerNotification, ne bloque jamais l'appelant.
+export async function notifierAdmins(type, message, lien = null) {
+  try {
+    await pool.query(
+      `INSERT INTO notifications (user_id, type, message, lien)
+       SELECT id, $1, $2, $3 FROM users
+        WHERE role IN ('admin', 'superadmin') AND statut_compte = 'actif'`,
+      [type, message, lien]
+    );
+  } catch (err) {
+    console.error("Erreur notification des administrateurs :", err);
+  }
+}
+
 // GET /notifications : les plus récentes, avec le nombre de non lues
 export const listMesNotifications = async (req, res) => {
   try {

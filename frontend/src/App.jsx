@@ -11,6 +11,8 @@ import RequireRole from "@/routes/RequireRole";
 
 // --- Pages Admin ---
 import AdminLogin from "@/pages/admin/AdminLogin";
+import AdminMotDePasseOublie from "@/pages/admin/MotDePasseOublie";
+import AdminResetPassword from "@/pages/admin/ResetPassword";
 
 // --- Config de routes ---
 import adminRoutes from "@/routes/admin/Index";
@@ -36,6 +38,8 @@ export default function App() {
 
       <Routes>
         <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/mot-de-passe-oublie" element={<AdminMotDePasseOublie />} />
+        <Route path="/admin/reset-password/:token" element={<AdminResetPassword />} />
 
         <Route path="/admin" element={<RequireRole roles={["admin", "superadmin"]} />}>
           <Route element={<AdminLayout />}>

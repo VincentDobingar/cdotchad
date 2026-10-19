@@ -1,6 +1,6 @@
 // 📁 routes/admin.js
 import express from "express";
-import { rateLimit, ipKeyGenerator } from "express-rate-limit";
+import { rateLimit } from "express-rate-limit";
 import { pool } from "../config/db.js";
 
 // 🔐 Middlewares
@@ -12,6 +12,7 @@ import {
   ajouterAdministrateur,
   getAllAdmins,
   deleteAdmin,
+  reinitialiserMotDePasseAdmin,
   getAdminMe,
   forgotPassword,
   resetPassword,
@@ -29,8 +30,7 @@ const loginLimiter = rateLimit({
   limit: 10,                    // 10 tentatives / fenêtre / IP
   standardHeaders: 'draft-7',
   legacyHeaders: false,
-  keyGenerator: ipKeyGenerator, // ✅ important pour IPv6
-  message: { error: "TOO_MANY_LOGIN_ATTEMPTS" },
+  message: { error: "TOO_MANY_LOGIN_ATTEMPTS" }, // clé par défaut = IP (IPv6-safe) ; ipKeyGenerator passé en keyGenerator était inopérant
 });
 
 // ❌ Supprimé: router.use(adminLimiter);  // (ça posait un rate-limit global)
@@ -66,6 +66,8 @@ router.post("/reset-password/:token", resetPassword);
 router.get("/admins", requireRole("admin", "superadmin"), getAllAdmins);
 
 router.post("/admins", requireRole("superadmin"), ajouterAdministrateur);
+
+router.post("/admins/:id/reset-password", requireRole("superadmin"), reinitialiserMotDePasseAdmin);
 
 // Validation légère de l'ID (numérique)
 router.delete("/admins/:id", requireRole("superadmin"), deleteAdmin);

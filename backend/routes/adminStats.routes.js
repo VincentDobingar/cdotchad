@@ -4,6 +4,7 @@ import {
   getAdminStats,
   getCandidaturesParMois,
   getAdminStatsResume,
+  getAnalysePremium,
 } from "../controllers/adminStatsController.js";
 
 const router = express.Router();
@@ -19,5 +20,8 @@ router.get("/candidatures-par-mois", requireRole("admin", "superadmin"), getCand
 
 // Résumé complet (?year=2025&month=03)
 router.get("/resume", requireRole("admin", "superadmin"), getAdminStatsResume);
+
+// Analyse premium des avis de recrutement (?year=2026 ou ?year=toutes)
+router.get("/premium", requireRole("admin", "superadmin"), getAnalysePremium);
 
 export default router;

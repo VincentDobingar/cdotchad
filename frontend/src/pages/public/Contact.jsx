@@ -150,7 +150,7 @@ export default function Contact() {
             </button>
 
             <p className="text-xs text-slate-500">
-              Ce formulaire est protégé par reCAPTCHA. Les conditions de Google s'appliquent.
+              Ce formulaire est protégé contre les robots par reCAPTCHA v3 — une protection invisible : aucune case « Je ne suis pas un robot » n'est à cocher, c'est normal. Les règles de confidentialité et conditions d'utilisation de Google s'appliquent.
             </p>
           </form>
         </section>

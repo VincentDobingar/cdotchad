@@ -4,7 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Loader, Trash2, FileDown, FileText, Eye } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import Dialog from "@/components/ui/dialog";
+import { toast } from "react-toastify";
+import api from "@/utils/api";
 
 export default function AdminMessages() {
   const [messages, setMessages] = useState([]);
@@ -16,15 +17,17 @@ export default function AdminMessages() {
   const [modaleOuverte, setModaleOuverte] = useState(false);
   const messagesParPage = 10;
 
+  // Les messages du formulaire de contact sont servis par /backend/messages (réservé aux admins).
   const fetchMessages = () => {
-    fetch("/cdobackend/api/messages")
-      .then((res) => res.json())
-      .then((data) => {
-        setMessages(data);
+    api
+      .get("/messages")
+      .then(({ data }) => {
+        setMessages(Array.isArray(data) ? data : []);
         setLoading(false);
       })
       .catch((err) => {
         console.error("Erreur chargement messages:", err);
+        toast.error("Impossible de charger les messages.");
         setLoading(false);
       });
   };
@@ -32,16 +35,19 @@ export default function AdminMessages() {
   const supprimerMessage = async (id) => {
     if (!window.confirm("Confirmer la suppression de ce message ?")) return;
     try {
-      await fetch(`/cdobackend/api/messages/${id}`, { method: "DELETE" });
+      await api.delete(`/messages/${id}`);
+      toast.success("Message supprimé");
       fetchMessages();
     } catch (err) {
       console.error("Erreur suppression:", err);
+      toast.error("Suppression impossible.");
     }
   };
 
   const messagesFiltres = messages.filter((m) => {
-    const matchEmail = filtreEmail ? m.email.includes(filtreEmail) : true;
-    const matchDate = filtreDate ? m.date_envoi.startsWith(filtreDate) : true;
+    const email = String(m.email || "").toLowerCase();
+    const matchEmail = filtreEmail ? email.includes(filtreEmail.trim().toLowerCase()) : true;
+    const matchDate = filtreDate ? String(m.date_envoi || "").startsWith(filtreDate) : true;
     return matchEmail && matchDate;
   });
 
@@ -53,7 +59,7 @@ export default function AdminMessages() {
     const rows = messagesFiltres.map((m) => [
       m.nom,
       m.email,
-      m.message.replace(/\n/g, " ").replace(/;/g, ","),
+      String(m.message || "").replace(/\n/g, " ").replace(/;/g, ","),
       new Date(m.date_envoi).toLocaleString(),
     ]);
     const csv = [header, ...rows].map((row) => row.join(";")).join("\n");
@@ -75,7 +81,7 @@ export default function AdminMessages() {
       body: messagesFiltres.map((m) => [
         m.nom,
         m.email,
-        m.message.length > 50 ? m.message.slice(0, 50) + "..." : m.message,
+        String(m.message || "").length > 50 ? String(m.message).slice(0, 50) + "..." : m.message,
         new Date(m.date_envoi).toLocaleString(),
       ]),
       styles: { fontSize: 8 },
@@ -143,7 +149,7 @@ export default function AdminMessages() {
                   <div className="table-cell py-2">
                     {msg.email}
                     <div className="text-xs text-gray-400">
-                      @{msg.email.split("@")[1]}
+                      @{String(msg.email || "").split("@")[1]}
                     </div>
                   </div>
                   <div className="table-cell py-2 max-w-[300px] truncate">{msg.message}</div>
@@ -168,6 +174,12 @@ export default function AdminMessages() {
               ))}
             </div>
 
+            {messagesAffiches.length === 0 && (
+              <p className="py-8 text-center text-gray-500">
+                {messages.length === 0 ? "Aucun message reçu pour le moment." : "Aucun message ne correspond aux filtres."}
+              </p>
+            )}
+
             {totalPages > 1 && (
               <div className="flex justify-center mt-4 gap-2">
                 {[...Array(totalPages).keys()].map((i) => (
@@ -186,26 +198,27 @@ export default function AdminMessages() {
 
         {/* ✅ MODALE DETAIL MESSAGE */}
         {modaleOuverte && messageActif && (
-          <Dialog open={modaleOuverte} onOpenChange={setModaleOuverte}>
-            <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
-              <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
-                <h3 className="text-lg font-semibold mb-2">📨 Message de {messageActif.nom}</h3>
-                <p className="text-sm text-gray-600 mb-1"><strong>Email :</strong> {messageActif.email}</p>
-                <p className="text-sm text-gray-600 mb-1"><strong>Date :</strong> {new Date(messageActif.date_envoi).toLocaleString()}</p>
-                <div className="mt-4 text-sm text-gray-800 whitespace-pre-line border-t pt-3">
-                  {messageActif.message}
-                </div>
-                <div className="mt-4 text-right">
-                  <button
-                    onClick={() => setModaleOuverte(false)}
-                    className="px-4 py-2 bg-red-700 text-white rounded hover:bg-red-800"
-                  >
-                    Fermer
-                  </button>
-                </div>
+          <div
+            className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
+            onClick={() => setModaleOuverte(false)}
+          >
+            <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+              <h3 className="text-lg font-semibold mb-2">📨 Message de {messageActif.nom}</h3>
+              <p className="text-sm text-gray-600 mb-1"><strong>Email :</strong> {messageActif.email}</p>
+              <p className="text-sm text-gray-600 mb-1"><strong>Date :</strong> {new Date(messageActif.date_envoi).toLocaleString()}</p>
+              <div className="mt-4 text-sm text-gray-800 whitespace-pre-line border-t pt-3">
+                {messageActif.message}
+              </div>
+              <div className="mt-4 text-right">
+                <button
+                  onClick={() => setModaleOuverte(false)}
+                  className="px-4 py-2 bg-red-700 text-white rounded hover:bg-red-800"
+                >
+                  Fermer
+                </button>
               </div>
             </div>
-          </Dialog>
+          </div>
         )}
       </CardContent>
     </Card>

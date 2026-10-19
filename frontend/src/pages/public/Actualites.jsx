@@ -4,11 +4,9 @@ import { Link, useSearchParams } from "react-router-dom";
 import api from "@/utils/api";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { toPublicImageUrl } from "@/utils/imgUrl";
 
 const FALLBACK = "/images/default-news.jpg";
 const stripHtml = (s = "") => s.replace(/<[^>]+>/g, "");
-const toTime = (d) => (d ? Number(new Date(d).getTime()) || 0 : 0);
 
 /** Construit une liste d’URL candidates pour une image donnée */
 function buildCandidates(raw, cacheKey) {
@@ -22,7 +20,6 @@ function buildCandidates(raw, cacheKey) {
     try {
       const u = new URL(v);
       const p = u.pathname.replace(/^\/+/, "");
-      // tente backend/uploads puis chemin absolu tel quel
       const up = p.replace(/^api\//i, "").replace(/^backend\//i, "");
       const ups = up.startsWith("uploads/") ? up : `uploads/${up}`;
       const list = [
@@ -52,7 +49,6 @@ function buildCandidates(raw, cacheKey) {
     const asUpload = `uploads/${v.replace(/^images\//i, "")}`;
     cands.push(`${origin}/backend/${asUpload}`, `${origin}/${asUpload}`);
   } else {
-    // inconnu → tente uploads puis images
     const asUpload = `uploads/${v}`;
     cands.push(`${origin}/backend/${asUpload}`, `${origin}/${asUpload}`, `${origin}/images/${v}`);
   }
@@ -88,18 +84,18 @@ export default function Actualites() {
   const [actualites, setActualites] = useState([]);
   const [page, setPage] = useState(parseInt(searchParams.get("page")) || 1);
   const [search, setSearch] = useState(searchParams.get("search") || "");
-  const [sortOrder, setSortOrder] = useState(searchParams.get("sort") || "desc");
-  const [sortKey, setSortKey] = useState(searchParams.get("sort_by") || "date_publication");
-  const [month, setMonth] = useState(searchParams.get("month") || "");
   const [year, setYear] = useState(searchParams.get("year") || "");
   const [categorie, setCategorie] = useState(searchParams.get("categorie") || "");
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(null);
   const [anneesDispo, setAnneesDispo] = useState([]);
+  const [categoriesDispo, setCategoriesDispo] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const limit = 6;
 
+  // Le filtrage, le tri (par date, du plus récent au plus ancien) et la pagination
+  // sont désormais faits côté serveur : on affiche directement ce qu'il renvoie.
   useEffect(() => {
     const load = async () => {
       try {
@@ -108,10 +104,7 @@ export default function Actualites() {
           params: {
             page,
             limit,
-            search,
-            sort: sortOrder,
-            sort_by: sortKey,
-            ...(month && { month }),
+            ...(search && { search }),
             ...(year && { year }),
             ...(categorie && { categorie }),
           },
@@ -136,22 +129,14 @@ export default function Actualites() {
           updated_at: n.updated_at ?? n.modified_at ?? null,
         }));
 
-        const dir = sortOrder === "asc" ? 1 : -1;
-        const sorted = [...normalized].sort((a, b) => {
-          if (sortKey === "titre") {
-            return a.titre.localeCompare(b.titre, "fr", { sensitivity: "base" }) * dir;
-          }
-          return (toTime(a.date_publication) - toTime(b.date_publication)) * dir;
-        });
-
-        setActualites(sorted);
+        setActualites(normalized);
 
         const total =
           Number(raw?.total) ||
           Number(raw?.count) ||
           (Number(raw?.totalPages) && Number(raw?.limit || limit)
             ? Number(raw.totalPages) * Number(raw.limit || limit)
-            : sorted.length);
+            : normalized.length);
 
         setTotalCount(total);
         const tp =
@@ -168,20 +153,29 @@ export default function Actualites() {
     };
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, search, sortOrder, sortKey, month, year, categorie]);
+  }, [page, search, year, categorie]);
 
+  // Années et catégories réellement présentes en base (plus de liste figée).
   useEffect(() => {
     api
       .get("/actualites/annees")
       .then((res) => {
         const arr = Array.isArray(res.data) ? res.data : [];
-        setAnneesDispo(arr.length ? arr : [2025, 2024, 2023]);
+        setAnneesDispo(arr);
       })
-      .catch(() => setAnneesDispo([2025, 2024, 2023]));
+      .catch(() => setAnneesDispo([]));
+
+    api
+      .get("/actualites/categories")
+      .then((res) => {
+        const arr = Array.isArray(res.data) ? res.data : [];
+        setCategoriesDispo(arr);
+      })
+      .catch(() => setCategoriesDispo([]));
   }, []);
 
-  const syncURL = (nextPage = page, nextSearch = search, nextSort = sortOrder, nextSortKey = sortKey, nextMonth = month, nextYear = year, nextCat = categorie) => {
-    const params = { page: nextPage, search: nextSearch, sort: nextSort, sort_by: nextSortKey, month: nextMonth, year: nextYear, categorie: nextCat };
+  const syncURL = (nextPage = page, nextSearch = search, nextYear = year, nextCat = categorie) => {
+    const params = { page: nextPage, search: nextSearch, year: nextYear, categorie: nextCat };
     Object.keys(params).forEach((k) => (params[k] === "" || params[k] == null) && delete params[k]);
     setSearchParams(params);
   };
@@ -211,9 +205,9 @@ export default function Actualites() {
       ) : (
         <>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between mb-4">
-            <h1 className="text-3xl font-bold text-red-600">Actualités</h1>
+            <h1 className="text-3xl font-bold text-red-700">Actualités</h1>
             <p className="text-sm text-gray-600">
-              {totalCount == null ? "" : `${totalCount} actualit\u00e9${totalCount > 1 ? "s" : ""}`}
+              {totalCount == null ? "" : `${totalCount} actualité${totalCount > 1 ? "s" : ""}`}
             </p>
           </div>
 
@@ -223,7 +217,7 @@ export default function Actualites() {
             </button>
           </div>
 
-          {/* Recherche + Filtres + Tri */}
+          {/* Recherche + catégorie + année (filtres appliqués côté serveur) */}
           <form onSubmit={handleSearch} className="mb-6 flex flex-col md:flex-row flex-wrap gap-4 md:items-center">
             <input
               type="text"
@@ -233,45 +227,18 @@ export default function Actualites() {
               className="border p-2 rounded w-full md:w-1/3"
             />
 
-            <div className="flex gap-2">
-              <select
-                value={sortKey}
-                onChange={(e) => {
-                  setSortKey(e.target.value);
-                  setPage(1);
-                  syncURL(1, search, sortOrder, e.target.value);
-                }}
-                className="border p-2 rounded text-sm md:w-48"
-              >
-                <option value="date_publication">Tri : date de publication</option>
-                <option value="titre">Tri : titre</option>
-              </select>
-              <select
-                value={sortOrder}
-                onChange={(e) => {
-                  setSortOrder(e.target.value);
-                  setPage(1);
-                  syncURL(1, search, e.target.value, sortKey);
-                }}
-                className="border p-2 rounded text-sm md:w-40"
-              >
-                <option value="desc">Ordre : décroissant</option>
-                <option value="asc">Ordre : croissant</option>
-              </select>
-            </div>
-
             <select
-              value={month}
+              value={categorie}
               onChange={(e) => {
-                setMonth(e.target.value);
+                setCategorie(e.target.value);
                 setPage(1);
-                syncURL(1, search, sortOrder, sortKey, e.target.value, year, categorie);
+                syncURL(1, search, year, e.target.value);
               }}
-              className="border p-2 rounded text-sm md:w-28"
+              className="border p-2 rounded text-sm md:w-56"
             >
-              <option value="">Mois</option>
-              {[...Array(12)].map((_, i) => (
-                <option key={i + 1} value={i + 1}>{i + 1}</option>
+              <option value="">Toutes les catégories</option>
+              {categoriesDispo.map((c) => (
+                <option key={c} value={c}>{c}</option>
               ))}
             </select>
 
@@ -280,9 +247,9 @@ export default function Actualites() {
               onChange={(e) => {
                 setYear(e.target.value);
                 setPage(1);
-                syncURL(1, search, sortOrder, sortKey, month, e.target.value, categorie);
+                syncURL(1, search, e.target.value, categorie);
               }}
-              className="border p-2 rounded text-sm md:w-28"
+              className="border p-2 rounded text-sm md:w-32"
             >
               <option value="">Année</option>
               {anneesDispo.map((y) => (
@@ -290,24 +257,6 @@ export default function Actualites() {
               ))}
             </select>
 
-            <select
-              value={categorie}
-              onChange={(e) => {
-                setCategorie(e.target.value);
-                setPage(1);
-                syncURL(1, search, sortOrder, sortKey, month, year, e.target.value);
-              }}
-              className="border p-2 rounded text-sm md:w-48"
-            >
-              <option value="">Toutes les catégories</option>
-              <option value="Annonce">Annonce</option>
-              <option value="Événement">Événement</option>
-              <option value="Projet">Projet</option>
-            </select>
-
-            <button type="submit" className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
-              Rechercher
-            </button>
           </form>
 
           {/* Liste */}
@@ -324,7 +273,7 @@ export default function Actualites() {
                   alt={actu.titre}
                   className="h-40 w-full object-cover rounded mb-3"
                 />
-                <span className="text-xs text-red-500 font-semibold uppercase mb-1">
+                <span className="text-xs text-red-600 font-semibold uppercase mb-1">
                   {actu.categorie || "Non classée"}
                 </span>
                 <h3 className="font-bold text-base mb-1 text-gray-800">{actu.titre}</h3>
@@ -345,8 +294,8 @@ export default function Actualites() {
                     <span>{stripHtml(actu.contenu).slice(0, 150)}…</span>
                   )}
                 </div>
-                <Link to={`/actualites/${actu.id}`} className="text-red-600 text-sm font-medium hover:underline mt-auto">
-                  Lire la suite →
+                <Link to={`/actualites/${actu.id}`} className="text-red-700 text-sm font-medium hover:underline mt-auto">
+                  Voir le détail →
                 </Link>
               </div>
             ))}

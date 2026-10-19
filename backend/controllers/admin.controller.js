@@ -285,6 +285,9 @@ export async function ajouterAdministrateur(req, res) {
     if (!email || !password) {
       return res.status(400).json({ message: "Email et mot de passe requis." });
     }
+    if (String(password).length < 8) {
+      return res.status(400).json({ message: "Le mot de passe doit contenir au moins 8 caractères." });
+    }
     if (!["admin", "superadmin"].includes(role)) {
       return res.status(400).json({ message: "Rôle invalide (admin ou superadmin uniquement)." });
     }
@@ -305,6 +308,37 @@ export async function ajouterAdministrateur(req, res) {
     return res.status(201).json({ admin: rows[0] });
   } catch (err) {
     console.error("❌ ajouterAdministrateur:", err);
+    return res.status(500).json({ message: "Erreur serveur." });
+  }
+}
+
+// POST /backend/admin/admins/:id/reset-password  { password }
+// Un superadmin fixe un nouveau mot de passe pour un autre compte d'administration.
+// Son propre mot de passe se change avec /change-password (qui exige l'ancien).
+export async function reinitialiserMotDePasseAdmin(req, res) {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ message: "ID invalide." });
+
+    if (req.admin?.id === id) {
+      return res.status(400).json({ message: "Pour votre propre compte, utilisez le changement de mot de passe." });
+    }
+
+    const { password } = req.body || {};
+    if (!password || String(password).length < 8) {
+      return res.status(400).json({ message: "Le nouveau mot de passe doit contenir au moins 8 caractères." });
+    }
+
+    const passwordHash = await bcrypt.hash(String(password), 10);
+    const { rowCount } = await pool.query(
+      "UPDATE users SET password_hash = $1 WHERE id = $2 AND role IN ('admin', 'superadmin')",
+      [passwordHash, id]
+    );
+
+    if (!rowCount) return res.status(404).json({ message: "Compte administrateur introuvable." });
+    return res.json({ message: "Mot de passe réinitialisé." });
+  } catch (err) {
+    console.error("❌ reinitialiserMotDePasseAdmin:", err);
     return res.status(500).json({ message: "Erreur serveur." });
   }
 }

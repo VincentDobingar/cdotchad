@@ -6,6 +6,7 @@ import { pool } from "../config/db.js";
 import { toOffrePayload, validateOffre } from "./offres.controller.js";
 import { supprimerFichierAvis } from "../middlewares/uploadAvis.js";
 import { supprimerLogo } from "../middlewares/uploadLogoPartenaire.js";
+import { notifierAdmins } from "./notifications.controller.js";
 
 // La date de publication d'un avis est celle de sa soumission (ou de sa dernière modification).
 const aujourdhui = () => new Date().toISOString().slice(0, 10);
@@ -174,6 +175,12 @@ export const soumettreAvis = async (req, res) => {
       ]
     );
 
+    await notifierAdmins(
+      "avis_a_moderer",
+      `${partenaire.nom} a soumis l'avis de recrutement « ${rows[0].titre} ». Il attend votre validation.`,
+      "/admin/moderation"
+    );
+
     res.status(201).json({
       message: "Avis soumis. Il sera publié après validation par l'administration.",
       avis: rows[0],
@@ -238,6 +245,12 @@ export const modifierMonAvis = async (req, res) => {
 
     // L'ancienne pièce n'est plus référencée : on la supprime seulement si elle a été remplacée.
     if (req.file && actuels[0].document_url) supprimerFichierAvis(actuels[0].document_url);
+
+    await notifierAdmins(
+      "avis_a_moderer",
+      `${partenaire.nom} a corrigé l'avis de recrutement « ${rows[0].titre} ». Il attend de nouveau votre validation.`,
+      "/admin/moderation"
+    );
 
     res.json({ message: "Avis mis à jour. Il est de nouveau soumis à validation.", avis: rows[0] });
   } catch (err) {

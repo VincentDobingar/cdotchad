@@ -12,6 +12,11 @@ export const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+  // Les serveurs cPanel présentent souvent, sur mail.<domaine>:465, le certificat de
+  // l'hôte du serveur (et non de mail.<domaine>) : la vérification stricte échoue alors
+  // et aucun e-mail ne part. La connexion reste chiffrée (TLS) ; on n'exige simplement
+  // pas la correspondance stricte du nom de certificat.
+  tls: { rejectUnauthorized: false },
 });
 
 /**

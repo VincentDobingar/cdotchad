@@ -13,7 +13,11 @@ import { pool } from "./config/db.js"; // optionnel, pour un petit test DB
 dotenv.config();
 
 const app = express();
-app.set("trust proxy", true);
+// Ne faire confiance qu'au proxy de l'hébergement (1 saut) : sinon X-Forwarded-For
+// est falsifiable et la limitation par IP devient contournable.
+app.set("trust proxy", 1);
+// Ne pas annoncer « Express » dans les réponses.
+app.disable("x-powered-by");
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -31,7 +35,7 @@ app.get(`${BASE}/ping`, (_req, res) => {
 app.head(`${BASE}/ping`, (_req, res) => res.status(200).end());
 
 app.get(`${BASE}/health`, (_req, res) =>
-  res.json({ status: "ok", node: process.version, when: new Date().toISOString() })
+  res.json({ status: "ok", when: new Date().toISOString() })
 );
 
 /* ----------------------- Sécurité & perfs ------------------------- */
@@ -162,7 +166,9 @@ app.use((req, res, next) => {
 app.use((err, req, res, _next) => {
   console.error("🔥 Erreur API:", err);
   const code = err.status || err.statusCode || 500;
-  res.status(code).json({ message: err.message || "Erreur serveur" });
+  // En production, ne pas divulguer le détail interne des erreurs 500 au client.
+  const detailVisible = process.env.NODE_ENV !== "production" || code < 500;
+  res.status(code).json({ message: detailVisible ? err.message || "Erreur serveur" : "Erreur serveur" });
 });
 
 /* ---------------------- Petit test PostgreSQL --------------------- */

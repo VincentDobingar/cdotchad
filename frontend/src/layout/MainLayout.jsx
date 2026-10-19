@@ -14,7 +14,7 @@ export default function MainLayout() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {!isAdminRoute && <Navbar />}
+      {!isAdminRoute && !isEspaceRoute && <Navbar />}
 
       <main className="flex-grow">
         <Outlet />

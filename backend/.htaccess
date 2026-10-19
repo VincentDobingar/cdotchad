@@ -35,3 +35,13 @@ SetEnv UNDICI_NO_WASM 1
   RewriteCond %{REQUEST_FILENAME} -f
   RewriteRule !^(uploads|public)/ - [F,L]
 </IfModule>
+
+# ---------------------------------------------------------------------------
+# Blocage fiable du service direct des fichiers source du backend.
+# Les regles de reecriture ci-dessus ne sont pas honorees partout (LiteSpeed) ;
+# cette regle d'autorisation, elle, l'est. Les routes de l'API ne sont pas des
+# fichiers, elles ne sont donc pas concernees.
+# ---------------------------------------------------------------------------
+<FilesMatch "\.(js|cjs|mjs|ts|jsx|json|sql|sh|md|txt|log|env|map|lock|ya?ml|cfg|ini|bak)$">
+  Require all denied
+</FilesMatch>

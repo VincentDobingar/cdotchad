@@ -73,12 +73,12 @@ export default function HomeObjectifs() {
           ))}
         </div>
         <div className="mt-10">
-          <a
-            href="/objectifs"
+          <Link
+            to="/objectifs"
             className="inline-block bg-red-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-red-700 transition"
           >
-            Voir plus d'Objectifs
-          </a>
+            Voir plus d'objectifs
+          </Link>
         </div>
       </div>
     </section>
