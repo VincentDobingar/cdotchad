@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { NavLink, Link, useLocation, useNavigate } from "react-router-dom";
-import logo from "/images/logo-cdo-navbar.png";
+import logo from "/images/logo-cdo-navbar-v2.png";
 import { useAuth } from "@/context/AuthContext";
 
 // Menu

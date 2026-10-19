@@ -49,7 +49,7 @@ export default function EspaceLayout({ children }) {
           des rubriques publiques (la barre de navigation du site est masquée ici). */}
       <div className={`fixed top-0 inset-x-0 z-50 h-16 ${accent.barBg} text-white flex items-center justify-between px-4 md:px-6 shadow-md`}>
         <Link to="/" className="flex items-center">
-          <img src="/images/logo-cdo-navbar.png" alt="CDO Consulting" className="h-11 w-auto" />
+          <img src="/images/logo-cdo-navbar-v2.png" alt="CDO Consulting" className="h-11 w-auto" />
         </Link>
         <Link to="/" className="inline-flex items-center gap-1.5 text-sm font-medium text-white/90 hover:text-white">
           <ArrowLeft className="w-4 h-4" /> Retour au site
