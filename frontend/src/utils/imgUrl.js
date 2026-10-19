@@ -6,9 +6,13 @@ export function toPublicImageUrl(raw, cacheKey) {
 
   // Si absolue → remap /api/uploads OU /uploads → /backend/uploads et force l'origin courant
   if (/^https?:\/\//i.test(v)) {
-    v = v.replace(/\/(?:api\/)?uploads/gi, "/backend/uploads");
     try {
       const u = new URL(v);
+      // Normalise le chemin : /api/uploads, /uploads ou /backend/uploads -> /backend/uploads
+      // (sans doubler le préfixe quand l'API renvoie déjà /backend/uploads/...)
+      let p = u.pathname.replace(/^\/(?:api|backend)\//i, "/");
+      if (/^\/uploads\//i.test(p)) p = `/backend${p}`;
+      u.pathname = p;
       const o = new URL(window.location.origin);
       u.protocol = o.protocol;
       u.host = o.host; // évite le cross-origin bloqué par CSP
