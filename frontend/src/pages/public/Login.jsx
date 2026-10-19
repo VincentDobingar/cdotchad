@@ -128,6 +128,12 @@ const Login = () => {
             <p>
               Partenaire sans mot de passe ? Contactez l'équipe CDO pour recevoir vos accès.
             </p>
+            <p>
+              Administrateur ?{" "}
+              <Link to="/admin/login" className="font-medium text-red-700 hover:underline">
+                Connexion à l'espace d'administration
+              </Link>
+            </p>
           </div>
         </div>
       </main>
