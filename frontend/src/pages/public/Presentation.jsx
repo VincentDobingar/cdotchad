@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
+import PageHero from "@/components/ui/PageHero";
 
 const teamMembers = [
   {
@@ -43,24 +44,20 @@ export default function Presentation() {
     const member = teamMembers[index];
     return (
       <motion.div
-        className="flex flex-col items-center bg-white rounded-xl shadow-md p-4 cursor-pointer w-64 max-w-full z-10"
-        whileHover={{ scale: 1.03 }}
+        className="flex flex-col items-center bg-white border border-sable rounded-2xl shadow-sm hover:shadow-xl p-5 cursor-pointer w-64 max-w-full z-10 transition-shadow"
+        whileHover={{ scale: 1.02 }}
         onClick={() => setActiveMember(activeMember === index ? null : index)}
       >
-        <img
-          src={member.image}
-          alt={member.name}
-          className="w-32 h-32 rounded-full object-cover mb-3 shadow"
-        />
-        <p className="font-semibold text-gray-800 text-center">{member.name}</p>
-        <p className="text-sm text-red-700 text-center">{member.role}</p>
+        <img src={member.image} alt={member.name} className="w-28 h-28 rounded-full object-cover mb-3 ring-2 ring-sable" />
+        <p className="font-display text-lg text-encre text-center leading-tight">{member.name}</p>
+        <p className="text-sm text-rouge text-center mt-1">{member.role}</p>
         {member.lien && (
           <a
             href={member.lien}
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="mt-1 text-xs font-medium text-red-600 hover:underline"
+            className="mt-1 text-xs font-medium text-rouge hover:text-rougeprofond hover:underline"
           >
             {member.lien.replace(/^https?:\/\//, "")}
           </a>
@@ -69,7 +66,7 @@ export default function Presentation() {
         <AnimatePresence>
           {activeMember === index && (
             <motion.div
-              className="mt-3 text-sm text-gray-600 text-center overflow-hidden"
+              className="mt-3 text-sm text-graphite text-center overflow-hidden"
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
@@ -84,81 +81,88 @@ export default function Presentation() {
   };
 
   return (
-    <main className="text-gray-800">
-      <div></div>
+    <main className="bg-ivoire text-encre">
+      <PageHero
+        label="Le cabinet"
+        title="Qui sommes-nous ?"
+        intro="CDO Tchad révèle les talents tchadiens et les propulse vers des opportunités concrètes — RH, emploi, formation et finance."
+      />
+
       {/* SECTION: Présentation */}
-      <section className="container mx-auto px-4 flex flex-col-reverse md:flex-row items-center gap-10 mb-16">
-        {/* Texte à gauche */}
+      <section className="max-w-6xl mx-auto px-6 py-16 md:py-20 flex flex-col-reverse md:flex-row items-center gap-12">
         <motion.div
           className="md:w-1/2"
-          initial={{ x: -100, opacity: 0 }}
+          initial={{ x: -60, opacity: 0 }}
           whileInView={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
           <div>
-            <h1 className="text-4xl font-bold mb-6 text-red-700">Qui sommes-nous ?</h1>
-            <p className="text-lg text-gray-700 mb-4">
+            <p className="text-lg text-graphite leading-relaxed mb-4">
               CDO TCHAD est une initiative innovante qui vise à transformer le paysage de l'emploi au Tchad en mettant en
               relation les jeunes talents avec les entreprises, en développant les compétences et en favorisant une
               économie inclusive et durable.
             </p>
-            <p className="text-lg text-gray-700 mb-4">
-            C'est une plateforme stratégique dédiée à la valorisation des
-            talents, à l'innovation en ressources humaines et à l’amélioration de
-            l’employabilité au Tchad.<br />
-            Un cabinet de Consultance spécialisé dans l’ingénierie informatique, la communication digitale et stratégie marketing,
-            la Représentation d’affaires, les prestations de services divers en ressources humaines ainsi que la finance.<br />
-            Nous accompagnons les entreprises dans la recherche de performance durable à travers des solutions sur mesure, adaptées à leurs enjeux
-            organisationnels, opérationnels et humains.
-          </p>
-            <blockquote className="italic text-gray-600 mt-4 border-l-4 border-red-500 pl-4">
-              « Notre engagement est de révéler les talents tchadiens et de les propulser vers des opportunités concrètes. <br />
-              Notre mission est d’apporter une expertise ciblée pour renforcer les capacités des organisations et faciliter l’insertion des compétences
-              locales dans un écosystème professionnel en constante évolution. »
+            <p className="text-lg text-graphite leading-relaxed mb-4">
+              C'est une plateforme stratégique dédiée à la valorisation des talents, à l'innovation en ressources humaines
+              et à l’amélioration de l’employabilité au Tchad.
+              <br />
+              Un cabinet de consultance spécialisé dans l’ingénierie informatique, la communication digitale et la
+              stratégie marketing, la représentation d’affaires, les prestations de services divers en ressources humaines
+              ainsi que la finance.
+              <br />
+              Nous accompagnons les entreprises dans la recherche de performance durable à travers des solutions sur
+              mesure, adaptées à leurs enjeux organisationnels, opérationnels et humains.
+            </p>
+            <blockquote className="font-display italic text-xl text-encre mt-6 border-l-2 border-rouge pl-5 leading-relaxed">
+              « Notre engagement est de révéler les talents tchadiens et de les propulser vers des opportunités concrètes.
+              Notre mission est d’apporter une expertise ciblée pour renforcer les capacités des organisations et faciliter
+              l’insertion des compétences locales dans un écosystème professionnel en constante évolution. »
             </blockquote>
-        </div>
+          </div>
         </motion.div>
 
-        {/* Image à droite */}
         <motion.div
           className="md:w-1/2"
-          initial={{ x: 100, opacity: 0 }}
+          initial={{ x: 60, opacity: 0 }}
           whileInView={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <img
-            src="/images/dg-cdotchad.jpg?v=4"
-            alt="Équipe CDOTCHAD"
-            className="rounded-2xl shadow-xl w-full"
-          />
+          <img src="/images/dg-cdotchad.jpg?v=4" alt="Équipe CDOTCHAD" className="rounded-2xl shadow-xl w-full" />
         </motion.div>
       </section>
 
       {/* SECTION: Notre mission */}
-      <section className="bg-gray-100 py-12 px-4">
+      <section className="bg-white border-y border-sable py-16 md:py-20 px-6">
         <motion.div
-          className="max-w-4xl mx-auto text-center"
-          initial={{ opacity: 0, y: 50 }}
+          className="max-w-3xl mx-auto text-center"
+          initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-3xl font-bold text-red-700 mb-4">Notre mission</h2>
-          <p className="text-lg text-gray-700">
-            Notre mission est de promouvoir l’employabilité, l’innovation RH et de créer des ponts solides entre les
-            talents tchadiens et les opportunités locales et internationales.
+          <span className="inline-flex items-center gap-2.5 text-sm font-medium text-rouge">
+            <span className="h-px w-6 bg-rouge/60" aria-hidden="true" />
+            Notre mission
+            <span className="h-px w-6 bg-rouge/60" aria-hidden="true" />
+          </span>
+          <h2 className="mt-3 font-display text-3xl md:text-4xl text-encre mb-5">
+            Un partenaire de choix pour les talents et les organisations
+          </h2>
+          <p className="text-lg text-graphite leading-relaxed mb-3">
+            Promouvoir l’employabilité, l’innovation RH et créer des ponts solides entre les talents tchadiens et les
+            opportunités locales et internationales.
           </p>
-          <p className="text-lg text-gray-700">
-            Elle consiste à nous positionner comme un partenaire de choix auprès des entreprises, organisations et de particuliers afin de leur fournir les services de qualité
-            qu’il leur faut pour atteindre leurs objectifs socio-économiques.
+          <p className="text-lg text-graphite leading-relaxed">
+            Nous nous positionnons comme un partenaire de choix auprès des entreprises, organisations et particuliers afin
+            de leur fournir les services de qualité qu’il leur faut pour atteindre leurs objectifs socio-économiques.
           </p>
         </motion.div>
       </section>
 
       {/* SECTION: Nos valeurs */}
-      <section className="py-12 px-4">
+      <section className="py-16 md:py-20 px-6">
         <motion.div
           className="max-w-6xl mx-auto text-center"
           initial={{ opacity: 0 }}
@@ -166,8 +170,8 @@ export default function Presentation() {
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-3xl font-bold text-red-700 mb-6">Nos valeurs</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          <h2 className="font-display text-3xl md:text-4xl text-encre mb-8">Nos valeurs</h2>
+          <div className="flex flex-wrap justify-center gap-3">
             {[
               "Innovation",
               "Transparence",
@@ -181,53 +185,44 @@ export default function Presentation() {
               "Efficacité",
               "Fidélité",
             ].map((valeur, i) => (
-              <motion.div
+              <motion.span
                 key={i}
-                className="bg-white shadow-md rounded-xl p-6 border"
-                whileHover={{ scale: 1.05 }}
+                className="inline-flex items-center rounded-full bg-white border border-sable px-5 py-2.5 text-base font-medium text-encre shadow-sm hover:border-rouge hover:text-rouge transition-colors"
+                whileHover={{ y: -2 }}
                 transition={{ type: "spring", stiffness: 300 }}
               >
-                <p className="text-lg font-semibold text-gray-800">{valeur}</p>
-              </motion.div>
+                {valeur}
+              </motion.span>
             ))}
           </div>
         </motion.div>
       </section>
 
-      {/* SECTION: Notre équipe */}
-      <section className="bg-gray-100 py-12 px-4">
+      {/* SECTION: Notre équipe (organigramme) */}
+      <section className="bg-white border-t border-sable py-16 md:py-20 px-6">
         <motion.div
           className="max-w-6xl mx-auto text-center"
-          initial={{ opacity: 0, y: 50 }}
+          initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-3xl font-bold text-red-700 mb-4">Notre équipe</h2>
-          <p className="text-lg text-gray-700 mb-10">
+          <h2 className="font-display text-3xl md:text-4xl text-encre mb-3">Notre équipe</h2>
+          <p className="text-lg text-graphite mb-12 max-w-2xl mx-auto">
             Une équipe passionnée et engagée, composée de professionnels aux parcours variés, unis par la même vision.
           </p>
 
-          {/* Organigramme vertical : hiérarchie du haut vers le bas (#22).
-              Niveau 1 : Direction générale — Niveau 2 : associés & partenaires — Niveau 3 : équipe technique.
-              Chaque carte se déplie au clic pour révéler la bio. */}
           <div className="flex flex-col items-center">
             <Carte index={0} />
-
-            {/* connecteur vertical */}
-            <div className="w-px h-8 bg-red-300" aria-hidden="true" />
-            <p className="text-xs uppercase tracking-wider text-gray-400 mb-3">Associés & partenaires</p>
-
+            <div className="w-px h-8 bg-sablefonce" aria-hidden="true" />
+            <p className="text-sm font-medium tracking-wide text-graphite mb-3">Associés & partenaires</p>
             <div className="flex flex-wrap justify-center gap-6">
               <Carte index={1} />
               <Carte index={2} />
               <Carte index={3} />
             </div>
-
-            {/* connecteur vertical */}
-            <div className="w-px h-8 bg-red-300 mt-2" aria-hidden="true" />
-            <p className="text-xs uppercase tracking-wider text-gray-400 mb-3">Équipe technique</p>
-
+            <div className="w-px h-8 bg-sablefonce mt-2" aria-hidden="true" />
+            <p className="text-sm font-medium tracking-wide text-graphite mb-3">Équipe technique</p>
             <Carte index={4} />
           </div>
         </motion.div>

@@ -3,7 +3,7 @@ import { useState } from "react";
 import Modal from "react-modal";
 import { motion } from "framer-motion";
 import { toPublicImageUrl } from "@/utils/imgUrl";
-import { Link } from "react-router-dom";
+import SectionHeading from "@/components/ui/SectionHeading";
 
 const FALLBACK = "/images/default-gallery.jpg"; // si ce fichier n'existe pas, mets /images/default-news.jpg
 
@@ -49,29 +49,43 @@ export default function HomeGalerie() {
   };
 
   return (
-    <section className="py-24 bg-white" id="galerie">
-      <div className="container mx-auto px-4 text-center">
-        <h2 className="text-4xl font-bold text-red-600 mb-10">Galerie</h2>
+    <section className="py-20 md:py-28 bg-white" id="galerie">
+      <div className="max-w-6xl mx-auto px-6">
+        <SectionHeading
+          label="En images"
+          title="Nos moments forts"
+          intro="Formations, missions de terrain et temps d’échange qui rythment la vie du cabinet."
+          to="/galerie"
+        />
 
-        <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
+        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {images.map((raw, i) => {
             const src = normalizeSrc(raw, i); // i = petite clé stable en guise de cache-buster local
+            // La première image occupe une place plus grande
+            const span = i === 0 ? "sm:col-span-2 lg:row-span-2 lg:col-span-1" : "";
             return (
-              <motion.img
+              <button
                 key={i}
-                src={src}
-                alt={`CDO Image ${i + 1}`}
-                title="Cliquer pour agrandir"
-                loading="lazy"
-                decoding="async"
+                type="button"
                 onClick={() => openModal(src)}
-                onError={(e) => {
-                  e.currentTarget.onerror = null;
-                  e.currentTarget.src = FALLBACK;
-                }}
-                whileHover={{ scale: 1.05 }}
-                className="cursor-pointer rounded-lg shadow-lg object-cover w-full h-64 transition duration-300"
-              />
+                title="Cliquer pour agrandir"
+                className={`group relative overflow-hidden rounded-2xl bg-sable ${span}`}
+              >
+                <motion.img
+                  src={src}
+                  alt={`CDO – moment ${i + 1}`}
+                  loading="lazy"
+                  decoding="async"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = FALLBACK;
+                  }}
+                  whileHover={{ scale: 1.06 }}
+                  transition={{ duration: 0.5 }}
+                  className="h-64 w-full object-cover"
+                />
+                <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-encre/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              </button>
             );
           })}
         </div>
@@ -82,12 +96,12 @@ export default function HomeGalerie() {
           onRequestClose={closeModal}
           contentLabel="Image agrandie"
           className="max-w-3xl mx-auto mt-24 outline-none"
-          overlayClassName="fixed inset-0 bg-black/80 flex items-center justify-center px-4"
+          overlayClassName="fixed inset-0 bg-encre/85 flex items-center justify-center px-4 z-[1000]"
         >
           <div className="relative">
             <button
               onClick={closeModal}
-              className="absolute top-2 right-2 bg-white p-1 rounded-full shadow hover:bg-gray-200"
+              className="absolute top-2 right-2 bg-white p-1.5 rounded-full shadow hover:bg-sable transition"
               aria-label="Fermer la prévisualisation"
             >
               ✕
@@ -95,7 +109,7 @@ export default function HomeGalerie() {
             <img
               src={selectedImage || FALLBACK}
               alt="Aperçu"
-              className="rounded-xl max-h-[80vh] w-auto mx-auto"
+              className="rounded-2xl max-h-[80vh] w-auto mx-auto shadow-2xl"
               onError={(e) => {
                 e.currentTarget.onerror = null;
                 e.currentTarget.src = FALLBACK;
@@ -103,15 +117,6 @@ export default function HomeGalerie() {
             />
           </div>
         </Modal>
-
-        <div className="mt-10">
-          <Link
-            to="/galerie"
-            className="inline-block bg-red-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-red-700 transition"
-          >
-            Voir toute la galerie
-          </Link>
-        </div>
       </div>
     </section>
   );

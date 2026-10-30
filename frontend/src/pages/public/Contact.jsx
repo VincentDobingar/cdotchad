@@ -10,7 +10,7 @@ const COORDONNEES = [
 ];
 
 const champ =
-  "w-full border border-slate-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-red-600";
+  "w-full border border-sable rounded-xl px-3.5 py-2.5 text-encre placeholder:text-graphite/50 focus:outline-none focus:ring-2 focus:ring-rouge/30 focus:border-rouge transition";
 
 export default function Contact() {
   const form = useRef();
@@ -75,24 +75,28 @@ export default function Contact() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 pt-24 pb-16 px-4">
+    <div className="min-h-screen bg-ivoire pt-24 pb-16 px-6">
       <div className="max-w-6xl mx-auto grid gap-8 lg:grid-cols-5">
         {/* Coordonnées */}
-        <aside className="lg:col-span-2 bg-gradient-to-br from-red-900 via-red-800 to-red-700 text-white rounded-2xl p-8 shadow-lg">
-          <p className="text-sm uppercase tracking-[0.2em] text-red-200">Contact</p>
-          <h1 className="mt-3 text-3xl font-bold leading-tight">Parlons de votre projet</h1>
-          <p className="mt-3 text-red-100">
+        <aside className="relative overflow-hidden lg:col-span-2 bg-gradient-to-br from-encre via-encre to-rougeprofond text-white rounded-2xl p-8 shadow-lg">
+          <div className="pointer-events-none absolute -top-16 -right-16 h-56 w-56 rounded-full bg-rouge/20 blur-3xl" />
+          <p className="relative inline-flex items-center gap-2.5 text-sm font-medium text-white/80">
+            <span className="h-px w-8 bg-rouge" aria-hidden="true" />
+            Contact
+          </p>
+          <h1 className="relative mt-4 font-display text-3xl md:text-4xl leading-tight">Parlons de votre projet</h1>
+          <p className="relative mt-3 text-white/80 leading-relaxed">
             Une question sur une offre, une candidature ou un partenariat ? Écrivez-nous, l'équipe CDO vous répond.
           </p>
 
-          <ul className="mt-8 space-y-6">
+          <ul className="relative mt-8 space-y-6">
             {COORDONNEES.map(({ icone: Icone, titre, valeur, lien }) => (
               <li key={titre} className="flex gap-4">
-                <span className="shrink-0 w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+                <span className="shrink-0 w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-rouge">
                   <Icone className="w-5 h-5" />
                 </span>
                 <div>
-                  <p className="text-sm text-red-200">{titre}</p>
+                  <p className="text-sm text-white/60">{titre}</p>
                   {lien ? (
                     <a href={lien} className="font-medium hover:underline">
                       {valeur}
@@ -107,9 +111,9 @@ export default function Contact() {
         </aside>
 
         {/* Formulaire */}
-        <section className="lg:col-span-3 bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
-          <h2 className="text-xl font-semibold">Envoyer un message</h2>
-          <p className="mt-1 text-sm text-slate-500">Les champs marqués d'un astérisque sont obligatoires.</p>
+        <section className="lg:col-span-3 bg-white rounded-2xl border border-sable shadow-sm p-8">
+          <h2 className="font-display text-2xl text-encre">Envoyer un message</h2>
+          <p className="mt-1 text-sm text-graphite">Les champs marqués d'un astérisque sont obligatoires.</p>
 
           {sent && (
             <div className="mt-6 flex gap-3 p-4 text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg">
@@ -127,29 +131,29 @@ export default function Contact() {
           <form ref={form} onSubmit={sendEmail} className="mt-6 space-y-5">
             <div className="grid gap-5 md:grid-cols-2">
               <label className="block">
-                <span className="block mb-1 text-sm font-medium text-slate-700">Nom *</span>
+                <span className="block mb-1 text-sm font-medium text-encre">Nom *</span>
                 <input type="text" name="user_name" required className={champ} />
               </label>
               <label className="block">
-                <span className="block mb-1 text-sm font-medium text-slate-700">Adresse e-mail *</span>
+                <span className="block mb-1 text-sm font-medium text-encre">Adresse e-mail *</span>
                 <input type="email" name="user_email" required className={champ} />
               </label>
             </div>
             <label className="block">
-              <span className="block mb-1 text-sm font-medium text-slate-700">Message *</span>
+              <span className="block mb-1 text-sm font-medium text-encre">Message *</span>
               <textarea name="message" required rows="6" className={champ}></textarea>
             </label>
 
             <button
               type="submit"
               disabled={loading}
-              className="inline-flex items-center gap-2 bg-red-700 hover:bg-red-800 text-white px-6 py-2.5 rounded-lg font-medium shadow-sm disabled:opacity-60"
+              className="inline-flex items-center gap-2 bg-rouge hover:bg-rougeprofond text-white px-6 py-3 rounded-full font-semibold shadow-sm disabled:opacity-60"
             >
               <Send className="w-4 h-4" />
               {loading ? "Envoi en cours…" : "Envoyer le message"}
             </button>
 
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-graphite/70">
               Ce formulaire est protégé contre les robots par reCAPTCHA v3 — une protection invisible : aucune case « Je ne suis pas un robot » n'est à cocher, c'est normal. Les règles de confidentialité et conditions d'utilisation de Google s'appliquent.
             </p>
           </form>

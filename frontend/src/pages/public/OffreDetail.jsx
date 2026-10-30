@@ -85,7 +85,9 @@ function getDisplayStatus(offre) {
 }
 
 function getRecruitmentLabel(value) {
-  return String(value || "").toLowerCase() === "interne" ? "Interne" : "Externe";
+  return String(value || "").toLowerCase() === "interne"
+    ? "Interne"
+    : "Externe";
 }
 
 function buildDocumentUrl(documentUrl) {
@@ -154,180 +156,217 @@ export default function OffreDetail() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-10">
-      <div className="bg-white border rounded-2xl shadow-sm p-6 md:p-8">
-        <div className="flex flex-col gap-5">
-          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-            <div>
-              <div className="flex flex-wrap items-center gap-3 mb-3">
-                <h1 className="text-3xl font-bold text-red-700">{offre.titre}</h1>
+    <main className="bg-ivoire min-h-screen">
+      <div className="max-w-6xl mx-auto px-6 pt-24 pb-16">
+        <div className="bg-white border border-sable rounded-2xl shadow-sm p-6 md:p-8">
+          <div className="flex flex-col gap-5">
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+              <div>
+                <div className="flex flex-wrap items-center gap-3 mb-3">
+                  <h1 className="font-display text-3xl md:text-4xl text-encre">
+                    {offre.titre}
+                  </h1>
 
-                {displayStatus && (
-                  <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${displayStatus.className}`}>
-                    {displayStatus.label}
+                  {displayStatus && (
+                    <span
+                      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${displayStatus.className}`}
+                    >
+                      {displayStatus.label}
+                    </span>
+                  )}
+
+                  <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-encre/5 text-encre border border-sable">
+                    Recrutement {getRecruitmentLabel(offre.type_recrutement)}
                   </span>
-                )}
+                </div>
 
-                <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-blue-100 text-blue-800">
-                  Recrutement {getRecruitmentLabel(offre.type_recrutement)}
-                </span>
+                <p className="text-graphite">
+                  Consultez les détails complets de cette opportunité.
+                </p>
               </div>
 
-              <p className="text-gray-600">
-                Consultez les détails complets de cette opportunité.
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => navigate("/offres")}
+                  className="px-4 py-2 rounded-full text-sm font-medium border border-sable text-encre bg-white hover:bg-sable transition"
+                >
+                  Retour aux offres
+                </button>
+
+                <button
+                  onClick={() => window.print()}
+                  className="px-4 py-2 rounded-full text-sm font-medium border border-sable text-encre bg-white hover:bg-sable transition"
+                >
+                  Imprimer
+                </button>
+
+                <button
+                  onClick={handleCopy}
+                  className="px-4 py-2 rounded-full text-sm font-medium border border-sable text-encre bg-white hover:bg-sable transition"
+                >
+                  Copier le lien
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+              <InfoCard
+                label="Date de publication"
+                value={formatDate(offre.date_publication)}
+              />
+              <InfoCard
+                label="Date d’expiration"
+                value={formatDate(offre.date_limite)}
+              />
+              <InfoCard label="Lieu" value={offre.lieu} />
+              <InfoCard label="Employeur" value={offre.employeur} />
+              <InfoCard label="Type de contrat" value={offre.type_contrat} />
+              <InfoCard
+                label="Type de recrutement"
+                value={getRecruitmentLabel(offre.type_recrutement)}
+              />
+            </div>
+
+            {offre.resume && (
+              <SectionCard title="Résumé du poste">
+                <p className="text-graphite whitespace-pre-line leading-relaxed">
+                  {offre.resume}
+                </p>
+              </SectionCard>
+            )}
+
+            {offre.description && (
+              <SectionCard title="Description du poste">
+                <p className="text-graphite whitespace-pre-line leading-relaxed">
+                  {offre.description}
+                </p>
+              </SectionCard>
+            )}
+
+            {offre.attributions && (
+              <SectionCard title="Attributions principales">
+                <p className="text-graphite whitespace-pre-line leading-relaxed">
+                  {offre.attributions}
+                </p>
+              </SectionCard>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {offre.diplome && (
+                <SectionCard title="Diplôme requis">
+                  <p className="text-graphite whitespace-pre-line leading-relaxed">
+                    {offre.diplome}
+                  </p>
+                </SectionCard>
+              )}
+
+              {offre.formation && (
+                <SectionCard title="Formation exigée">
+                  <p className="text-graphite whitespace-pre-line leading-relaxed">
+                    {offre.formation}
+                  </p>
+                </SectionCard>
+              )}
+
+              {offre.experience && (
+                <SectionCard title="Expérience">
+                  <p className="text-graphite whitespace-pre-line leading-relaxed">
+                    {offre.experience}
+                  </p>
+                </SectionCard>
+              )}
+
+              {offre.competences && (
+                <SectionCard title="Compétences">
+                  <p className="text-graphite whitespace-pre-line leading-relaxed">
+                    {offre.competences}
+                  </p>
+                </SectionCard>
+              )}
+
+              {offre.certifications && (
+                <SectionCard title="Certifications">
+                  <p className="text-graphite whitespace-pre-line leading-relaxed">
+                    {offre.certifications}
+                  </p>
+                </SectionCard>
+              )}
+
+              {offre.logiciels && (
+                <SectionCard title="Compétences logicielles">
+                  <p className="text-graphite whitespace-pre-line leading-relaxed">
+                    {offre.logiciels}
+                  </p>
+                </SectionCard>
+              )}
+
+              {offre.affiliations && (
+                <SectionCard title="Affiliations / accréditations">
+                  <p className="text-graphite whitespace-pre-line leading-relaxed">
+                    {offre.affiliations}
+                  </p>
+                </SectionCard>
+              )}
+
+              {offre.langue && (
+                <SectionCard title="Langues">
+                  <p className="text-graphite whitespace-pre-line leading-relaxed">
+                    {offre.langue}
+                  </p>
+                </SectionCard>
+              )}
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4 pt-2">
+              <button
+                onClick={() => navigate(`/postuler/${id}`)}
+                disabled={isExpired}
+                className={`font-semibold py-3 px-7 rounded-full transition ${
+                  isExpired
+                    ? "bg-sablefonce text-graphite cursor-not-allowed"
+                    : "bg-rouge hover:bg-rougeprofond text-white shadow-lg shadow-rouge/20"
+                }`}
+              >
+                {isExpired ? "Offre expirée" : "Postuler maintenant"}
+              </button>
+
+              {documentLink && (
+                <a
+                  href={documentLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="border border-sable text-encre bg-white hover:bg-sable font-medium py-3 px-7 rounded-full transition"
+                >
+                  Télécharger l’offre originale
+                </a>
+              )}
+            </div>
+
+            {isExpired && (
+              <p className="text-sm text-rouge">
+                La période de candidature est terminée.
               </p>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => navigate("/offres")}
-                className="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700"
-              >
-                Retour aux offres
-              </button>
-
-              <button
-                onClick={() => window.print()}
-                className="bg-gray-100 text-gray-700 px-4 py-2 rounded-xl hover:bg-gray-200"
-              >
-                Imprimer
-              </button>
-
-              <button
-                onClick={handleCopy}
-                className="bg-gray-100 text-gray-700 px-4 py-2 rounded-xl hover:bg-gray-200"
-              >
-                Copier le lien
-              </button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-            <InfoCard label="Date de publication" value={formatDate(offre.date_publication)} />
-            <InfoCard label="Date d’expiration" value={formatDate(offre.date_limite)} />
-            <InfoCard label="Lieu" value={offre.lieu} />
-            <InfoCard label="Employeur" value={offre.employeur} />
-            <InfoCard label="Type de contrat" value={offre.type_contrat} />
-            <InfoCard label="Type de recrutement" value={getRecruitmentLabel(offre.type_recrutement)} />
-          </div>
-
-          {offre.resume && (
-            <SectionCard title="Résumé du poste">
-              <p className="text-gray-700 whitespace-pre-line leading-relaxed">{offre.resume}</p>
-            </SectionCard>
-          )}
-
-          {offre.description && (
-            <SectionCard title="Description du poste">
-              <p className="text-gray-700 whitespace-pre-line leading-relaxed">{offre.description}</p>
-            </SectionCard>
-          )}
-
-          {offre.attributions && (
-            <SectionCard title="Attributions principales">
-              <p className="text-gray-700 whitespace-pre-line leading-relaxed">{offre.attributions}</p>
-            </SectionCard>
-          )}
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {offre.diplome && (
-              <SectionCard title="Diplôme requis">
-                <p className="text-gray-700 whitespace-pre-line leading-relaxed">{offre.diplome}</p>
-              </SectionCard>
-            )}
-
-            {offre.formation && (
-              <SectionCard title="Formation exigée">
-                <p className="text-gray-700 whitespace-pre-line leading-relaxed">{offre.formation}</p>
-              </SectionCard>
-            )}
-
-            {offre.experience && (
-              <SectionCard title="Expérience">
-                <p className="text-gray-700 whitespace-pre-line leading-relaxed">{offre.experience}</p>
-              </SectionCard>
-            )}
-
-            {offre.competences && (
-              <SectionCard title="Compétences">
-                <p className="text-gray-700 whitespace-pre-line leading-relaxed">{offre.competences}</p>
-              </SectionCard>
-            )}
-
-            {offre.certifications && (
-              <SectionCard title="Certifications">
-                <p className="text-gray-700 whitespace-pre-line leading-relaxed">{offre.certifications}</p>
-              </SectionCard>
-            )}
-
-            {offre.logiciels && (
-              <SectionCard title="Compétences logicielles">
-                <p className="text-gray-700 whitespace-pre-line leading-relaxed">{offre.logiciels}</p>
-              </SectionCard>
-            )}
-
-            {offre.affiliations && (
-              <SectionCard title="Affiliations / accréditations">
-                <p className="text-gray-700 whitespace-pre-line leading-relaxed">{offre.affiliations}</p>
-              </SectionCard>
-            )}
-
-            {offre.langue && (
-              <SectionCard title="Langues">
-                <p className="text-gray-700 whitespace-pre-line leading-relaxed">{offre.langue}</p>
-              </SectionCard>
             )}
           </div>
-
-          <div className="flex flex-col sm:flex-row gap-4 pt-2">
-            <button
-              onClick={() => navigate(`/postuler/${id}`)}
-              disabled={isExpired}
-              className={`font-bold py-3 px-6 rounded-xl ${
-                isExpired
-                  ? "bg-gray-400 text-white cursor-not-allowed"
-                  : "bg-red-700 hover:bg-red-800 text-white"
-              }`}
-            >
-              {isExpired ? "Offre expirée" : "Postuler maintenant"}
-            </button>
-
-            {documentLink && (
-              <a
-                href={documentLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-6 rounded-xl"
-              >
-                Télécharger l’offre originale
-              </a>
-            )}
-          </div>
-
-          {isExpired && (
-            <p className="text-sm text-red-600">
-              La période de candidature est terminée.
-            </p>
-          )}
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 
 function InfoCard({ label, value }) {
   return (
-    <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4">
-      <p className="text-sm font-medium text-gray-500 mb-2">{label}</p>
-      <p className="text-gray-900 font-semibold">{value || "Non précisé"}</p>
+    <div className="bg-ivoire border border-sable rounded-2xl p-4">
+      <p className="text-sm font-medium text-graphite mb-1.5">{label}</p>
+      <p className="text-encre font-semibold">{value || "Non précisé"}</p>
     </div>
   );
 }
 
 function SectionCard({ title, children }) {
   return (
-    <div className="border rounded-2xl p-5 bg-white shadow-sm">
-      <h2 className="text-lg font-semibold text-gray-900 mb-3">{title}</h2>
+    <div className="border border-sable rounded-2xl p-5 bg-white shadow-sm">
+      <h2 className="font-display text-lg text-encre mb-3">{title}</h2>
       {children}
     </div>
   );

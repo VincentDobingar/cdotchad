@@ -15,8 +15,8 @@ const TYPES_DOCUMENTS = [
 
 const CHAMPS_PROFIL = ["prenom", "nom", "telephone", "ville", "pays", "lien_linkedin", "lien_portfolio", "resume"];
 
-const champ = "w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-600";
-const CARTE = "bg-white rounded-2xl border border-slate-200 shadow-sm p-6";
+const champ = "w-full border border-sable rounded-lg px-3 py-2 text-sm bg-ivoire/40 focus:outline-none focus:ring-2 focus:ring-rouge focus:border-rouge transition";
+const CARTE = "bg-white rounded-2xl border border-sable shadow-sm p-6";
 
 export default function Profile() {
   const { user, refreshMe } = useAuth();
@@ -25,17 +25,17 @@ export default function Profile() {
   return (
     <div className="space-y-6">
       <header>
-        <p className="text-sm text-slate-500">Vos informations de connexion et votre profil.</p>
+        <p className="text-sm text-graphite/70">Vos informations de connexion et votre profil.</p>
         {estCandidat && (
           <p className="mt-2 text-sm">
-            <Link to="/mes-candidatures" className="text-blue-600 hover:underline">
+            <Link to="/mes-candidatures" className="text-rouge font-semibold hover:text-rougeprofond hover:underline underline-offset-4">
               Voir mes candidatures
             </Link>
           </p>
         )}
         {user?.role === "partenaire" && !user?.doit_changer_mdp && (
           <p className="mt-2 text-sm">
-            <Link to="/partenaire" className="text-blue-600 hover:underline">
+            <Link to="/partenaire" className="text-rouge font-semibold hover:text-rougeprofond hover:underline underline-offset-4">
               Aller à mon espace partenaire (mes avis de recrutement)
             </Link>
           </p>
@@ -47,9 +47,9 @@ export default function Profile() {
       {user?.role === "partenaire" && !user?.doit_changer_mdp && <ProfilPartenaire />}
 
       <section className={CARTE}>
-        <h3 className="text-lg font-semibold mb-4">Changer de mot de passe</h3>
+        <h3 className="font-display text-xl text-encre mb-4">Changer de mot de passe</h3>
         {user?.doit_changer_mdp && (
-          <p className="mb-3 text-sm text-yellow-900 bg-yellow-50 border border-yellow-300 rounded p-2">
+          <p className="mb-3 text-sm text-yellow-900 bg-yellow-50 border border-yellow-300 rounded-lg p-2.5">
             Votre mot de passe est provisoire. Choisissez-en un nouveau pour accéder à votre espace.
           </p>
         )}
@@ -93,11 +93,11 @@ function InformationsPersonnelles({ onSaved }) {
     }
   };
 
-  if (chargement) return <p className="text-gray-500">Chargement de votre profil…</p>;
+  if (chargement) return <p className="text-graphite/70">Chargement de votre profil…</p>;
 
   return (
     <section className={CARTE}>
-      <h3 className="text-lg font-semibold mb-4">Mes informations</h3>
+      <h3 className="font-display text-xl text-encre mb-4">Mes informations</h3>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <input name="prenom" placeholder="Prénom" value={form.prenom} onChange={handleChange} className={champ} />
@@ -120,12 +120,12 @@ function InformationsPersonnelles({ onSaved }) {
           <button
             type="submit"
             disabled={enregistrement}
-            className="bg-red-600 text-white px-4 py-2 rounded disabled:opacity-50"
+            className="bg-rouge hover:bg-rougeprofond text-white px-5 py-2.5 rounded-full font-semibold shadow-sm shadow-rouge/20 disabled:opacity-50 transition"
           >
             {enregistrement ? "Enregistrement…" : "Enregistrer"}
           </button>
           {message && (
-            <span className={`text-sm ${message.type === "erreur" ? "text-red-600" : "text-green-700"}`}>
+            <span className={`text-sm ${message.type === "erreur" ? "text-rougeprofond" : "text-green-700"}`}>
               {message.texte}
             </span>
           )}
@@ -201,30 +201,30 @@ function DocumentsEnregistres() {
 
   return (
     <section className={CARTE}>
-      <h3 className="text-lg font-semibold mb-1">Mes documents</h3>
-      <p className="text-sm text-gray-600 mb-4">
+      <h3 className="font-display text-xl text-encre mb-1">Mes documents</h3>
+      <p className="text-sm text-graphite mb-4">
         Enregistrez vos pièces une fois : elles seront proposées automatiquement à chaque candidature.
         PDF uniquement, 5 Mo maximum.
       </p>
 
       {chargement ? (
-        <p className="text-gray-500">Chargement…</p>
+        <p className="text-graphite/70">Chargement…</p>
       ) : (
-        <ul className="divide-y border rounded mb-6">
+        <ul className="divide-y divide-sable border border-sable rounded-xl mb-6 overflow-hidden">
           {TYPES_DOCUMENTS.map(({ value, label }) => {
             const doc = documents.find((d) => d.type === value);
             return (
-              <li key={value} className="flex flex-wrap items-center justify-between gap-2 p-3">
+              <li key={value} className="flex flex-wrap items-center justify-between gap-2 p-3.5">
                 <div>
-                  <div className="font-medium">{label}</div>
-                  <div className="text-sm text-gray-600">{doc ? doc.nom_original : "Aucun document enregistré"}</div>
+                  <div className="font-medium text-encre">{label}</div>
+                  <div className="text-sm text-graphite/70">{doc ? doc.nom_original : "Aucun document enregistré"}</div>
                 </div>
                 {doc && (
                   <div className="flex gap-3 text-sm">
-                    <button type="button" onClick={() => telecharger(doc)} className="text-blue-600 hover:underline">
+                    <button type="button" onClick={() => telecharger(doc)} className="text-rouge font-medium hover:text-rougeprofond hover:underline underline-offset-4">
                       Télécharger
                     </button>
-                    <button type="button" onClick={() => supprimer(doc)} className="text-red-600 hover:underline">
+                    <button type="button" onClick={() => supprimer(doc)} className="text-graphite hover:text-rougeprofond hover:underline underline-offset-4">
                       Supprimer
                     </button>
                   </div>
@@ -237,8 +237,8 @@ function DocumentsEnregistres() {
 
       <form onSubmit={handleUpload} className="flex flex-col sm:flex-row gap-3 items-start sm:items-end">
         <div>
-          <label className="block text-sm text-gray-700 mb-1">Type</label>
-          <select value={type} onChange={(e) => setType(e.target.value)} className="border p-2 rounded">
+          <label className="block text-sm text-encre mb-1">Type</label>
+          <select value={type} onChange={(e) => setType(e.target.value)} className="border border-sable bg-ivoire/40 p-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-rouge focus:border-rouge transition">
             {TYPES_DOCUMENTS.map((t) => (
               <option key={t.value} value={t.value}>
                 {t.label}
@@ -247,25 +247,25 @@ function DocumentsEnregistres() {
           </select>
         </div>
         <div className="flex-1">
-          <label className="block text-sm text-gray-700 mb-1">Fichier PDF</label>
+          <label className="block text-sm text-encre mb-1">Fichier PDF</label>
           <input
             type="file"
             accept=".pdf,application/pdf"
             onChange={(e) => setFichier(e.target.files[0] || null)}
-            className="w-full"
+            className="w-full text-sm text-graphite file:mr-3 file:rounded-full file:border-0 file:bg-rouge/10 file:px-4 file:py-2 file:text-rouge file:font-medium hover:file:bg-rouge/20"
           />
         </div>
         <button
           type="submit"
           disabled={!fichier || envoi}
-          className="bg-red-600 text-white px-4 py-2 rounded disabled:opacity-50"
+          className="bg-rouge hover:bg-rougeprofond text-white px-5 py-2.5 rounded-full font-semibold shadow-sm shadow-rouge/20 disabled:opacity-50 transition"
         >
           {envoi ? "Envoi…" : "Enregistrer le document"}
         </button>
       </form>
 
       {message && (
-        <p className={`text-sm mt-3 ${message.type === "erreur" ? "text-red-600" : "text-green-700"}`}>{message.texte}</p>
+        <p className={`text-sm mt-3 ${message.type === "erreur" ? "text-rougeprofond" : "text-green-700"}`}>{message.texte}</p>
       )}
     </section>
   );
@@ -295,11 +295,11 @@ function PasswordForm({ onChanged }) {
       <input type="password" placeholder="Ancien mot de passe" value={ancien} onChange={(e) => setAncien(e.target.value)} required className={champ} />
       <input type="password" placeholder="Nouveau mot de passe" value={nouveau} onChange={(e) => setNouveau(e.target.value)} required minLength={8} className={champ} />
       <div className="sm:col-span-2 flex items-center gap-4">
-        <button type="submit" className="bg-gray-800 text-white px-4 py-2 rounded">
+        <button type="submit" className="bg-encre hover:bg-encre/90 text-white px-5 py-2.5 rounded-full font-semibold transition">
           Changer de mot de passe
         </button>
         {msg && (
-          <span className={`text-sm ${msg.type === "erreur" ? "text-red-600" : "text-green-700"}`}>{msg.texte}</span>
+          <span className={`text-sm ${msg.type === "erreur" ? "text-rougeprofond" : "text-green-700"}`}>{msg.texte}</span>
         )}
       </div>
     </form>

@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { clientsData } from "@/data/clientsData";
 import { Modal, ModalContent } from "@/components/ui/Modal";
+import SectionHeading from "@/components/ui/SectionHeading";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
 import "swiper/css";
@@ -16,57 +17,63 @@ export default function HomeClients() {
   const handleCloseModal = () => setSelectedClient(null);
 
   return (
-    <section className="py-12 bg-gray-100" id="clients">
-      <div className="container mx-auto px-4">
-        <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center text-red-600">
-          Nos Référents
-        </h2>
+    <section
+      className="py-20 md:py-28 bg-white [--swiper-navigation-color:#1b1410] [--swiper-navigation-size:28px]"
+      id="clients"
+    >
+      <div className="max-w-6xl mx-auto px-6">
+        <SectionHeading
+          label="Ils nous font confiance"
+          title="Nos référents"
+          intro="Des structures publiques et privées qui s’appuient sur notre expertise au quotidien."
+        />
 
-        {clientsData.length > 0 ? (
-          <Swiper
-            modules={[Navigation, Autoplay]}
-            slidesPerView={2}
-            spaceBetween={20}
-            navigation
-            autoplay={{ delay: 4000 }}
-            loop
-            breakpoints={{
-              640: { slidesPerView: 1 },
-              768: { slidesPerView: 2 },
-              1024: { slidesPerView: 3 },
-            }}
-          >
-            {clientsData.map((client, index) => (
-              <SwiperSlide key={index}>
-                <div
-                  onClick={() => setSelectedClient(client)}
-                  className="cursor-pointer bg-white rounded-xl shadow p-6 min-h-[280px] flex flex-col justify-between hover:shadow-lg transition"
-                >
-                  <img
-                    src={client.logo || fallbackLogo}
-                    alt={client.nom || "Logo"}
-                    className="h-16 object-contain mb-4 mx-auto"
-                    loading="lazy"
-                    onError={(e) => {
-                      e.currentTarget.onerror = null;
-                      e.currentTarget.src = fallbackLogo;
-                    }}
-                  />
-                  <h3 className="text-lg font-semibold text-center">
-                    {client.nom}
-                  </h3>
-                  <p className="text-sm text-gray-600 text-center mt-2 line-clamp-3">
-                    {client.resume || client.description}
-                  </p>
-                </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
-        ) : (
-          <p className="text-center text-gray-500">
-            Aucun client référencé pour le moment.
-          </p>
-        )}
+        <div className="mt-12">
+          {clientsData.length > 0 ? (
+            <Swiper
+              modules={[Navigation, Autoplay]}
+              slidesPerView={2}
+              spaceBetween={24}
+              navigation
+              autoplay={{ delay: 4000 }}
+              loop
+              breakpoints={{
+                640: { slidesPerView: 1 },
+                768: { slidesPerView: 2 },
+                1024: { slidesPerView: 3 },
+              }}
+            >
+              {clientsData.map((client, index) => (
+                <SwiperSlide key={index} className="h-auto pb-2">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedClient(client)}
+                    className="group w-full text-left cursor-pointer bg-ivoire border border-sable rounded-2xl p-7 min-h-[280px] flex flex-col shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
+                  >
+                    <div className="h-16 flex items-center justify-center mb-5">
+                      <img
+                        src={client.logo || fallbackLogo}
+                        alt={client.nom || "Logo"}
+                        className="max-h-16 max-w-[70%] object-contain"
+                        loading="lazy"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = fallbackLogo;
+                        }}
+                      />
+                    </div>
+                    <h3 className="font-display text-lg text-center text-encre">{client.nom}</h3>
+                    <p className="text-sm text-graphite text-center mt-3 leading-relaxed line-clamp-3">
+                      {client.resume || client.description}
+                    </p>
+                  </button>
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          ) : (
+            <p className="text-center text-graphite/60">Aucun client référencé pour le moment.</p>
+          )}
+        </div>
       </div>
 
       {/* Modal affichée si un client est sélectionné */}
@@ -84,10 +91,8 @@ export default function HomeClients() {
                   e.currentTarget.src = fallbackLogo;
                 }}
               />
-              <h3 className="text-xl font-bold text-indigo-700">
-                {selectedClient.nom}
-              </h3>
-              <p className="text-gray-700">{selectedClient.description}</p>
+              <h3 className="font-display text-xl text-encre">{selectedClient.nom}</h3>
+              <p className="text-graphite leading-relaxed">{selectedClient.description}</p>
             </div>
           </ModalContent>
         </Modal>

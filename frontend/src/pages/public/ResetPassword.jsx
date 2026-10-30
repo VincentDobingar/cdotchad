@@ -37,9 +37,9 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 pt-24 pb-16 px-4 flex items-start justify-center">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-200 p-8">
-        <h1 className="text-2xl font-bold tracking-tight text-red-700">Nouveau mot de passe</h1>
+    <div className="min-h-screen bg-ivoire pt-28 pb-16 px-4 flex items-start justify-center">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-sable p-8">
+        <h1 className="font-display text-3xl text-encre">Nouveau mot de passe</h1>
 
         {ok ? (
           <div className="mt-6 text-sm text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg p-4">
@@ -48,42 +48,42 @@ export default function ResetPassword() {
         ) : (
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             {err && (
-              <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-3">{err}</div>
+              <div className="text-sm text-rougeprofond bg-rouge/10 border border-rouge/20 rounded-lg p-3">{err}</div>
             )}
             <label className="block">
-              <span className="text-sm font-medium text-slate-700">Nouveau mot de passe</span>
+              <span className="text-sm font-medium text-encre">Nouveau mot de passe</span>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 autoComplete="new-password"
-                className="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-red-600"
+                className="mt-1.5 w-full border border-sable rounded-lg px-3 py-2.5 bg-ivoire/40 focus:outline-none focus:ring-2 focus:ring-rouge focus:border-rouge transition"
               />
             </label>
             <label className="block">
-              <span className="text-sm font-medium text-slate-700">Confirmer le mot de passe</span>
+              <span className="text-sm font-medium text-encre">Confirmer le mot de passe</span>
               <input
                 type="password"
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
                 required
                 autoComplete="new-password"
-                className="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-red-600"
+                className="mt-1.5 w-full border border-sable rounded-lg px-3 py-2.5 bg-ivoire/40 focus:outline-none focus:ring-2 focus:ring-rouge focus:border-rouge transition"
               />
             </label>
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-red-700 hover:bg-red-800 text-white py-2.5 rounded-lg font-medium shadow-sm disabled:opacity-60"
+              className="w-full bg-rouge hover:bg-rougeprofond text-white py-3 rounded-full font-semibold shadow-sm shadow-rouge/20 disabled:opacity-60 transition"
             >
               {loading ? "Mise à jour…" : "Réinitialiser"}
             </button>
           </form>
         )}
 
-        <div className="mt-8 border-t border-slate-100 pt-6 text-sm text-center text-slate-600">
-          <Link to="/login" className="font-medium text-red-700 hover:underline">← Retour à la connexion</Link>
+        <div className="mt-8 border-t border-sable pt-6 text-sm text-center text-graphite">
+          <Link to="/login" className="font-semibold text-rouge hover:text-rougeprofond hover:underline underline-offset-4">← Retour à la connexion</Link>
         </div>
       </div>
     </div>

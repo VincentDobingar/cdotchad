@@ -47,65 +47,71 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 pt-16 grid lg:grid-cols-2">
+    <div className="min-h-screen bg-ivoire pt-16 grid lg:grid-cols-2">
       {/* Panneau de présentation */}
-      <aside className="hidden lg:flex flex-col justify-center px-16 bg-gradient-to-br from-red-900 via-red-800 to-red-700 text-white">
-        <p className="text-sm uppercase tracking-[0.2em] text-red-200">CDO Tchad</p>
-        <h1 className="mt-4 text-4xl font-bold leading-tight">Votre espace emploi et recrutement</h1>
-        <p className="mt-4 text-red-100 max-w-md">
-          Connectez-vous pour gérer votre profil, suivre vos candidatures ou publier vos avis de recrutement.
-        </p>
-        <ul className="mt-10 space-y-5">
-          {AVANTAGES.map(({ icone: Icone, texte }) => (
-            <li key={texte} className="flex gap-4">
-              <span className="shrink-0 w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
-                <Icone className="w-5 h-5" />
-              </span>
-              <span className="text-red-50">{texte}</span>
-            </li>
-          ))}
-        </ul>
+      <aside className="relative hidden lg:flex flex-col justify-center px-16 bg-gradient-to-br from-encre via-encre to-rougeprofond text-white overflow-hidden">
+        <div className="pointer-events-none absolute -top-24 -right-24 h-80 w-80 rounded-full bg-rouge/20 blur-3xl" aria-hidden="true" />
+        <div className="relative z-10 max-w-md">
+          <span className="inline-flex items-center gap-2.5 text-sm font-medium text-white/75">
+            <span className="h-px w-8 bg-rouge" aria-hidden="true" />
+            CDO Tchad
+          </span>
+          <h1 className="mt-5 font-display text-4xl font-semibold leading-tight">Votre espace emploi et recrutement</h1>
+          <p className="mt-4 text-white/80">
+            Connectez-vous pour gérer votre profil, suivre vos candidatures ou publier vos avis de recrutement.
+          </p>
+          <ul className="mt-10 space-y-5">
+            {AVANTAGES.map(({ icone: Icone, texte }) => (
+              <li key={texte} className="flex gap-4">
+                <span className="shrink-0 w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white">
+                  <Icone className="w-5 h-5" />
+                </span>
+                <span className="text-white/85">{texte}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </aside>
 
       {/* Formulaire */}
       <main className="flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-200 p-8">
-          <h2 className="text-2xl font-bold tracking-tight">Connexion</h2>
-          <p className="mt-1 text-sm text-slate-500">Candidats et partenaires</p>
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-sable p-8">
+          <h2 className="font-display text-3xl text-encre">Connexion</h2>
+          <p className="mt-1 text-sm text-graphite/70">Candidats et partenaires</p>
 
           {err && (
-            <div className="mt-6 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-3">{err}</div>
+            <div className="mt-6 text-sm text-rougeprofond bg-rouge/10 border border-rouge/20 rounded-lg p-3">{err}</div>
           )}
 
           <form onSubmit={handleLogin} className="mt-6 space-y-4">
             <label className="block">
-              <span className="text-sm font-medium text-slate-700">Adresse e-mail</span>
+              <span className="text-sm font-medium text-encre">Adresse e-mail</span>
               <input
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 type="email"
                 autoComplete="email"
                 required
-                className="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-red-600"
+                className="mt-1.5 w-full border border-sable rounded-lg px-3 py-2.5 bg-ivoire/40 focus:outline-none focus:ring-2 focus:ring-rouge focus:border-rouge transition"
               />
             </label>
 
             <label className="block">
-              <span className="text-sm font-medium text-slate-700">Mot de passe</span>
+              <span className="text-sm font-medium text-encre">Mot de passe</span>
               <input
                 value={motdepasse}
                 onChange={(e) => setMotdepasse(e.target.value)}
                 type="password"
                 autoComplete="current-password"
                 required
-                className="mt-1 w-full border border-slate-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-red-600"
+                className="mt-1.5 w-full border border-sable rounded-lg px-3 py-2.5 bg-ivoire/40 focus:outline-none focus:ring-2 focus:ring-rouge focus:border-rouge transition"
               />
             </label>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full inline-flex items-center justify-center gap-2 bg-red-700 hover:bg-red-800 text-white py-2.5 rounded-lg font-medium shadow-sm disabled:opacity-60"
+              className="w-full inline-flex items-center justify-center gap-2 bg-rouge hover:bg-rougeprofond text-white py-3 rounded-full font-semibold shadow-sm shadow-rouge/20 disabled:opacity-60 transition"
             >
               {loading ? "Connexion…" : "Se connecter"}
               {!loading && <ArrowRight className="w-4 h-4" />}
@@ -113,15 +119,15 @@ const Login = () => {
           </form>
 
           <div className="mt-4 text-right">
-            <Link to="/mot-de-passe-oublie" className="text-sm font-medium text-red-700 hover:underline">
+            <Link to="/mot-de-passe-oublie" className="text-sm font-medium text-rouge hover:text-rougeprofond hover:underline underline-offset-4">
               Mot de passe oublié ?
             </Link>
           </div>
 
-          <div className="mt-6 border-t border-slate-100 pt-6 space-y-3 text-sm text-center text-slate-600">
+          <div className="mt-6 border-t border-sable pt-6 space-y-3 text-sm text-center text-graphite">
             <p>
               Nouveau candidat ?{" "}
-              <Link to="/inscription" className="font-medium text-red-700 hover:underline">
+              <Link to="/inscription" className="font-semibold text-rouge hover:text-rougeprofond hover:underline underline-offset-4">
                 Créer mon compte
               </Link>
             </p>
@@ -130,7 +136,7 @@ const Login = () => {
             </p>
             <p>
               Administrateur ?{" "}
-              <Link to="/admin/login" className="font-medium text-red-700 hover:underline">
+              <Link to="/admin/login" className="font-semibold text-rouge hover:text-rougeprofond hover:underline underline-offset-4">
                 Connexion à l'espace d'administration
               </Link>
             </p>

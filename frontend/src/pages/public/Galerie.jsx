@@ -1,4 +1,5 @@
 // 📁 src/pages/public/Galerie.jsx
+import PageHero from "@/components/ui/PageHero";
 import { useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
@@ -152,20 +153,25 @@ export default function Galerie() {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-600" />
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-rouge" />
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <h2 className="text-3xl font-bold text-center text-red-600 mb-8">Notre Galerie</h2>
+    <main className="bg-ivoire min-h-screen [--swiper-navigation-color:#ffffff]">
+      <PageHero
+        label="En images"
+        title="Notre galerie"
+        intro="Formations, missions de terrain et temps d’échange qui rythment la vie du cabinet."
+      />
+      <div className="p-6 md:py-14 max-w-6xl mx-auto">
 
       {galerie.length > 0 ? (
         <>
           {/* Swiper en vedette */}
-          <div className="mb-10">
-            <h3 className="text-xl font-semibold text-center mb-4 text-gray-700">En vedette</h3>
+          <div className="mb-12">
+            <h3 className="font-display text-xl text-center mb-4 text-encre">En vedette</h3>
             <Swiper
               modules={[Autoplay, Navigation]}
               spaceBetween={20}
@@ -202,7 +208,7 @@ export default function Galerie() {
             <select
               value={filtre}
               onChange={(e) => { setFiltre(e.target.value); setCurrentPage(1); }}
-              className="p-2 rounded border bg-white shadow-sm focus:ring-2 focus:ring-red-500"
+              className="px-3.5 py-2.5 rounded-xl border border-sable bg-white text-sm text-encre shadow-sm focus:outline-none focus:ring-2 focus:ring-rouge/30 focus:border-rouge transition"
             >
               <option value="toutes">Toutes les catégories</option>
               {categories.map((cat, i) => (
@@ -214,11 +220,11 @@ export default function Galerie() {
           {/* Grille */}
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
             {currentImages.map((img) => (
-              <div key={img.id} className="cursor-pointer group relative overflow-hidden">
+              <div key={img.id} className="cursor-pointer group relative overflow-hidden rounded-2xl border border-sable shadow-sm">
                 <img
                   src={img.url || FALLBACK}
                   alt={img.titre}
-                  className="w-full h-56 object-cover rounded shadow-lg transition-transform duration-300 group-hover:scale-105"
+                  className="w-full h-56 object-cover transition-transform duration-500 group-hover:scale-105"
                   onClick={() => setLightboxImage(img.url)}
                   loading="lazy"
                   onError={(e) => {
@@ -241,10 +247,10 @@ export default function Galerie() {
                 <button
                   key={i}
                   onClick={() => setCurrentPage(i + 1)}
-                  className={`px-4 py-2 rounded-full border transition-colors ${
+                  className={`h-9 w-9 rounded-full border text-sm transition-colors ${
                     currentPage === i + 1
-                      ? "bg-red-600 text-white border-red-600"
-                      : "text-gray-700 border-gray-300 hover:bg-gray-100"
+                      ? "bg-rouge text-white border-rouge"
+                      : "text-encre border-sable bg-white hover:bg-sable"
                   }`}
                 >
                   {i + 1}
@@ -255,7 +261,7 @@ export default function Galerie() {
         </>
       ) : (
         <div className="text-center py-10">
-          <p className="text-gray-600">Aucune image disponible pour le moment.</p>
+          <p className="text-graphite">Aucune image disponible pour le moment.</p>
         </div>
       )}
 
@@ -284,6 +290,7 @@ export default function Galerie() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </main>
   );
 }

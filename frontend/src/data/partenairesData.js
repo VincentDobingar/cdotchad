@@ -56,4 +56,9 @@ export const partenaires = [
     description: "Partenaire est un cabinet spécialisé en expertise comptable, audit et assistance fiscale. Il nous accompagne dans la tenue rigoureuse de notre comptabilité, la préparation des états financiers, ainsi que dans les déclarations fiscales. Grâce à ses missions d’audit, il garantit la fiabilité de nos informations financières et renforce notre conformité réglementaire. Ce partenariat stratégique nous permet de prendre des décisions éclairées et d’optimiser notre gestion financière et fiscale.",
     image: "/images/hc.png",
   },
+  {
+    name: "Digital Business Services Africa",
+    description: "Partenaire dans le domaine du numérique, Digital Business Services Africa (DBS Africa) accompagne les entreprises, institutions et organisations dans leur transformation digitale : développement de sites web, de plateformes et d'applications sur mesure, analyse de données, business intelligence (tableaux de bord et reporting) et gestion de projets. DBS Africa a conçu et développé la plateforme digitale de CDO Consulting.",
+    image: "/images/dbs-africa.png",
+  },
 ];

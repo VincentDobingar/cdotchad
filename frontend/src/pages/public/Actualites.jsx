@@ -1,5 +1,6 @@
 // 📁 src/pages/public/Actualites.jsx
 import { useEffect, useMemo, useState } from "react";
+import PageHero from "@/components/ui/PageHero";
 import { Link, useSearchParams } from "react-router-dom";
 import api from "@/utils/api";
 import jsPDF from "jspdf";
@@ -198,137 +199,158 @@ export default function Actualites() {
     pdf.save("actualites.pdf");
   };
 
+  // Style commun des champs de filtre
+  const champ =
+    "border border-sable bg-white px-3.5 py-2.5 rounded-xl text-sm text-encre placeholder:text-graphite/50 focus:outline-none focus:ring-2 focus:ring-rouge/30 focus:border-rouge transition";
+
   return (
-    <div className="max-w-6xl mx-auto px-4 pt-20 pb-28 relative">
-      {loading ? (
-        <div className="p-6">Chargement des actualités…</div>
-      ) : (
-        <>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between mb-4">
-            <h1 className="text-3xl font-bold text-red-700">Actualités</h1>
-            <p className="text-sm text-gray-600">
-              {totalCount == null ? "" : `${totalCount} actualité${totalCount > 1 ? "s" : ""}`}
-            </p>
-          </div>
+    <main className="bg-ivoire min-h-screen">
+      <PageHero
+        label="Actualités"
+        title="Ce qui se passe au cabinet"
+        intro="Offres, sessions de formation, événements et temps forts de CDO Consulting."
+      />
 
-          <div className="flex justify-end mb-4">
-            <button onClick={handleExportPDF} className="bg-gray-200 text-sm px-4 py-2 rounded hover:bg-gray-300">
-              Exporter la liste en PDF
-            </button>
-          </div>
+      <div className="max-w-6xl mx-auto px-6 py-14 relative">
+        {loading ? (
+          <div className="py-10 text-center text-graphite/70">Chargement des actualités…</div>
+        ) : (
+          <>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
+              <p className="text-sm text-graphite">
+                {totalCount == null ? "" : `${totalCount} actualité${totalCount > 1 ? "s" : ""}`}
+              </p>
+              <button
+                onClick={handleExportPDF}
+                className="px-4 py-2 rounded-full text-sm font-medium border border-sable text-encre bg-white hover:bg-sable transition"
+              >
+                Exporter la liste en PDF
+              </button>
+            </div>
 
-          {/* Recherche + catégorie + année (filtres appliqués côté serveur) */}
-          <form onSubmit={handleSearch} className="mb-6 flex flex-col md:flex-row flex-wrap gap-4 md:items-center">
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Rechercher un titre..."
-              className="border p-2 rounded w-full md:w-1/3"
-            />
+            {/* Recherche + catégorie + année (filtres appliqués côté serveur) */}
+            <form onSubmit={handleSearch} className="mb-8 flex flex-col md:flex-row flex-wrap gap-3 md:items-center">
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Rechercher un titre…"
+                className={`${champ} w-full md:w-1/3`}
+              />
 
-            <select
-              value={categorie}
-              onChange={(e) => {
-                setCategorie(e.target.value);
-                setPage(1);
-                syncURL(1, search, year, e.target.value);
-              }}
-              className="border p-2 rounded text-sm md:w-56"
-            >
-              <option value="">Toutes les catégories</option>
-              {categoriesDispo.map((c) => (
-                <option key={c} value={c}>{c}</option>
+              <select
+                value={categorie}
+                onChange={(e) => {
+                  setCategorie(e.target.value);
+                  setPage(1);
+                  syncURL(1, search, year, e.target.value);
+                }}
+                className={`${champ} md:w-56`}
+              >
+                <option value="">Toutes les catégories</option>
+                {categoriesDispo.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+
+              <select
+                value={year}
+                onChange={(e) => {
+                  setYear(e.target.value);
+                  setPage(1);
+                  syncURL(1, search, e.target.value, categorie);
+                }}
+                className={`${champ} md:w-32`}
+              >
+                <option value="">Année</option>
+                {anneesDispo.map((y) => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+            </form>
+
+            {/* Liste */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 grid-actualites">
+              {actualites.length === 0 && (
+                <p className="text-center text-graphite/60 col-span-full py-6">Aucune actualité trouvée.</p>
+              )}
+
+              {actualites.map((actu) => (
+                <article
+                  key={actu.id}
+                  className="group bg-white border border-sable rounded-2xl shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 overflow-hidden flex flex-col"
+                >
+                  <div className="relative aspect-[16/10] overflow-hidden">
+                    <SmartImg
+                      raw={actu.image || actu.cover || actu.illustration || actu.url}
+                      cacheKey={actu.updated_at || actu.date_publication || actu.id}
+                      alt={actu.titre}
+                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </div>
+                  <div className="p-5 flex flex-col flex-1">
+                    <span className="text-xs font-semibold tracking-wide text-rouge mb-1.5">
+                      {actu.categorie || "Non classée"}
+                    </span>
+                    <h3 className="font-display text-lg leading-snug mb-1 text-encre">{actu.titre}</h3>
+                    <p className="text-xs text-graphite/70 mb-2">
+                      {actu.date_publication
+                        ? new Date(actu.date_publication).toLocaleDateString("fr-FR", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })
+                        : "Date inconnue"}
+                    </p>
+                    <div className="text-sm text-graphite flex-1 mb-4 line-clamp-3">
+                      {actu.resume ? (
+                        <span dangerouslySetInnerHTML={{ __html: actu.resume }} />
+                      ) : (
+                        <span>{stripHtml(actu.contenu).slice(0, 150)}…</span>
+                      )}
+                    </div>
+                    <Link
+                      to={`/actualites/${actu.id}`}
+                      className="text-rouge text-sm font-semibold hover:text-rougeprofond underline-offset-4 hover:underline mt-auto"
+                    >
+                      Lire l’article
+                    </Link>
+                  </div>
+                </article>
               ))}
-            </select>
+            </div>
 
-            <select
-              value={year}
-              onChange={(e) => {
-                setYear(e.target.value);
-                setPage(1);
-                syncURL(1, search, e.target.value, categorie);
-              }}
-              className="border p-2 rounded text-sm md:w-32"
-            >
-              <option value="">Année</option>
-              {anneesDispo.map((y) => (
-                <option key={y} value={y}>{y}</option>
-              ))}
-            </select>
-
-          </form>
-
-          {/* Liste */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 grid-actualites">
-            {actualites.length === 0 && (
-              <p className="text-center text-gray-500 col-span-full">Aucune actualité trouvée.</p>
-            )}
-
-            {actualites.map((actu) => (
-              <div key={actu.id} className="bg-white rounded-xl shadow hover:shadow-md transition-all duration-300 p-4 flex flex-col">
-                <SmartImg
-                  raw={actu.image || actu.cover || actu.illustration || actu.url}
-                  cacheKey={actu.updated_at || actu.date_publication || actu.id}
-                  alt={actu.titre}
-                  className="h-40 w-full object-cover rounded mb-3"
-                />
-                <span className="text-xs text-red-600 font-semibold uppercase mb-1">
-                  {actu.categorie || "Non classée"}
-                </span>
-                <h3 className="font-bold text-base mb-1 text-gray-800">{actu.titre}</h3>
-                <p className="text-xs text-gray-500 mb-2">
-                  {actu.date_publication
-                    ? new Date(actu.date_publication).toLocaleDateString("fr-FR", {
-                        weekday: "short",
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })
-                    : "Date inconnue"}
-                </p>
-                <div className="text-sm text-gray-700 flex-1 mb-3 line-clamp-4">
-                  {actu.resume ? (
-                    <span dangerouslySetInnerHTML={{ __html: actu.resume }} />
-                  ) : (
-                    <span>{stripHtml(actu.contenu).slice(0, 150)}…</span>
-                  )}
-                </div>
-                <Link to={`/actualites/${actu.id}`} className="text-red-700 text-sm font-medium hover:underline mt-auto">
-                  Voir le détail →
-                </Link>
-              </div>
-            ))}
-          </div>
-
-          {/* Pagination */}
-          <div className="flex justify-center mt-8 gap-4">
-            <button
-              onClick={() => {
-                const newPage = Math.max(page - 1, 1);
-                setPage(newPage);
-                syncURL(newPage);
-              }}
-              disabled={page <= 1}
-              className="px-4 py-1 rounded border text-sm disabled:opacity-50"
-            >
-              ← Précédent
-            </button>
-            <span className="text-sm text-gray-700">Page {page} / {totalPages}</span>
-            <button
-              onClick={() => {
-                const newPage = Math.min(page + 1, totalPages);
-                setPage(newPage);
-                syncURL(newPage);
-              }}
-              disabled={page >= totalPages}
-              className="px-4 py-1 rounded border text-sm disabled:opacity-50"
-            >
-              Suivant →
-            </button>
-          </div>
-        </>
-      )}
-    </div>
+            {/* Pagination */}
+            <div className="flex justify-center items-center mt-12 gap-3">
+              <button
+                onClick={() => {
+                  const newPage = Math.max(page - 1, 1);
+                  setPage(newPage);
+                  syncURL(newPage);
+                }}
+                disabled={page <= 1}
+                className="h-9 px-4 rounded-full border border-sable text-sm text-encre bg-white hover:bg-sable disabled:opacity-40 transition"
+              >
+                Précédent
+              </button>
+              <span className="text-sm text-graphite">
+                Page {page} / {totalPages}
+              </span>
+              <button
+                onClick={() => {
+                  const newPage = Math.min(page + 1, totalPages);
+                  setPage(newPage);
+                  syncURL(newPage);
+                }}
+                disabled={page >= totalPages}
+                className="h-9 px-4 rounded-full border border-sable text-sm text-encre bg-white hover:bg-sable disabled:opacity-40 transition"
+              >
+                Suivant
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </main>
   );
 }

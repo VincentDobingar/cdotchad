@@ -1,8 +1,21 @@
 // 📁 src/pages/public/Services.jsx
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import * as Icons from "lucide-react";
+import {
+  BookOpen,
+  HeartHandshake,
+  Globe,
+  Users,
+  Wrench,
+  FileSearch,
+  Compass,
+  Laptop,
+  HandHelping,
+  TriangleAlert,
+  ChevronRight,
+} from "lucide-react";
 import api from "@/utils/api";
+import PageHero from "@/components/ui/PageHero";
 
 // --- Helpers sûrs ---
 const asArray = (v) => {
@@ -21,16 +34,16 @@ const asArray = (v) => {
 const pick = (...vals) => vals.find((x) => x != null && x !== "") ?? "";
 
 const iconMap = {
-  BookOpen: Icons.BookOpen,
-  HeartHandshake: Icons.HeartHandshake,
-  Globe: Icons.Globe,
-  Users: Icons.Users,
-  Wrench: Icons.Wrench,
-  FileSearch: Icons.FileSearch,
-  Compass: Icons.Compass,
-  Laptop: Icons.Laptop,
-  HelpingHand: Icons.HelpingHand,
-  AlertTriangle: Icons.AlertTriangle,
+  BookOpen,
+  HeartHandshake,
+  Globe,
+  Users,
+  Wrench,
+  FileSearch,
+  Compass,
+  Laptop,
+  HelpingHand: HandHelping,
+  AlertTriangle: TriangleAlert,
 };
 
 export default function PublicServices() {
@@ -66,7 +79,7 @@ export default function PublicServices() {
           );
 
           const iconKey = pick(s?.icone, s?.icon, "AlertTriangle");
-          const IconComp = iconMap[iconKey] || Icons.AlertTriangle;
+          const IconComp = iconMap[iconKey] || TriangleAlert;
 
           return {
             id: s?.id ?? i,
@@ -93,124 +106,110 @@ export default function PublicServices() {
   const totalPages = Math.max(1, Math.ceil(services.length / perPage));
   const paginated = services.slice((page - 1) * perPage, page * perPage);
 
-  if (loading) {
-    return (
-      <section className="py-20 bg-gradient-to-b from-white to-gray-50">
-        <div className="container mx-auto px-4 text-center">
-          <p>Chargement des services...</p>
-        </div>
-      </section>
-    );
-  }
-
   return (
-    <section className="py-20 bg-gradient-to-b from-white to-gray-50">
-      <div className="container mx-auto px-4">
-        <motion.h2
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-4xl font-bold text-center mb-16 text-primary"
-        >
-          Nos Services
-        </motion.h2>
+    <main className="bg-ivoire">
+      <PageHero
+        label="Nos services"
+        title="Un accompagnement complet, de l'ambition au résultat"
+        intro="Des solutions sur mesure pour les entreprises comme pour les chercheurs d'emploi, à chaque étape du parcours."
+      />
 
-        {services.length === 0 ? (
-          <p className="text-center text-gray-500">Aucun service disponible pour le moment</p>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-10">
-              {paginated.map((service, index) => {
-                const Icon = service.IconComp || iconMap[service.icone] || Icons.AlertTriangle;
-                const isOpen = openServiceId === service.id;
-                const subs = asArray(service.sous_services);
+      <section className="py-20 md:py-24">
+        <div className="max-w-6xl mx-auto px-6">
+          {loading ? (
+            <p className="text-center text-graphite/70 py-10">Chargement des services…</p>
+          ) : services.length === 0 ? (
+            <p className="text-center text-graphite/60 py-10">Aucun service disponible pour le moment.</p>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {paginated.map((service, index) => {
+                  const Icon = service.IconComp || iconMap[service.icone] || TriangleAlert;
+                  const isOpen = openServiceId === service.id;
+                  const subs = asArray(service.sous_services);
 
-                return (
-                  <motion.div
-                    key={service.id}
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.2 }}
-                    className="bg-white p-8 rounded-2xl shadow-md hover:shadow-xl transition-transform transform hover:-translate-y-1"
-                  >
-                    <div className="flex items-center justify-center mb-5">
-                      <div className="bg-primary/10 p-4 rounded-full">
-                        <Icon className="w-6 h-6 text-primary" />
+                  return (
+                    <motion.div
+                      key={service.id}
+                      initial={{ opacity: 0, y: 24 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.5, delay: index * 0.08 }}
+                      className="group bg-white border border-sable rounded-2xl p-8 shadow-sm hover:shadow-xl transition-all duration-300"
+                    >
+                      <div className="grid place-items-center h-12 w-12 rounded-xl bg-rouge/10 text-rouge group-hover:bg-rouge group-hover:text-white transition-colors mb-5">
+                        <Icon className="w-6 h-6" />
                       </div>
-                    </div>
-                    <h3 className="text-xl font-semibold mb-3 text-center">{service.titre}</h3>
-                    <p className="text-gray-600 text-center mb-5">{service.description}</p>
+                      <h3 className="font-display text-xl text-encre mb-2">{service.titre}</h3>
+                      <p className="text-graphite leading-relaxed">{service.description}</p>
 
-                    {subs.length > 0 && (
-                      <>
-                        <div className="text-center">
+                      {subs.length > 0 && (
+                        <>
                           <button
                             onClick={() => toggleSubServices(service.id)}
-                            className="text-sm font-medium text-primary underline hover:text-primary-dark transition"
+                            className="mt-4 text-sm font-semibold text-rouge hover:text-rougeprofond underline-offset-4 hover:underline"
                           >
                             {isOpen ? "Masquer les sous-services" : "Voir les sous-services"}
                           </button>
-                        </div>
 
-                        <AnimatePresence initial={false}>
-                          {isOpen && (
-                            <motion.ul
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: "auto" }}
-                              exit={{ opacity: 0, height: 0 }}
-                              transition={{ duration: 0.4 }}
-                              className="mt-4 text-sm text-gray-700 space-y-2"
-                            >
-                              {subs.map((sub, idx) => (
-                                <li key={idx} className="flex items-center gap-2">
-                                  <Icons.ChevronRight className="w-4 h-4 text-primary" />
-                                  {sub?.nom || sub?.title || String(sub)}
-                                </li>
-                              ))}
-                            </motion.ul>
-                          )}
-                        </AnimatePresence>
-                      </>
-                    )}
-                  </motion.div>
-                );
-              })}
-            </div>
-
-            {totalPages > 1 && (
-              <div className="flex justify-center mt-10 space-x-2">
-                <button
-                  onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                  disabled={page === 1}
-                  className="px-3 py-1 rounded border text-sm bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-50"
-                >
-                  ◀ Précédent
-                </button>
-                {Array.from({ length: totalPages }, (_, i) => (
-                  <button
-                    key={i + 1}
-                    onClick={() => setPage(i + 1)}
-                    className={`px-3 py-1 rounded border text-sm ${
-                      page === i + 1
-                        ? "bg-red-600 text-white"
-                        : "bg-white text-gray-700 hover:bg-gray-100"
-                    }`}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
-                <button
-                  onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-                  disabled={page === totalPages}
-                  className="px-3 py-1 rounded border text-sm bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-50"
-                >
-                  Suivant ▶
-                </button>
+                          <AnimatePresence initial={false}>
+                            {isOpen && (
+                              <motion.ul
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={{ opacity: 0, height: 0 }}
+                                transition={{ duration: 0.35 }}
+                                className="mt-4 text-sm text-graphite space-y-2 overflow-hidden"
+                              >
+                                {subs.map((sub, idx) => (
+                                  <li key={idx} className="flex items-center gap-2">
+                                    <ChevronRight className="w-4 h-4 text-rouge shrink-0" />
+                                    {sub?.nom || sub?.title || String(sub)}
+                                  </li>
+                                ))}
+                              </motion.ul>
+                            )}
+                          </AnimatePresence>
+                        </>
+                      )}
+                    </motion.div>
+                  );
+                })}
               </div>
-            )}
-          </>
-        )}
-      </div>
-    </section>
+
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center mt-12 gap-2">
+                  <button
+                    onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                    disabled={page === 1}
+                    className="h-9 px-4 rounded-full border border-sable text-sm text-encre bg-white hover:bg-sable disabled:opacity-40 transition"
+                  >
+                    Précédent
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => (
+                    <button
+                      key={i + 1}
+                      onClick={() => setPage(i + 1)}
+                      className={`h-9 w-9 rounded-full border text-sm transition ${
+                        page === i + 1 ? "bg-rouge border-rouge text-white" : "bg-white border-sable text-encre hover:bg-sable"
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+                    disabled={page === totalPages}
+                    className="h-9 px-4 rounded-full border border-sable text-sm text-encre bg-white hover:bg-sable disabled:opacity-40 transition"
+                  >
+                    Suivant
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </section>
+    </main>
   );
 }

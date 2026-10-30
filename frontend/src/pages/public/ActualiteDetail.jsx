@@ -203,18 +203,18 @@ export default function ActualiteDetail() {
 
   const BoutonsAction = ({ stacked = false }) => (
     <div className={stacked ? "flex flex-col gap-3" : "flex flex-wrap items-center gap-4"}>
-      <button onClick={handleCopyLink} className="text-sm text-gray-600 hover:text-red-700">
+      <button onClick={handleCopyLink} className="text-sm text-graphite hover:text-rouge transition">
         {copied ? "Lien copié ✅" : "Copier le lien"}
       </button>
       {typeof navigator !== "undefined" && navigator.share && (
-        <button onClick={handleNativeShare} className="text-sm text-gray-600 hover:text-red-700">
+        <button onClick={handleNativeShare} className="text-sm text-graphite hover:text-rouge transition">
           Partager…
         </button>
       )}
-      <button onClick={() => window.print()} className="text-sm text-gray-600 hover:text-red-700">
+      <button onClick={() => window.print()} className="text-sm text-graphite hover:text-rouge transition">
         Imprimer
       </button>
-      <button onClick={handleDownloadPDF} className="text-sm text-gray-600 hover:text-red-700">
+      <button onClick={handleDownloadPDF} className="text-sm text-graphite hover:text-rouge transition">
         Télécharger PDF
       </button>
     </div>
@@ -224,50 +224,51 @@ export default function ActualiteDetail() {
     <div className="hidden lg:flex flex-col gap-3 sticky top-28 ml-6 print:hidden">
       <BoutonsAction stacked />
       <ReseauxSociaux className="flex-col !items-start" />
-      <button onClick={scrollToTop} className="text-sm text-gray-600 hover:text-red-700 text-left">
+      <button onClick={scrollToTop} className="text-sm text-graphite hover:text-rouge text-left transition">
         Haut de page ↑
       </button>
     </div>
   );
 
-  if (!actu) return <p className="text-center mt-10">Chargement...</p>;
+  if (!actu) return <p className="text-center mt-28 text-graphite/70">Chargement…</p>;
 
   const mainImgRaw = actu.image || actu.cover || actu.image_url || actu.photo || "";
   const mainKey = actu.updated_at || actu.date_publication || actu.id;
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8 max-w-7xl mx-auto px-4 pt-24 pb-28 relative">
+    <div className="bg-ivoire">
+    <div className="flex flex-col lg:flex-row gap-8 max-w-7xl mx-auto px-6 pt-28 pb-28 relative">
       <style>{PRINT_CSS}</style>
 
       {/* Colonne principale */}
       <div className="w-full lg:w-3/4">
-        <div className="flex flex-col gap-3 mb-4 print:hidden">
+        <div className="flex flex-col gap-3 mb-6 print:hidden">
           <div className="flex justify-between items-center">
-            <button onClick={() => navigate(-1)} className="text-sm text-red-700 hover:underline">
+            <button onClick={() => navigate(-1)} className="text-sm font-medium text-rouge hover:text-rougeprofond hover:underline underline-offset-4 transition">
               ← Retour
             </button>
             <BoutonsAction />
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-500">Partager :</span>
+            <span className="text-xs text-graphite/70">Partager :</span>
             <ReseauxSociaux />
           </div>
         </div>
 
-        <div className="actu-print-zone">
+        <article className="actu-print-zone bg-white border border-sable rounded-2xl shadow-sm p-6 md:p-10">
           {/* Image affichée en entier (non recadrée) sur un fond neutre */}
           <SmartImg
             raw={mainImgRaw}
             cacheKey={mainKey}
             alt={actu.titre}
-            className="w-full max-h-[70vh] object-contain rounded-lg shadow mb-6 bg-gray-50"
+            className="w-full max-h-[70vh] object-contain rounded-xl mb-8 bg-sable/40"
           />
 
           <div className="mb-4">
-            <span className="text-xs font-medium text-red-600 uppercase">
+            <span className="inline-flex items-center rounded-full bg-rouge/10 text-rouge text-xs font-medium px-3 py-1">
               {actu.categorie || "Non classée"}
             </span>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-graphite/70 mt-3">
               Publié le{" "}
               {new Date(actu.date_publication).toLocaleDateString("fr-FR", {
                 weekday: "short",
@@ -278,32 +279,34 @@ export default function ActualiteDetail() {
             </p>
           </div>
 
-          <h1 className="text-3xl font-bold text-gray-900 mb-6">{actu.titre}</h1>
+          <h1 className="font-display text-3xl md:text-4xl leading-tight text-encre mb-6">{actu.titre}</h1>
 
           <div
-            className="prose prose-sm md:prose-base lg:prose-lg max-w-none text-gray-800 leading-relaxed"
+            className="prose prose-sm md:prose-base lg:prose-lg max-w-none text-graphite leading-relaxed prose-headings:font-display prose-headings:text-encre prose-a:text-rouge"
             dangerouslySetInnerHTML={{ __html: actu.contenu }}
           />
-        </div>
+        </article>
 
         {similar.length > 0 && (
           <div className="mt-16 print:hidden">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-6">À lire aussi</h2>
+            <h2 className="font-display text-2xl md:text-3xl text-encre mb-6">À lire aussi</h2>
             <div className="grid sm:grid-cols-2 gap-6">
               {similar.map((item) => {
                 const raw = item.image || item.cover || item.image_url || item.photo || "";
                 const key = item.updated_at || item.date_publication || item.id;
                 return (
-                  <Link key={item.id} to={`/actualites/${item.id}`} className="border rounded-lg overflow-hidden hover:shadow transition-all">
-                    <SmartImg
-                      raw={raw}
-                      cacheKey={key}
-                      alt={item.titre}
-                      className="h-40 w-full object-cover"
-                    />
-                    <div className="p-4">
-                      <h3 className="font-semibold text-gray-800 text-base mb-1 line-clamp-2">{item.titre}</h3>
-                      <p className="text-xs text-gray-500">{new Date(item.date_publication).toLocaleDateString("fr-FR")}</p>
+                  <Link key={item.id} to={`/actualites/${item.id}`} className="group bg-white border border-sable rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all">
+                    <div className="h-44 w-full overflow-hidden">
+                      <SmartImg
+                        raw={raw}
+                        cacheKey={key}
+                        alt={item.titre}
+                        className="h-44 w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    </div>
+                    <div className="p-5">
+                      <h3 className="font-display text-lg text-encre mb-1 line-clamp-2">{item.titre}</h3>
+                      <p className="text-xs text-graphite/70">{new Date(item.date_publication).toLocaleDateString("fr-FR")}</p>
                     </div>
                   </Link>
                 );
@@ -322,12 +325,13 @@ export default function ActualiteDetail() {
       {showTopBtn && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-6 right-6 bg-red-700 text-white p-2 rounded-full shadow-lg hover:bg-red-800 z-50 print:hidden"
+          className="fixed bottom-6 right-6 bg-rouge text-white p-2.5 rounded-full shadow-lg hover:bg-rougeprofond z-50 print:hidden transition"
           title="Remonter en haut"
         >
           ↑
         </button>
       )}
+    </div>
     </div>
   );
 }

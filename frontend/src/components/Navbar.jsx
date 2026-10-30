@@ -101,13 +101,13 @@ export default function Navbar() {
     mode === "transparent-light"
       ? "bg-transparent text-white backdrop-blur-[2px]"
       : mode === "solid-red"
-      ? "bg-red-800 text-white shadow-md"
+      ? "bg-encre/95 text-white shadow-lg shadow-encre/10 backdrop-blur border-b border-white/5"
       : "bg-white text-[color:var(--brand-red)] border-b border-gray-100";
 
   const linkBase = "inline-flex items-center text-sm md:text-[15px] font-medium transition-colors";
   const linkOnHome = "text-white/90 hover:text-white";
   const activeUnderline =
-    "relative after:absolute after:-bottom-1 after:left-0 after:h-[2px] after:w-full after:rounded-full after:bg-current";
+    "relative after:absolute after:-bottom-1 after:left-0 after:h-[2px] after:w-full after:rounded-full after:bg-rouge";
 
   // Lien vers l'espace propre au rôle connecté (candidat ou partenaire)
   const lienEspace =
@@ -165,7 +165,7 @@ export default function Navbar() {
         </Link>
         <Link
           to="/inscription"
-          className="inline-flex items-center px-3 py-1 rounded-md bg-white/10 hover:bg-white/20 text-sm whitespace-nowrap"
+          className="inline-flex items-center px-4 py-1.5 rounded-full bg-rouge hover:bg-rougeprofond text-white text-sm font-semibold whitespace-nowrap transition"
         >
           Créer un compte
         </Link>
@@ -296,7 +296,7 @@ export default function Navbar() {
           mode === "transparent-light"
             ? "bg-black/60 backdrop-blur"
             : mode === "solid-red"
-            ? "bg-red-800"
+            ? "bg-encre"
             : "bg-white",
         ].join(" ")}
       >

@@ -13,7 +13,7 @@ const CHAMPS = [
   { cle: "site_web", label: "Site web (https://…)" },
 ];
 
-const champ = "w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-600";
+const champ = "w-full border border-sable rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rouge focus:border-rouge";
 
 export default function ProfilPartenaire() {
   const [form, setForm] = useState(() => Object.fromEntries(CHAMPS.map((c) => [c.cle, ""])));
@@ -78,8 +78,8 @@ export default function ProfilPartenaire() {
   if (chargement) return <p className="text-gray-500">Chargement…</p>;
 
   return (
-    <section className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6">
-      <h3 className="text-lg font-semibold">Ma fiche partenaire</h3>
+    <section className="bg-white rounded-2xl border border-sable shadow-sm p-6 space-y-6">
+      <h3 className="font-display text-xl text-encre">Ma fiche partenaire</h3>
 
       <div className="flex items-center gap-4">
         <div className="w-24 h-24 border rounded bg-gray-50 flex items-center justify-center overflow-hidden">
@@ -116,7 +116,7 @@ export default function ProfilPartenaire() {
               required={c.requis}
               className={champ}
             />
-            {erreurs[c.cle] && <span className="block text-xs text-red-600">{erreurs[c.cle]}</span>}
+            {erreurs[c.cle] && <span className="block text-xs text-rougeprofond">{erreurs[c.cle]}</span>}
           </label>
         ))}
 
@@ -124,12 +124,12 @@ export default function ProfilPartenaire() {
           <button
             type="submit"
             disabled={enregistrement}
-            className="bg-red-600 text-white px-4 py-2 rounded text-sm disabled:opacity-60"
+            className="bg-rouge hover:bg-rougeprofond text-white px-5 py-2.5 rounded-full font-semibold text-sm shadow-sm shadow-rouge/20 disabled:opacity-60 transition"
           >
             {enregistrement ? "Enregistrement…" : "Enregistrer la fiche"}
           </button>
           {message && (
-            <span className={`text-sm ${message.type === "succes" ? "text-green-700" : "text-red-600"}`}>
+            <span className={`text-sm ${message.type === "succes" ? "text-green-700" : "text-rougeprofond"}`}>
               {message.texte}
             </span>
           )}

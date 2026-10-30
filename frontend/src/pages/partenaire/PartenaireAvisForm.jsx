@@ -36,10 +36,10 @@ const VIDE = {
   affiliations: "",
 };
 
-const champ = "w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-600";
+const champ = "w-full border border-sable rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-rouge focus:border-rouge";
 
 function ErreurChamp({ erreurs, nom }) {
-  return erreurs[nom] ? <p className="text-sm text-red-600 mt-1">{erreurs[nom]}</p> : null;
+  return erreurs[nom] ? <p className="text-sm text-rougeprofond mt-1">{erreurs[nom]}</p> : null;
 }
 
 export default function PartenaireAvisForm() {
@@ -96,15 +96,15 @@ export default function PartenaireAvisForm() {
     }
   };
 
-  if (chargement) return <p className="text-slate-500">Chargement…</p>;
+  if (chargement) return <p className="text-graphite/70">Chargement…</p>;
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 md:p-8 space-y-6">
+    <div className="bg-white rounded-2xl border border-sable shadow-sm p-6 md:p-8 space-y-6">
       <header>
         <Link to="/partenaire" className="text-sm text-blue-600 hover:underline">
           ← Retour à mes avis
         </Link>
-        <h2 className="text-xl font-bold text-red-600 mt-2">
+        <h2 className="font-display text-2xl text-encre mt-2">
           {modification ? "Corriger l'avis de recrutement" : "Soumettre un avis de recrutement"}
         </h2>
         <p className="text-sm text-gray-600">
@@ -112,7 +112,7 @@ export default function PartenaireAvisForm() {
         </p>
       </header>
 
-      {message && <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded p-2">{message.texte}</div>}
+      {message && <div className="text-sm text-rougeprofond bg-rouge/10 border border-rouge/20 rounded-lg p-2.5">{message.texte}</div>}
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
@@ -186,7 +186,7 @@ export default function PartenaireAvisForm() {
         </div>
 
         <div className="flex items-center gap-4">
-          <button type="submit" disabled={envoi} className="bg-red-700 hover:bg-red-800 text-white px-5 py-2.5 rounded-lg font-medium shadow-sm disabled:opacity-60">
+          <button type="submit" disabled={envoi} className="bg-rouge hover:bg-rougeprofond text-white px-5 py-2.5 rounded-lg font-medium shadow-sm disabled:opacity-60">
             {envoi ? "Envoi…" : modification ? "Enregistrer et soumettre à nouveau" : "Soumettre l'avis"}
           </button>
         </div>

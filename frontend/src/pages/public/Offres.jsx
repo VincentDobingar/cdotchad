@@ -1,6 +1,7 @@
 // pages/public/Offres.jsx
 
 import { useEffect, useMemo, useState } from "react";
+import PageHero from "@/components/ui/PageHero";
 import { Link } from "react-router-dom";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
@@ -98,7 +99,7 @@ function getDisplayStatus(offre) {
   ) {
     return {
       label: "Expirée",
-      className: "bg-gray-100 text-gray-700 border-gray-200",
+      className: "bg-sable text-encre border-sablefonce",
     };
   }
 
@@ -112,7 +113,7 @@ function getDisplayStatus(offre) {
     if (!Number.isNaN(deadline.getTime()) && deadline < today) {
       return {
         label: "Expirée",
-        className: "bg-gray-100 text-gray-700 border-gray-200",
+        className: "bg-sable text-encre border-sablefonce",
       };
     }
   }
@@ -328,227 +329,189 @@ export default function Offres() {
 
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
+  // Style commun des champs de filtre
+  const champ =
+    "border border-sable bg-white px-3.5 py-2.5 rounded-xl text-sm text-encre placeholder:text-graphite/50 focus:outline-none focus:ring-2 focus:ring-rouge/30 focus:border-rouge transition";
+
   return (
-    <div className="max-w-6xl mx-auto px-4 pt-20 pb-28">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between mb-4">
-        <div>
-          <h1 className="text-2xl font-bold text-red-700">Offres d'emploi</h1>
-          <p className="text-sm text-gray-600 mt-1">
-            Découvrez les opportunités actuellement publiées.
+    <main className="bg-ivoire min-h-screen">
+      <PageHero
+        label="Carrière"
+        title="Offres d'emploi"
+        intro="Découvrez les opportunités actuellement publiées et postulez en quelques minutes."
+      />
+
+      <div className="max-w-6xl mx-auto px-6 py-14">
+        <div className="flex items-center justify-between mb-5">
+          <p className="text-sm text-graphite">
+            {`${totalCount} offre${totalCount > 1 ? "s" : ""} trouvée${totalCount > 1 ? "s" : ""}`}
           </p>
         </div>
 
-        <p className="text-sm text-gray-600">
-          {`${totalCount} offre${totalCount > 1 ? "s" : ""} trouvée${totalCount > 1 ? "s" : ""}`}
-        </p>
-      </div>
+        <div className="bg-white border border-sable rounded-2xl shadow-sm p-5 md:p-6 mb-10 space-y-4">
+          <form onSubmit={onSubmitSearch}>
+            <input
+              type="text"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="Rechercher un titre, un employeur ou un lieu…"
+              className={`${champ} w-full`}
+            />
+          </form>
 
-      <form onSubmit={onSubmitSearch} className="mb-4">
-        <input
-          type="text"
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          placeholder="Rechercher un titre, un employeur ou un lieu..."
-          className="border px-3 py-2 rounded-xl w-full"
-        />
-      </form>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <input
+              type="text"
+              value={lieuInput}
+              onChange={(e) => setLieuInput(e.target.value)}
+              placeholder="Filtrer par lieu"
+              className={champ}
+            />
+            <input
+              type="text"
+              value={employeurInput}
+              onChange={(e) => setEmployeurInput(e.target.value)}
+              placeholder="Filtrer par employeur"
+              className={champ}
+            />
+            <input
+              type="text"
+              value={typeContratInput}
+              onChange={(e) => setTypeContratInput(e.target.value)}
+              placeholder="Filtrer par type de contrat"
+              className={champ}
+            />
+          </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-        <input
-          type="text"
-          value={lieuInput}
-          onChange={(e) => setLieuInput(e.target.value)}
-          placeholder="Filtrer par lieu"
-          className="border px-3 py-2 rounded-xl"
-        />
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <select value={typeRecrutementInput} onChange={(e) => setTypeRecrutementInput(e.target.value)} className={champ}>
+              <option value="">Type de recrutement</option>
+              <option value="externe">Externe</option>
+              <option value="interne">Interne</option>
+            </select>
+            <select value={statutInput} onChange={(e) => setStatutInput(e.target.value)} className={champ}>
+              <option value="publiee">Publiées</option>
+              <option value="suspendue">Suspendues</option>
+              <option value="cloturee">Clôturées</option>
+            </select>
+            <input type="date" value={dateMinInput} onChange={(e) => setDateMinInput(e.target.value)} className={champ} />
+            <input type="date" value={dateMaxInput} onChange={(e) => setDateMaxInput(e.target.value)} className={champ} />
+          </div>
 
-        <input
-          type="text"
-          value={employeurInput}
-          onChange={(e) => setEmployeurInput(e.target.value)}
-          placeholder="Filtrer par employeur"
-          className="border px-3 py-2 rounded-xl"
-        />
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <select value={sortKey} onChange={(e) => setSortKey(e.target.value)} className={champ}>
+              <option value="date_publication">Tri : date de publication</option>
+              <option value="date_limite">Tri : date limite</option>
+              <option value="titre">Tri : titre</option>
+              <option value="employeur">Tri : employeur</option>
+              <option value="lieu">Tri : lieu</option>
+            </select>
+            <select value={sortDir} onChange={(e) => setSortDir(e.target.value)} className={champ}>
+              <option value="desc">Ordre : décroissant</option>
+              <option value="asc">Ordre : croissant</option>
+            </select>
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="px-4 py-2.5 rounded-xl text-sm font-medium border border-sable text-encre bg-white hover:bg-sable transition"
+            >
+              Réinitialiser
+            </button>
+            <button
+              type="button"
+              onClick={exportPDF}
+              className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-rouge text-white hover:bg-rougeprofond transition"
+            >
+              Exporter en PDF
+            </button>
+          </div>
+        </div>
 
-        <input
-          type="text"
-          value={typeContratInput}
-          onChange={(e) => setTypeContratInput(e.target.value)}
-          placeholder="Filtrer par type de contrat"
-          className="border px-3 py-2 rounded-xl"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-        <select
-          value={typeRecrutementInput}
-          onChange={(e) => setTypeRecrutementInput(e.target.value)}
-          className="border px-3 py-2 rounded-xl bg-white"
-        >
-          <option value="">Type de recrutement</option>
-          <option value="externe">Externe</option>
-          <option value="interne">Interne</option>
-        </select>
-
-        <select
-          value={statutInput}
-          onChange={(e) => setStatutInput(e.target.value)}
-          className="border px-3 py-2 rounded-xl bg-white"
-        >
-          <option value="publiee">Publiées</option>
-          <option value="suspendue">Suspendues</option>
-          <option value="cloturee">Clôturées</option>
-        </select>
-
-        <input
-          type="date"
-          value={dateMinInput}
-          onChange={(e) => setDateMinInput(e.target.value)}
-          className="border px-3 py-2 rounded-xl"
-        />
-
-        <input
-          type="date"
-          value={dateMaxInput}
-          onChange={(e) => setDateMaxInput(e.target.value)}
-          className="border px-3 py-2 rounded-xl"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <select
-          value={sortKey}
-          onChange={(e) => setSortKey(e.target.value)}
-          className="border px-3 py-2 rounded-xl bg-white"
-        >
-          <option value="date_publication">Tri : date de publication</option>
-          <option value="date_limite">Tri : date limite</option>
-          <option value="titre">Tri : titre</option>
-          <option value="employeur">Tri : employeur</option>
-          <option value="lieu">Tri : lieu</option>
-        </select>
-
-        <select
-          value={sortDir}
-          onChange={(e) => setSortDir(e.target.value)}
-          className="border px-3 py-2 rounded-xl bg-white"
-        >
-          <option value="desc">Ordre : décroissant</option>
-          <option value="asc">Ordre : croissant</option>
-        </select>
-
-        <button
-          type="button"
-          onClick={resetFilters}
-          className="bg-gray-100 text-gray-700 px-4 py-2 rounded-xl hover:bg-gray-200"
-        >
-          Réinitialiser
-        </button>
-
-        <button
-          type="button"
-          onClick={exportPDF}
-          className="bg-red-600 text-white px-4 py-2 rounded-xl hover:bg-red-700"
-        >
-          Exporter en PDF
-        </button>
-      </div>
-
-      {loading ? (
-        <div className="text-center text-gray-500 py-10">Chargement...</div>
-      ) : visibleOffres.length === 0 ? (
-        <div className="text-center text-gray-500 py-10">Aucune offre trouvée.</div>
-      ) : (
-        <>
-          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {visibleOffres.map((offre) => {
-              const status = getDisplayStatus(offre);
-
-              return (
-                <article
-                  key={offre.id}
-                  className="border rounded-2xl p-5 bg-white shadow-sm hover:shadow-md transition"
-                >
-                  <div className="flex items-start justify-between gap-3 mb-3">
-                    <h2 className="text-lg font-semibold text-gray-800">
-                      {offre.titre}
-                    </h2>
-                    <span
-                      className={`text-xs px-2.5 py-1 rounded-full border whitespace-nowrap ${status.className}`}
-                    >
-                      {status.label}
-                    </span>
-                  </div>
-
-                  <div className="space-y-1 text-sm text-gray-600 mb-3">
-                    <p><span className="font-medium">Employeur :</span> {offre.employeur}</p>
-                    <p><span className="font-medium">Lieu :</span> {offre.lieu}</p>
-                    <p><span className="font-medium">Contrat :</span> {offre.type_contrat}</p>
-                    <p>
-                      <span className="font-medium">Recrutement :</span>{" "}
-                      {getRecruitmentLabel(offre.type_recrutement)}
-                    </p>
-                    <p>
-                      <span className="font-medium">Publié le :</span>{" "}
-                      {formatDate(offre.date_publication)}
-                    </p>
-                    <p>
-                      <span className="font-medium">Expire le :</span>{" "}
-                      {formatDate(offre.date_limite)}
-                    </p>
-                  </div>
-
-                  <p className="text-sm text-gray-700 mb-4">
-                    {truncateText(offre.resume || offre.description, 180)}
-                  </p>
-
-                  <Link
-                    to={`/offres/${offre.id}`}
-                    className="inline-flex items-center text-red-700 font-medium hover:underline"
+        {loading ? (
+          <div className="text-center text-graphite/70 py-10">Chargement…</div>
+        ) : visibleOffres.length === 0 ? (
+          <div className="text-center text-graphite/60 py-10">Aucune offre trouvée.</div>
+        ) : (
+          <>
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {visibleOffres.map((offre) => {
+                const status = getDisplayStatus(offre);
+                return (
+                  <article
+                    key={offre.id}
+                    className="group flex flex-col border border-sable rounded-2xl p-6 bg-white shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
                   >
-                    Voir le détail
-                  </Link>
-                </article>
-              );
-            })}
-          </div>
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <h2 className="font-display text-lg text-encre leading-snug">{offre.titre}</h2>
+                      <span className={`text-xs px-2.5 py-1 rounded-full border whitespace-nowrap ${status.className}`}>
+                        {status.label}
+                      </span>
+                    </div>
 
-          <div className="flex justify-center items-center gap-3 mt-10 flex-wrap">
-            <button
-              type="button"
-              disabled={page <= 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              className="px-4 py-2 border rounded-xl disabled:opacity-50"
-            >
-              Précédent
-            </button>
+                    <div className="space-y-1 text-sm text-graphite mb-3">
+                      <p><span className="font-medium text-encre">Employeur :</span> {offre.employeur}</p>
+                      <p><span className="font-medium text-encre">Lieu :</span> {offre.lieu}</p>
+                      <p><span className="font-medium text-encre">Contrat :</span> {offre.type_contrat}</p>
+                      <p>
+                        <span className="font-medium text-encre">Recrutement :</span>{" "}
+                        {getRecruitmentLabel(offre.type_recrutement)}
+                      </p>
+                      <p>
+                        <span className="font-medium text-encre">Publié le :</span> {formatDate(offre.date_publication)}
+                      </p>
+                      <p>
+                        <span className="font-medium text-encre">Expire le :</span> {formatDate(offre.date_limite)}
+                      </p>
+                    </div>
 
-            {pages.map((p) => (
+                    <p className="text-sm text-graphite mb-4 line-clamp-3">
+                      {truncateText(offre.resume || offre.description, 180)}
+                    </p>
+
+                    <Link
+                      to={`/offres/${offre.id}`}
+                      className="mt-auto self-start text-sm font-semibold text-rouge hover:text-rougeprofond underline-offset-4 hover:underline"
+                    >
+                      Voir le détail
+                    </Link>
+                  </article>
+                );
+              })}
+            </div>
+
+            <div className="flex justify-center items-center gap-2 mt-12 flex-wrap">
               <button
-                key={p}
                 type="button"
-                onClick={() => setPage(p)}
-                className={`px-4 py-2 rounded-xl border ${
-                  p === page
-                    ? "bg-red-600 text-white border-red-600"
-                    : "bg-white text-gray-700"
-                }`}
+                disabled={page <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                className="h-9 px-4 border border-sable rounded-full text-sm text-encre bg-white hover:bg-sable disabled:opacity-40 transition"
               >
-                {p}
+                Précédent
               </button>
-            ))}
-
-            <button
-              type="button"
-              disabled={page >= totalPages}
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              className="px-4 py-2 border rounded-xl disabled:opacity-50"
-            >
-              Suivant
-            </button>
-          </div>
-        </>
-      )}
-    </div>
+              {pages.map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setPage(p)}
+                  className={`h-9 w-9 rounded-full border text-sm transition ${
+                    p === page ? "bg-rouge text-white border-rouge" : "bg-white text-encre border-sable hover:bg-sable"
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
+              <button
+                type="button"
+                disabled={page >= totalPages}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                className="h-9 px-4 border border-sable rounded-full text-sm text-encre bg-white hover:bg-sable disabled:opacity-40 transition"
+              >
+                Suivant
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </main>
   );
 }

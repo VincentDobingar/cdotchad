@@ -6,6 +6,7 @@ import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
 import api from "@/utils/api";
+import SectionHeading from "@/components/ui/SectionHeading";
 
 const FALLBACK = "/images/default-actualite.jpg";
 
@@ -95,7 +96,13 @@ export default function HomeActualites() {
           // on garde la valeur *brute*, SmartImg s’occupe des chemins
           image: a.image ?? a.image_url ?? a.cover ?? a.photo ?? "",
           date_publication: a.date_publication ?? a.created_at ?? a.date ?? null,
-          resume: (a.resume || a.contenu || a.content || "").toString(),
+          // texte brut : on retire les balises HTML de l'éditeur
+          resume: (a.resume || a.contenu || a.content || "")
+            .toString()
+            .replace(/<[^>]*>/g, " ")
+            .replace(/&nbsp;/gi, " ")
+            .replace(/\s+/g, " ")
+            .trim(),
           updated_at: a.updated_at ?? a.modified_at ?? null,
         }));
 
@@ -111,89 +118,92 @@ export default function HomeActualites() {
     fetchActualites();
   }, []);
 
-  if (loading) return <div className="text-center py-10 text-gray-500">Chargement des actualités...</div>;
-  if (!actualites.length) return <div className="text-center py-10 text-gray-400">Aucune actualité à afficher.</div>;
-
   return (
-    <div className="max-w-6xl mx-auto px-6 py-12 relative">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-3xl font-bold text-gray-900">Actualités À La Une</h2>
-        <button onClick={() => navigate("/actualites")} className="text-sm text-blue-600 font-semibold hover:underline">
-          Tous Découvrir
-        </button>
-      </div>
+    <section
+      className="bg-ivoire py-20 md:py-28 [--swiper-pagination-color:#c8102e] [--swiper-pagination-bullet-inactive-color:#1b1410]"
+      id="actualites"
+    >
+      <div className="max-w-6xl mx-auto px-6">
+        <SectionHeading
+          label="Actualités"
+          title="Ce qui se passe au cabinet"
+          intro="Offres d’emploi, sessions de formation, événements et temps forts de CDO Consulting."
+          to="/actualites"
+        />
 
-      <Swiper
-        modules={[Autoplay, Pagination, Navigation, Keyboard]}
-        spaceBetween={24}
-        slidesPerView={1}
-        breakpoints={{ 768: { slidesPerView: 2 } }}
-        autoplay={{ delay: 6000, disableOnInteraction: false, pauseOnMouseEnter: true }}
-        pagination={{ clickable: true }}
-        navigation={{ nextEl: ".actualite-swiper-next", prevEl: ".actualite-swiper-prev" }}
-        keyboard={{ enabled: true, onlyInViewport: true }}
-        className="relative"
-      >
-        {actualites.map((actu) => (
-          <SwiperSlide key={actu.id}>
-            <article className="flex flex-col md:flex-row bg-white border rounded-lg shadow-lg overflow-hidden h-full min-h-[380px]">
-              {/* Media avec ratio stable */}
-              <div className="md:w-1/2">
-                <div className="relative w-full h-full md:h-auto aspect-video">
-                  <SmartImg
-                    raw={actu.image}
-                    cacheKey={actu.updated_at || actu.date_publication || actu.id}
-                    alt={`Actualité – ${actu.titre}`}
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
-                </div>
-              </div>
+        <div className="mt-12 relative">
+          {loading ? (
+            <div className="py-10 text-center text-graphite/70">Chargement des actualités…</div>
+          ) : actualites.length ? (
+            <>
+              <Swiper
+                modules={[Autoplay, Pagination, Navigation, Keyboard]}
+                spaceBetween={24}
+                slidesPerView={1}
+                breakpoints={{ 768: { slidesPerView: 2 } }}
+                autoplay={{ delay: 6000, disableOnInteraction: false, pauseOnMouseEnter: true }}
+                pagination={{ clickable: true }}
+                navigation={{ nextEl: ".actualite-swiper-next", prevEl: ".actualite-swiper-prev" }}
+                keyboard={{ enabled: true, onlyInViewport: true }}
+                className="relative !pb-12"
+              >
+                {actualites.map((actu) => (
+                  <SwiperSlide key={actu.id} className="h-auto">
+                    <article className="group flex flex-col bg-white border border-sable rounded-2xl overflow-hidden h-full shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+                      <div className="relative w-full aspect-[16/10] overflow-hidden">
+                        <SmartImg
+                          raw={actu.image}
+                          cacheKey={actu.updated_at || actu.date_publication || actu.id}
+                          alt={`Actualité – ${actu.titre}`}
+                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                      </div>
+                      <div className="p-6 flex flex-col flex-1">
+                        {actu.date_publication && (
+                          <p className="text-xs font-medium tracking-wide text-rouge mb-2">
+                            {new Date(actu.date_publication).toLocaleDateString("fr-FR", {
+                              day: "2-digit",
+                              month: "long",
+                              year: "numeric",
+                            })}
+                          </p>
+                        )}
+                        <h3 className="font-display text-xl text-encre leading-snug mb-3">{actu.titre}</h3>
+                        <p className="text-sm text-graphite leading-relaxed line-clamp-3 mb-5">
+                          {actu.resume?.length > 180 ? `${actu.resume.slice(0, 180)}…` : actu.resume || ""}
+                        </p>
+                        <button
+                          onClick={() => navigate(`/actualites/${actu.id}`)}
+                          className="mt-auto self-start text-sm font-semibold text-rouge hover:text-rougeprofond underline-offset-4 hover:underline"
+                          aria-label={`Consulter l’actualité : ${actu.titre}`}
+                        >
+                          Lire l’article
+                        </button>
+                      </div>
+                    </article>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
 
-              {/* Contenu */}
-              <div className="p-5 md:w-1/2 flex flex-col justify-between">
-                <div>
-                  <p className="text-xs text-gray-400 mb-1">
-                    {actu.date_publication
-                      ? new Date(actu.date_publication).toLocaleDateString("fr-FR", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        })
-                      : ""}
-                  </p>
-                  <h3 className="text-lg font-bold mb-2 text-gray-800">{actu.titre}</h3>
-                  <p className="text-sm text-gray-700 mb-4 line-clamp-4">
-                    {actu.resume?.length > 180 ? `${actu.resume.slice(0, 180)}…` : (actu.resume || "")}
-                  </p>
-                </div>
-                <button
-                  onClick={() => navigate(`/actualites/${actu.id}`)}
-                  className="text-red-600 font-semibold hover:underline self-start"
-                  aria-label={`Consulter l’actualité : ${actu.titre}`}
-                >
-                  Consulter Maintenant
-                </button>
-              </div>
-            </article>
-          </SwiperSlide>
-        ))}
-      </Swiper>
-
-      {/* Boutons navigation */}
-      <div
-        className="actualite-swiper-prev absolute top-1/2 -left-4 transform -translate-y-1/2 z-10 cursor-pointer text-red-600 text-3xl select-none"
-        role="button"
-        aria-label="Précédent"
-      >
-        ‹
+              {/* Boutons navigation */}
+              <button
+                className="actualite-swiper-prev absolute top-[38%] -left-3 md:-left-5 z-10 grid place-items-center h-10 w-10 rounded-full bg-white border border-sable text-encre shadow-sm hover:bg-encre hover:text-white transition"
+                aria-label="Actualité précédente"
+              >
+                ‹
+              </button>
+              <button
+                className="actualite-swiper-next absolute top-[38%] -right-3 md:-right-5 z-10 grid place-items-center h-10 w-10 rounded-full bg-white border border-sable text-encre shadow-sm hover:bg-encre hover:text-white transition"
+                aria-label="Actualité suivante"
+              >
+                ›
+              </button>
+            </>
+          ) : (
+            <div className="py-10 text-center text-graphite/60">Aucune actualité à afficher pour le moment.</div>
+          )}
+        </div>
       </div>
-      <div
-        className="actualite-swiper-next absolute top-1/2 -right-4 transform -translate-y-1/2 z-10 cursor-pointer text-red-600 text-3xl select-none"
-        role="button"
-        aria-label="Suivant"
-      >
-        ›
-      </div>
-    </div>
+    </section>
   );
 }

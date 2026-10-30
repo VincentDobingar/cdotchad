@@ -27,40 +27,17 @@ export default function Home() {
 
   return (
     <main className="w-screen overflow-x-hidden">
-      {/* HERO */}
-        <HomeHero />
-
-      {/* SERVICES */}
-          <HomeServices />
-
-      {/* POURQUOI NOUS CHOISIR */}
-        <HomePourquoi />
-
-      {/* OBJECTIFS */}
-        <HomeObjectifs />
-
-      {/* ACTUALITES */}
-        <HomeActualites />
-
-      {/* ACTIVITÉS */}
-        <HomeActivites />
-      
-      {/* Section Galeries */}
-        <HomeGalerie />
-
-      {/* Section Partenaires */}
+      <HomeHero />
+      <HomeServices />
+      <HomePourquoi />
+      <HomeObjectifs />
+      <HomeActualites />
+      <HomeActivites />
+      <HomeGalerie />
       <HomePartenaires />
-
-      {/* Section Clients */}
       <HomeClients />
-
-      {/* Section Témoignages */}
-        <Testimonials />      
-
-      {/* CTA FINAL */}
-          <HomeCTA />
-
-          
+      <Testimonials />
+      <HomeCTA />
       <ScrollToTop />
     </main>
   );

@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { partenaires } from "@/data/partenairesData";
 import { Modal, ModalContent } from "@/components/ui/Modal";
+import SectionHeading from "@/components/ui/SectionHeading";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
 import "swiper/css";
@@ -14,51 +15,57 @@ export default function HomePartenaires() {
   const [selectedPartenaire, setSelectedPartenaire] = useState(null);
 
   return (
-    <section className="py-16 bg-gray-50" id="partenaires">
-      <div className="container mx-auto px-4">
-        <h2 className="text-3xl md:text-4xl font-bold text-center text-red-600 mb-8">
-          Nos Partenaires
-        </h2>
+    <section
+      className="py-20 md:py-28 bg-ivoire [--swiper-navigation-color:#1b1410] [--swiper-navigation-size:28px]"
+      id="partenaires"
+    >
+      <div className="max-w-6xl mx-auto px-6">
+        <SectionHeading
+          label="Écosystème"
+          title="Nos partenaires"
+          intro="Institutions, entreprises et organisations qui nous accompagnent au Tchad et au-delà."
+        />
 
-        <Swiper
-          modules={[Navigation, Autoplay]}
-          slidesPerView={2}
-          spaceBetween={20}
-          navigation
-          autoplay={{ delay: 4000 }}
-          loop
-          breakpoints={{
-            640: { slidesPerView: 1 },
-            768: { slidesPerView: 2 },
-            1024: { slidesPerView: 3 },
-          }}
-        >
-          {partenaires.map((item, index) => (
-            <SwiperSlide key={index}>
-              <div
-                onClick={() => setSelectedPartenaire(item)}
-                className="cursor-pointer bg-white rounded-xl shadow p-6 min-h-[280px] flex flex-col justify-between hover:shadow-lg transition"
-              >
-                <img
-                  src={item.image || fallbackLogo}
-                  alt={item.name || "Logo"}
-                  className="h-20 mx-auto object-contain mb-4"
-                  loading="lazy"
-                  onError={(e) => {
-                    e.currentTarget.onerror = null;
-                    e.currentTarget.src = fallbackLogo;
-                  }}
-                />
-                <h3 className="text-lg font-semibold text-center text-red-700">
-                  {item.name}
-                </h3>
-                <p className="text-sm text-gray-600 text-center mt-2 line-clamp-3">
-                  {item.description}
-                </p>
-              </div>
-            </SwiperSlide>
-          ))}
-        </Swiper>
+        <div className="mt-12">
+          <Swiper
+            modules={[Navigation, Autoplay]}
+            slidesPerView={2}
+            spaceBetween={24}
+            navigation
+            autoplay={{ delay: 4000 }}
+            loop
+            breakpoints={{
+              640: { slidesPerView: 1 },
+              768: { slidesPerView: 2 },
+              1024: { slidesPerView: 3 },
+            }}
+          >
+            {partenaires.map((item, index) => (
+              <SwiperSlide key={index} className="h-auto pb-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedPartenaire(item)}
+                  className="group w-full text-left cursor-pointer bg-white border border-sable rounded-2xl p-7 min-h-[280px] flex flex-col shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
+                >
+                  <div className="h-20 flex items-center justify-center mb-5">
+                    <img
+                      src={item.image || fallbackLogo}
+                      alt={item.name || "Logo"}
+                      className="max-h-20 max-w-[70%] object-contain"
+                      loading="lazy"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = fallbackLogo;
+                      }}
+                    />
+                  </div>
+                  <h3 className="font-display text-lg text-center text-encre">{item.name}</h3>
+                  <p className="text-sm text-graphite text-center mt-3 leading-relaxed line-clamp-3">{item.description}</p>
+                </button>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </div>
       </div>
 
       {/* Modal */}
@@ -76,10 +83,8 @@ export default function HomePartenaires() {
                   e.currentTarget.src = fallbackLogo;
                 }}
               />
-              <h3 className="text-xl font-bold text-red-600">
-                {selectedPartenaire.name}
-              </h3>
-              <p className="text-gray-700">{selectedPartenaire.description}</p>
+              <h3 className="font-display text-xl text-encre">{selectedPartenaire.name}</h3>
+              <p className="text-graphite leading-relaxed">{selectedPartenaire.description}</p>
             </div>
           </ModalContent>
         </Modal>

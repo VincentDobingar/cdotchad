@@ -9,6 +9,7 @@ import {
   Landmark,
   ChevronRight,
 } from "lucide-react";
+import PageHero from "@/components/ui/PageHero";
 
 const activites = [
   {
@@ -64,83 +65,71 @@ const activites = [
 ];
 
 export default function Activites() {
-  const [openId, setOpenId] = useState(null);
-
-  const toggle = useCallback(
-    (id) => setOpenId((current) => (current === id ? null : id)),
-    []
-  );
+  const [openActivity, setOpenActivity] = useState(null);
+  const toggle = useCallback((id) => setOpenActivity((cur) => (cur === id ? null : id)), []);
 
   return (
-    <section className="py-20 bg-gradient-to-b from-white to-gray-50">
-      <div className="container mx-auto px-4">
-        <motion.h2
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-4xl font-bold text-center mb-16 text-primary"
-        >
-          Nos Activités
-        </motion.h2>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-10">
-          {activites.map((activite, index) => {
-            const Icon = activite.icon;
-            const isOpen = openId === activite.id;
-
-            return (
-              <motion.div
-                key={activite.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.2 }}
-                className="bg-white p-8 rounded-2xl shadow-md hover:shadow-xl transition-transform transform hover:-translate-y-1"
-              >
-                <div className="flex items-center justify-center mb-5">
-                  <div className="bg-primary/10 p-4 rounded-full">
-                    <Icon className="w-6 h-6 text-primary" />
+    <main className="bg-ivoire">
+      <PageHero
+        label="Nos activités"
+        title="Des actions concrètes, sur le terrain"
+        intro="Forums, formations, mentorat et partenariats : nous rapprochons les talents et les opportunités au Tchad."
+      />
+      <section className="py-20 md:py-24">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {activites.map((activity, index) => {
+              const Icon = activity.icon;
+              const isOpen = openActivity === activity.id;
+              return (
+                <motion.div
+                  key={activity.id}
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: index * 0.08 }}
+                  className="group bg-white border border-sable rounded-2xl p-8 shadow-sm hover:shadow-xl transition-all duration-300"
+                >
+                  <div className="grid place-items-center h-12 w-12 rounded-xl bg-rouge/10 text-rouge group-hover:bg-rouge group-hover:text-white transition-colors mb-5">
+                    <Icon className="w-6 h-6" />
                   </div>
-                </div>
-                <h3 className="text-xl font-semibold mb-3 text-center">{activite.title}</h3>
-                <p className="text-gray-600 text-center mb-5">{activite.description}</p>
+                  <h3 className="font-display text-xl text-encre mb-2">{activity.title}</h3>
+                  <p className="text-graphite leading-relaxed">{activity.description}</p>
 
-                {activite.subActivities && (
-                  <>
-                    <div className="text-center">
+                  {activity.subActivities && (
+                    <>
                       <button
-                        onClick={() => toggle(activite.id)}
-                        className="text-sm font-medium text-primary underline hover:text-primary-dark transition"
+                        onClick={() => toggle(activity.id)}
+                        className="mt-4 text-sm font-semibold text-rouge hover:text-rougeprofond underline-offset-4 hover:underline"
                       >
                         {isOpen ? "Masquer les sous-activités" : "Voir les sous-activités"}
                       </button>
-                    </div>
-
-                    <AnimatePresence initial={false}>
-                      {isOpen && (
-                        <motion.ul
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: "auto" }}
-                          exit={{ opacity: 0, height: 0 }}
-                          transition={{ duration: 0.4 }}
-                          className="mt-4 text-sm text-gray-700 space-y-2"
-                        >
-                          {activite.subActivities.map((sub) => (
-                            <li key={sub.id} className="flex items-center gap-2">
-                              <ChevronRight className="w-4 h-4 text-primary" />
-                              {sub.title}
-                            </li>
-                          ))}
-                        </motion.ul>
-                      )}
-                    </AnimatePresence>
-                  </>
-                )}
-              </motion.div>
-            );
-          })}
+                      <AnimatePresence initial={false}>
+                        {isOpen && (
+                          <motion.ul
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.35 }}
+                            className="mt-4 text-sm text-graphite space-y-2 overflow-hidden"
+                          >
+                            {activity.subActivities.map((sub) => (
+                              <li key={sub.id} className="flex items-center gap-2">
+                                <ChevronRight className="w-4 h-4 text-rouge shrink-0" />
+                                {sub.title}
+                              </li>
+                            ))}
+                          </motion.ul>
+                        )}
+                      </AnimatePresence>
+                    </>
+                  )}
+                </motion.div>
+              );
+            })}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </main>
   );
 }
-
