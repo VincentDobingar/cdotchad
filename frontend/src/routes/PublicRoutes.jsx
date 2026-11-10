@@ -24,6 +24,12 @@ import SuiviCandidature from "@/pages/public/SuiviCandidature";
 import MesCandidatureDetail from "@/pages/public/MesCandidatureDetail";
 import TestQuill from "@/components/public/TestQuill";
 import NotFound from "@/pages/NotFound";
+import Formations from "@/pages/public/Formations";
+import FormationDetail from "@/pages/public/FormationDetail";
+import VerifierCertificat from "@/pages/public/VerifierCertificat";
+import MesFormations from "@/pages/formation/MesFormations";
+import MaFormation from "@/pages/formation/MaFormation";
+import PasserEvaluation from "@/pages/formation/PasserEvaluation";
 import RequireRole from "@/routes/RequireRole";
 import EspaceLayout from "@/components/espace/EspaceLayout";
 import { Navigate, useParams } from "react-router-dom";
@@ -49,6 +55,41 @@ const publicRoutes = [
     element: (
       <RequireRole roles={["candidat"]} redirectTo="/login">
         <PostulerEtape />
+      </RequireRole>
+    ),
+  },
+  // Plateforme de formation en ligne
+  { path: "/formations", element: <Formations /> },
+  { path: "/formations/:slug", element: <FormationDetail /> },
+  { path: "/certificats/verifier", element: <VerifierCertificat /> },
+  { path: "/certificats/verifier/:numero", element: <VerifierCertificat /> },
+  {
+    path: "/mes-formations",
+    element: (
+      <RequireRole roles={["candidat", "partenaire"]} redirectTo="/login">
+        <EspaceLayout>
+          <MesFormations />
+        </EspaceLayout>
+      </RequireRole>
+    ),
+  },
+  {
+    path: "/mes-formations/:id",
+    element: (
+      <RequireRole roles={["candidat", "partenaire"]} redirectTo="/login">
+        <EspaceLayout>
+          <MaFormation />
+        </EspaceLayout>
+      </RequireRole>
+    ),
+  },
+  {
+    path: "/mes-formations/:id/evaluations/:evaluationId",
+    element: (
+      <RequireRole roles={["candidat", "partenaire"]} redirectTo="/login">
+        <EspaceLayout>
+          <PasserEvaluation />
+        </EspaceLayout>
       </RequireRole>
     ),
   },

@@ -13,6 +13,7 @@ const navItems = [
   { label: "Objectifs", to: "/objectifs" },
   { label: "Activités", to: "/activites" },
   { label: "Carrière", to: "/offres" },
+  { label: "Formations", to: "/formations" },
   { label: "Actualités", to: "/actualites" },
   { label: "Galerie", to: "/galerie" },
   { label: "Contact", to: "/contact" },

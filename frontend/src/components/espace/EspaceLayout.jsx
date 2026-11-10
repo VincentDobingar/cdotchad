@@ -2,19 +2,21 @@
 // Coque commune des espaces connectés (candidat, partenaire) : barre latérale sur
 // ordinateur, barre défilante sur mobile. Les liens dépendent du rôle connecté.
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { ArrowLeft, FileText, LayoutDashboard, LogOut, PlusCircle, Search, Settings, User } from "lucide-react";
+import { ArrowLeft, FileText, GraduationCap, LayoutDashboard, LogOut, PlusCircle, Search, Settings, User } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import NotificationsCloche from "@/components/NotificationsCloche";
 
 const LIENS_CANDIDAT = [
   { to: "/profile", label: "Mon profil", icon: User },
   { to: "/mes-candidatures", label: "Mes candidatures", icon: FileText },
+  { to: "/mes-formations", label: "Mes formations", icon: GraduationCap },
   { to: "/offres", label: "Trouver une offre", icon: Search },
 ];
 
 const LIENS_PARTENAIRE = [
   { to: "/partenaire", label: "Mes avis", icon: LayoutDashboard, end: true },
   { to: "/partenaire/avis/nouveau", label: "Soumettre un avis", icon: PlusCircle },
+  { to: "/mes-formations", label: "Mes formations", icon: GraduationCap },
   { to: "/profile", label: "Ma fiche et mot de passe", icon: Settings },
 ];
 

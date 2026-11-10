@@ -12,6 +12,7 @@ import Unauthorized from "@/pages/admin/Unauthorized";
 import ServicesRoutes from "./ServicesRoutes";
 import NotFound from "@/pages/NotFound";
 import debugRoutes from "./DebugRoutes";
+import formationsRoutes from "./FormationsRoutes";
 
 const adminRoutes = [
   ...dashboardRoutes,
@@ -25,6 +26,7 @@ const adminRoutes = [
   ...messagesRoutes,
   ...partenairesRoutes,
   ...moderationRoutes,
+  ...formationsRoutes,
   { path: "*", element: <NotFound /> },
   { path: "unauthorized", element: <Unauthorized />, },
 ];

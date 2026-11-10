@@ -135,9 +135,14 @@ import candidatRoutes from "./routes/candidat.routes.js";
 import partenairesRoutes from "./routes/partenaires.routes.js";
 import partenaireRoutes from "./routes/partenaire.routes.js";
 import notificationsRoutes from "./routes/notifications.routes.js";
+import formationsRoutes from "./routes/formations.routes.js";
+import formationsAdminRoutes from "./routes/formationsAdmin.routes.js";
 
 
 /* ------------------- Montage des routers -------------------------- */
+// Plateforme de formation : monté avant /admin pour que ce routeur ne l'intercepte pas
+app.use(`${BASE}/admin/formations`, formationsAdminRoutes);
+app.use(`${BASE}/formations`, formationsRoutes);
 app.use(`${BASE}/admin`, adminRoutes);
 app.use(`${BASE}/admin/stats`, adminStatsRoutes);
 app.use(`${BASE}/auth`, authRoutes);

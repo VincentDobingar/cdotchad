@@ -69,6 +69,10 @@ export default function AdminSidebar({ email, onLogout }) {
       ),
     },
     {
+      title: "Formations",
+      routes: visibleLinks.filter((r) => ["formations"].includes(r.path)),
+    },
+    {
       title: "Administration",
       routes: visibleLinks.filter(
         (r) =>
@@ -84,6 +88,7 @@ export default function AdminSidebar({ email, onLogout }) {
             "utilisateurs",
             "messages",
             "partenaires",
+            "formations",
           ].includes(r.path)
       ),
     },
