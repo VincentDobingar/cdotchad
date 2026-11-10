@@ -1,8 +1,11 @@
 // 📁 src/pages/admin/ResetPassword.jsx
+// Choix d'un nouveau mot de passe à partir du lien reçu par e-mail.
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import api from "@/utils/api";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
+import { ArrowRight } from "lucide-react";
+import api from "@/utils/api";
+import AdminAuthLayout, { boutonAuthCls, champAuthCls } from "@/components/admin/AdminAuthLayout";
 
 export default function ResetPassword() {
   const { token } = useParams();
@@ -10,62 +13,45 @@ export default function ResetPassword() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (password !== confirmPassword) {
-      toast.error("Les mots de passe ne correspondent pas !");
-      return;
-    }
-
+    setErr("");
+    if (password.length < 8) return setErr("Le mot de passe doit contenir au moins 8 caractères.");
+    if (password !== confirmPassword) return setErr("Les deux mots de passe ne correspondent pas.");
     setLoading(true);
     try {
       await api.post(`/admin/reset-password/${token}`, { newPassword: password });
-      toast.success("Mot de passe réinitialisé !");
+      toast.success("Mot de passe réinitialisé. Vous pouvez vous connecter.");
       navigate("/admin/login");
-    } catch (err) {
-      toast.error("Erreur lors de la réinitialisation.");
+    } catch (e2) {
+      setErr(e2?.response?.data?.message || "Lien invalide ou expiré. Demandez un nouveau lien.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white dark:bg-gray-800 p-8 rounded shadow-md w-full max-w-md space-y-4"
-      >
-        <h2 className="text-2xl font-bold text-center text-red-600 dark:text-white">
-          Réinitialiser le mot de passe
-        </h2>
-
-        <input
-          type="password"
-          placeholder="Nouveau mot de passe"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full p-2 border rounded dark:bg-gray-700 dark:text-white"
-          required
-        />
-
-        <input
-          type="password"
-          placeholder="Confirmer le mot de passe"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          className="w-full p-2 border rounded dark:bg-gray-700 dark:text-white"
-          required
-        />
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded transition"
-        >
-          {loading ? "Mise à jour..." : "Réinitialiser"}
+    <AdminAuthLayout titre="Nouveau mot de passe" sousTitre="Au moins 8 caractères">
+      {err && <div className="mt-6 text-sm text-rougeprofond bg-rouge/10 border border-rouge/20 rounded-lg p-3">{err}</div>}
+      <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+        <label className="block">
+          <span className="text-sm font-medium text-encre">Nouveau mot de passe</span>
+          <input type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} required className={champAuthCls} />
+        </label>
+        <label className="block">
+          <span className="text-sm font-medium text-encre">Confirmer le mot de passe</span>
+          <input type="password" autoComplete="new-password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required className={champAuthCls} />
+        </label>
+        <button type="submit" disabled={loading} className={boutonAuthCls}>
+          {loading ? "Mise à jour…" : "Enregistrer"}
+          {!loading && <ArrowRight className="w-4 h-4" />}
         </button>
       </form>
-    </div>
+      <div className="mt-6 border-t border-sable pt-6 text-sm text-center">
+        <Link to="/admin/mot-de-passe-oublie" className="font-semibold text-rouge hover:text-rougeprofond hover:underline underline-offset-4">Demander un nouveau lien</Link>
+      </div>
+    </AdminAuthLayout>
   );
 }

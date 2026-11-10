@@ -2,7 +2,7 @@
 // Administration de la plateforme de formation. Montée sous /backend/admin/formations.
 import express from "express";
 import { requireRole } from "../middlewares/requireRole.js";
-import { uploadReplay, uploadSupport } from "../middlewares/uploadFormation.js";
+import { uploadImageFormation, uploadReplay, uploadSupport } from "../middlewares/uploadFormation.js";
 import * as c from "../controllers/formationsAdmin.controller.js";
 
 const router = express.Router();
@@ -65,5 +65,7 @@ router.get("/:id", c.lireFormation);
 router.put("/:id", c.modifierFormation);
 router.delete("/:id", c.supprimerFormation);
 router.post("/:id/sessions", c.creerSession);
+router.post("/:id/image", uploadImageFormation, c.televerserImage);
+router.delete("/:id/image", c.retirerImage);
 
 export default router;

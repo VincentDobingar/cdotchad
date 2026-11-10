@@ -10,6 +10,17 @@ import { calculerResultatsSession } from "../services/formation/resultats.servic
 import { genererCertificatPDF, nouveauNumero, urlVerification } from "../services/formation/certificat.service.js";
 import { booleen, entierPositif, envoyerEmail, idParam, journaliser, slugifier, texte } from "../services/formation/outils.js";
 import { creerNotification } from "./notifications.controller.js";
+import fs from "fs";
+import path from "path";
+import { DOSSIER_IMAGES } from "../middlewares/uploadFormation.js";
+
+const PREFIXE_IMAGE = "/backend/uploads/formations/";
+
+function supprimerImageLocale(url) {
+  if (!url || !url.startsWith(PREFIXE_IMAGE)) return;
+  const nom = path.basename(url);
+  fs.rm(path.join(DOSSIER_IMAGES, nom), { force: true }, () => {});
+}
 
 /* ------------------------------------------------------------------ */
 /*  Outils                                                            */
@@ -138,6 +149,34 @@ export async function modifierFormation(req, res) {
   res.json({ formation: f });
 }
 
+// POST /admin/formations/:id/image (multipart, champ « image »)
+export async function televerserImage(req, res) {
+  const id = idParam(req);
+  if (!req.file) throw erreur(400, "Aucune image reçue.");
+  const url = PREFIXE_IMAGE + req.file.filename;
+  const { rows: [avant] } = await pool.query("SELECT image_url FROM formations WHERE id = $1", [id]);
+  if (!avant) {
+    fs.rm(req.file.path, { force: true }, () => {});
+    throw erreur(404, "Formation introuvable.");
+  }
+  const { rows: [f] } = await pool.query(
+    "UPDATE formations SET image_url = $2, maj_le = now() WHERE id = $1 RETURNING *",
+    [id, url]
+  );
+  if (avant.image_url !== url) supprimerImageLocale(avant.image_url);
+  res.json({ formation: f });
+}
+
+// DELETE /admin/formations/:id/image
+export async function retirerImage(req, res) {
+  const id = idParam(req);
+  const { rows: [avant] } = await pool.query("SELECT image_url FROM formations WHERE id = $1", [id]);
+  if (!avant) throw erreur(404, "Formation introuvable.");
+  const { rows: [f] } = await pool.query("UPDATE formations SET image_url = NULL, maj_le = now() WHERE id = $1 RETURNING *", [id]);
+  supprimerImageLocale(avant.image_url);
+  res.json({ formation: f });
+}
+
 export async function supprimerFormation(req, res) {
   const id = idParam(req);
   const { rows: [{ n }] } = await pool.query(
@@ -146,8 +185,9 @@ export async function supprimerFormation(req, res) {
     [id]
   );
   if (n > 0) throw erreur(409, "Des participants sont inscrits : archivez la formation plutôt que de la supprimer.");
-  const { rowCount } = await pool.query("DELETE FROM formations WHERE id = $1", [id]);
-  if (!rowCount) throw erreur(404, "Formation introuvable.");
+  const { rows: [sup] } = await pool.query("DELETE FROM formations WHERE id = $1 RETURNING image_url", [id]);
+  if (!sup) throw erreur(404, "Formation introuvable.");
+  supprimerImageLocale(sup.image_url);
   res.json({ ok: true });
 }
 

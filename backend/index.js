@@ -68,7 +68,14 @@ const ORIGINS = new Set([
 ]);
 app.use(
   cors({
-    origin: (origin, cb) => (!origin || ORIGINS.has(origin) ? cb(null, true) : cb(new Error("CORS blocked"))),
+    // En développement, tout port de localhost est accepté (Vite passe sur 5174, 5175...
+    // quand 5173 est déjà pris, par exemple par l'ancien projet lancé en parallèle).
+    origin: (origin, cb) =>
+      !origin ||
+      ORIGINS.has(origin) ||
+      (process.env.NODE_ENV !== "production" && /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin))
+        ? cb(null, true)
+        : cb(new Error("CORS blocked")),
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
@@ -77,7 +84,7 @@ app.use(
 app.options(/.*/, cors());
 
 /* ----------- Préparation dossiers uploads (si manquants) ---------- */
-for (const folder of ["cv", "lettres", "diplomes", "galerie", "actualites", "documents"]) {
+for (const folder of ["cv", "lettres", "diplomes", "galerie", "actualites", "documents", "formations"]) {
   const dirPath = path.join(__dirname, "uploads", folder);
   if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
 }

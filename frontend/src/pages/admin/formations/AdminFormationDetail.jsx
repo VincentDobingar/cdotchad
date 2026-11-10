@@ -8,6 +8,7 @@ import api from "@/utils/api";
 import { dateFr, fcfa, messageErreur } from "@/utils/formation";
 import { Badge, Bouton, Carte, Champ, champCls, Modale, STATUT_SESSION } from "@/components/formation/AdminUi";
 import FormulaireSession from "@/components/formation/FormulaireSession";
+import ImageFormation from "@/components/formation/ImageFormation";
 
 const VIDE = {
   titre: "", slug: "", resume: "", description: "", objectifs: "", public_cible: "", prerequis: "",
@@ -23,6 +24,8 @@ export default function AdminFormationDetail() {
   const [chargement, setChargement] = useState(!nouvelle);
   const [envoi, setEnvoi] = useState(false);
   const [modaleSession, setModaleSession] = useState(false);
+  const [image, setImage] = useState(null); // fichier choisi, envoyé à l'enregistrement
+  const [imageAvant, setImageAvant] = useState(""); // image enregistrée en base
 
   const charger = useCallback(() => {
     if (nouvelle) return;
@@ -30,6 +33,7 @@ export default function AdminFormationDetail() {
       .get(`/admin/formations/${id}`)
       .then(({ data }) => {
         setV({ ...VIDE, ...Object.fromEntries(Object.entries(data.formation).map(([k, x]) => [k, x ?? ""])) });
+        setImageAvant(data.formation.image_url || "");
         setSessions(data.sessions || []);
       })
       .catch((err) => toast.error(messageErreur(err, "Formation introuvable.")))
@@ -43,15 +47,36 @@ export default function AdminFormationDetail() {
   const enregistrer = async (e) => {
     e.preventDefault();
     setEnvoi(true);
+    // L'image importée est envoyée à part : on ne transmet ici qu'une adresse saisie à la main
+    const urlSaisie = /^https?:\/\//i.test(v.image_url) ? v.image_url : null;
     const corps = { ...v, duree_heures: v.duree_heures === "" ? null : Number(v.duree_heures) };
+    if (image || (v.image_url && v.image_url === imageAvant)) delete corps.image_url;
+    else corps.image_url = urlSaisie;
+    const envoyerImage = async (fid) => {
+      const fd = new FormData();
+      fd.append("image", image);
+      const { data } = await api.post(`/admin/formations/${fid}/image`, fd, { timeout: 120000 });
+      return data.formation;
+    };
     try {
       if (nouvelle) {
         const { data } = await api.post("/admin/formations", corps);
+        if (image) {
+          try {
+            await envoyerImage(data.formation.id);
+          } catch (err) {
+            toast.error(messageErreur(err, "Formation créée, mais l'image n'a pas pu être envoyée."));
+          }
+        }
         toast.success("Formation créée. Ajoutez maintenant une session.");
         navigate(`/admin/formations/${data.formation.id}`, { replace: true });
       } else {
-        const { data } = await api.put(`/admin/formations/${id}`, corps);
-        setV((s) => ({ ...s, slug: data.formation.slug }));
+        if (!image && !v.image_url && imageAvant) await api.delete(`/admin/formations/${id}/image`);
+        let { data: { formation } } = await api.put(`/admin/formations/${id}`, corps);
+        if (image) formation = await envoyerImage(id);
+        setV((s) => ({ ...s, slug: formation.slug, image_url: formation.image_url || "" }));
+        setImageAvant(formation.image_url || "");
+        setImage(null);
         toast.success("Formation enregistrée.");
       }
     } catch (err) {
@@ -128,6 +153,16 @@ export default function AdminFormationDetail() {
       <Carte titre="Fiche catalogue">
         <form onSubmit={enregistrer} className="grid gap-4 md:grid-cols-2">
           <Champ label="Titre *" className="md:col-span-2"><input required value={v.titre} onChange={maj("titre")} className={champCls} /></Champ>
+          <div className="md:col-span-2">
+            <ImageFormation
+              url={v.image_url}
+              fichier={image}
+              onFichier={setImage}
+              onUrl={(u) => setV((s) => ({ ...s, image_url: u }))}
+              onErreur={(m) => toast.error(m)}
+              envoi={envoi}
+            />
+          </div>
           <Champ label="Résumé" aide="Affiché sur la carte du catalogue" className="md:col-span-2">
             <textarea rows={2} value={v.resume} onChange={maj("resume")} className={champCls} />
           </Champ>
@@ -139,7 +174,6 @@ export default function AdminFormationDetail() {
             <Champ label="Formateur"><input value={v.formateur_nom} onChange={maj("formateur_nom")} className={champCls} /></Champ>
             <Champ label="Durée totale (heures)"><input type="number" min="0" step="0.5" value={v.duree_heures} onChange={maj("duree_heures")} className={champCls} /></Champ>
           </div>
-          <Champ label="Image (URL)" aide="Facultatif, format 16/9"><input value={v.image_url} onChange={maj("image_url")} className={champCls} /></Champ>
           <Champ label="Adresse de la page" aide={`/formations/${v.slug || "…"}`}><input value={v.slug} onChange={maj("slug")} className={champCls} placeholder="générée depuis le titre" /></Champ>
           <Champ label="Statut">
             <select value={v.statut} onChange={maj("statut")} className={champCls}>
