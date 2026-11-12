@@ -10,11 +10,13 @@ export default defineConfig({
     postcss: './postcss.config.cjs',
   },
   server: {
-    port: 5173,
+    // Ports modifiables sans toucher au fichier (ex. quand l'ancien projet tourne déjà) :
+    // VITE_PORT pour le site, VITE_API_PROXY pour l'adresse du serveur API.
+    port: Number(process.env.VITE_PORT) || 5173,
     open: true,
     proxy: {
       '/backend': {
-        target: 'http://localhost:5000',
+        target: process.env.VITE_API_PROXY || 'http://localhost:5000',
         changeOrigin: true,
         secure: false,
       },
