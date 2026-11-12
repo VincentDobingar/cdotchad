@@ -1,16 +1,7 @@
 // 📁 src/components/HomeObjectifs.jsx
 import { Link } from "react-router-dom";
-import { Target, HandHeart, Lightbulb, ShieldCheck, Users, ChartColumn } from "lucide-react";
 import SectionHeading from "@/components/ui/SectionHeading";
-
-const objectifs = [
-  { Icon: Target, title: "Insertion professionnelle", description: "Faciliter l'accès à l'emploi des jeunes et des femmes au Tchad." },
-  { Icon: HandHeart, title: "Accompagnement humain", description: "Placer l'humain au centre des stratégies RH et des politiques publiques." },
-  { Icon: Lightbulb, title: "Innovation sociale", description: "Favoriser l'émergence de nouvelles approches pour un développement durable." },
-  { Icon: ShieldCheck, title: "Engagement éthique", description: "Promouvoir la transparence, l'équité et la responsabilité dans nos actions." },
-  { Icon: Users, title: "Renforcement de capacités", description: "Outiller les acteurs locaux pour une gestion des talents plus efficace." },
-  { Icon: ChartColumn, title: "Analyse et veille RH", description: "Observer les tendances du marché pour orienter nos interventions." },
-];
+import { OBJECTIFS } from "@/data/contenuCabinet";
 
 export default function HomeObjectifs() {
   return (
@@ -18,14 +9,14 @@ export default function HomeObjectifs() {
       <div className="max-w-6xl mx-auto px-6 md:px-8">
         <SectionHeading
           label="Nos objectifs"
-          title="Un avenir professionnel inclusif et durable"
-          intro="Six engagements qui guident chacune de nos interventions au service du Tchad."
+          title="Ce que nous nous engageons à changer"
+          intro="Quatre priorités guident chacune de nos interventions auprès des entreprises, des institutions et des projets."
         />
-        <div className="mt-14 grid gap-x-10 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
-          {objectifs.map(({ Icon, title, description }) => (
-            <div key={title} className="border-t border-sablefonce pt-6">
+        <div className="mt-14 grid gap-x-10 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
+          {OBJECTIFS.map(({ Icon, titre, description }) => (
+            <div key={titre} className="border-t border-sablefonce pt-6">
               <Icon className="h-7 w-7 text-rouge" />
-              <h3 className="mt-4 text-lg font-semibold text-encre">{title}</h3>
+              <h3 className="mt-4 text-lg font-semibold text-encre">{titre}</h3>
               <p className="mt-2 text-graphite leading-relaxed">{description}</p>
             </div>
           ))}

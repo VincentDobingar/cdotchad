@@ -31,29 +31,29 @@ export default function HomeHero() {
         >
           <span className="inline-flex items-center gap-2.5 text-sm font-medium text-white/80">
             <span className="h-px w-8 bg-rouge" aria-hidden="true" />
-            Cabinet de conseil · N'Djamena, Tchad
+            Audit · Conseil · Management · N'Djamena, Tchad
           </span>
           <h1 className="mt-6 font-display font-semibold leading-[1.05] text-[2.6rem] sm:text-5xl lg:text-[4.25rem]">
-            Révéler les talents,
+            Fiabiliser, structurer, faire grandir :
             <br />
             <span className="italic font-medium text-white/95">bâtir l'avenir économique du Tchad.</span>
           </h1>
           <p className="mt-6 max-w-xl text-lg text-white/85 leading-relaxed">
-            Nous relions les entreprises aux meilleurs profils et accompagnons les talents vers les bonnes
-            opportunités — recrutement, formation, RH et transformation.
+            Nous aidons les entreprises, les institutions et les projets à fiabiliser leur information, à structurer
+            leur organisation et à développer leurs équipes : audit, conseil et management.
           </p>
           <div className="mt-9 flex flex-col sm:flex-row gap-4">
             <Link
-              to="/offres"
+              to="/services"
               className="inline-flex justify-center items-center bg-rouge hover:bg-rougeprofond text-white px-7 py-3.5 rounded-full font-semibold shadow-lg shadow-rouge/20 transition"
             >
-              Découvrir les offres
+              Nos services
             </Link>
             <Link
-              to="/services"
+              to="/offres"
               className="inline-flex justify-center items-center border border-white/30 hover:border-white/70 hover:bg-white/5 text-white px-7 py-3.5 rounded-full font-semibold transition"
             >
-              Nos services
+              Découvrir les offres
             </Link>
           </div>
         </motion.div>
@@ -63,7 +63,7 @@ export default function HomeHero() {
         <div className="max-w-6xl mx-auto px-6 md:px-8 py-4 flex flex-wrap items-center gap-x-10 gap-y-2 text-sm text-white/75">
           <span>Enregistré au RCCM depuis 2021</span>
           <span className="hidden sm:block h-4 w-px bg-white/20" aria-hidden="true" />
-          <span>RH · Emploi · Formation · Finance</span>
+          <span>Audit · Conseil · Management</span>
           <span className="hidden sm:block h-4 w-px bg-white/20" aria-hidden="true" />
           <span>Un réseau de partenaires au Tchad et au-delà</span>
         </div>

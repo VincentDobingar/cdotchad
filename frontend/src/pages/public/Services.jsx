@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import api from "@/utils/api";
 import PageHero from "@/components/ui/PageHero";
+import { METIERS } from "@/data/contenuCabinet";
 
 // --- Helpers sûrs ---
 const asArray = (v) => {
@@ -110,18 +111,46 @@ export default function PublicServices() {
     <main className="bg-ivoire">
       <PageHero
         label="Nos services"
-        title="Un accompagnement complet, de l'ambition au résultat"
-        intro="Des solutions sur mesure pour les entreprises comme pour les chercheurs d'emploi, à chaque étape du parcours."
+        title="Un accompagnement complet, du diagnostic au résultat"
+        intro="Des solutions sur mesure pour les entreprises, les institutions et les projets de développement, à chaque étape de leur croissance."
       />
+
+      {/* Les trois métiers du cabinet */}
+      <section className="pt-20 md:pt-24">
+        <div className="max-w-6xl mx-auto px-6 grid gap-6 md:grid-cols-3">
+          {METIERS.map(({ id, titre, Icon, accroche, prestations }, index) => (
+            <motion.article
+              key={id}
+              id={id}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: index * 0.08 }}
+              className="group bg-white border border-sable rounded-2xl p-8 shadow-sm hover:shadow-xl transition-all duration-300"
+            >
+              <div className="grid place-items-center h-12 w-12 rounded-xl bg-rouge/10 text-rouge group-hover:bg-rouge group-hover:text-white transition-colors mb-5">
+                <Icon className="w-6 h-6" />
+              </div>
+              <h2 className="font-display text-2xl text-encre">{titre}</h2>
+              <p className="mt-1 text-sm text-graphite/80">{accroche}</p>
+              <ul className="mt-5 space-y-2.5 text-graphite">
+                {prestations.map((p) => (
+                  <li key={p} className="flex gap-2">
+                    <ChevronRight className="w-4 h-4 mt-1 text-rouge shrink-0" />
+                    {p}
+                  </li>
+                ))}
+              </ul>
+            </motion.article>
+          ))}
+        </div>
+      </section>
 
       <section className="py-20 md:py-24">
         <div className="max-w-6xl mx-auto px-6">
-          {loading ? (
-            <p className="text-center text-graphite/70 py-10">Chargement des services…</p>
-          ) : services.length === 0 ? (
-            <p className="text-center text-graphite/60 py-10">Aucun service disponible pour le moment.</p>
-          ) : (
+          {loading ? null : services.length === 0 ? null : (
             <>
+              <h2 className="font-display text-3xl text-encre mb-8">Le détail de nos prestations</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {paginated.map((service, index) => {
                   const Icon = service.IconComp || iconMap[service.icone] || TriangleAlert;

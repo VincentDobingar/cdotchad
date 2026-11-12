@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import PageHero from "@/components/ui/PageHero";
+import { METIERS } from "@/data/contenuCabinet";
 
 const teamMembers = [
   {
@@ -85,7 +86,7 @@ export default function Presentation() {
       <PageHero
         label="Le cabinet"
         title="Qui sommes-nous ?"
-        intro="CDO Tchad révèle les talents tchadiens et les propulse vers des opportunités concrètes — RH, emploi, formation et finance."
+        intro="CDO Consulting Tchad est un cabinet d’audit, de conseil et de management basé à N’Djaména. Il accompagne les entreprises, les institutions et les projets de développement dans la fiabilisation de leur information financière, la structuration de leur organisation et le développement de leurs équipes."
       />
 
       {/* SECTION: Présentation */}
@@ -99,25 +100,34 @@ export default function Presentation() {
         >
           <div>
             <p className="text-lg text-graphite leading-relaxed mb-4">
-              CDO TCHAD est une initiative innovante qui vise à transformer le paysage de l'emploi au Tchad en mettant en
-              relation les jeunes talents avec les entreprises, en développant les compétences et en favorisant une
-              économie inclusive et durable.
+              CDO Consulting Tchad est un cabinet d’audit, de conseil et de management qui accompagne les entreprises, les
+              institutions publiques et les projets de développement dans leur recherche de performance durable.
             </p>
+            <p className="text-lg text-graphite leading-relaxed mb-3">Nous intervenons sur trois métiers complémentaires :</p>
+            <ul className="space-y-3 mb-5">
+              {METIERS.map(({ id, titre, Icon, prestations }) => (
+                <li key={id} className="flex gap-3">
+                  <span className="shrink-0 grid place-items-center h-9 w-9 rounded-lg bg-rouge/10 text-rouge">
+                    <Icon className="w-5 h-5" />
+                  </span>
+                  <p className="text-graphite leading-relaxed">
+                    <strong className="text-encre">{titre} :</strong> {prestations.map((x) => x.charAt(0).toLowerCase() + x.slice(1)).join(", ")}.
+                  </p>
+                </li>
+              ))}
+            </ul>
             <p className="text-lg text-graphite leading-relaxed mb-4">
-              C'est une plateforme stratégique dédiée à la valorisation des talents, à l'innovation en ressources humaines
-              et à l’amélioration de l’employabilité au Tchad.
-              <br />
-              Un cabinet de consultance spécialisé dans l’ingénierie informatique, la communication digitale et la
-              stratégie marketing, la représentation d’affaires, les prestations de services divers en ressources humaines
-              ainsi que la finance.
-              <br />
-              Nous accompagnons les entreprises dans la recherche de performance durable à travers des solutions sur
-              mesure, adaptées à leurs enjeux organisationnels, opérationnels et humains.
+              Nous proposons des solutions sur mesure, adaptées aux enjeux financiers, organisationnels et humains de chaque
+              client, et nous nous appuyons sur une maîtrise des référentiels régionaux : OHADA/SYSCOHADA, COBAC, CEMAC,
+              ainsi que sur les procédures des bailleurs.
             </p>
             <blockquote className="font-display italic text-xl text-encre mt-6 border-l-2 border-rouge pl-5 leading-relaxed">
-              « Notre engagement est de révéler les talents tchadiens et de les propulser vers des opportunités concrètes.
-              Notre mission est d’apporter une expertise ciblée pour renforcer les capacités des organisations et faciliter
-              l’insertion des compétences locales dans un écosystème professionnel en constante évolution. »
+              « Notre engagement est de bâtir des organisations solides, capables de prendre des décisions en toute confiance
+              et de se développer durablement. Notre mission est d’apporter une expertise ciblée pour fiabiliser la gestion,
+              renforcer les capacités des équipes et valoriser les compétences locales au service de l’économie tchadienne. »
+              <footer className="mt-3 not-italic font-sans text-sm font-semibold text-rouge">
+                Dr. Sougnabé Oualoumi, Directeur Général
+              </footer>
             </blockquote>
           </div>
         </motion.div>
@@ -148,15 +158,16 @@ export default function Presentation() {
             <span className="h-px w-6 bg-rouge/60" aria-hidden="true" />
           </span>
           <h2 className="mt-3 font-display text-3xl md:text-4xl text-encre mb-5">
-            Un partenaire de choix pour les talents et les organisations
+            Un partenaire de confiance pour les organisations
           </h2>
           <p className="text-lg text-graphite leading-relaxed mb-3">
-            Promouvoir l’employabilité, l’innovation RH et créer des ponts solides entre les talents tchadiens et les
-            opportunités locales et internationales.
+            Fiabiliser la gestion, structurer les organisations et développer les compétences, pour des entreprises et des
+            institutions tchadiennes plus solides et plus performantes.
           </p>
           <p className="text-lg text-graphite leading-relaxed">
-            Nous nous positionnons comme un partenaire de choix auprès des entreprises, organisations et particuliers afin
-            de leur fournir les services de qualité qu’il leur faut pour atteindre leurs objectifs socio-économiques.
+            Nous sommes le partenaire des entreprises, des institutions publiques, des projets de développement et des
+            organisations internationales. Par des missions d’audit, de conseil et de management, nous les aidons à
+            atteindre leurs objectifs économiques et sociaux, avec rigueur, indépendance et sens du résultat.
           </p>
         </motion.div>
       </section>

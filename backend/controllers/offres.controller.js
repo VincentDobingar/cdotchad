@@ -5,6 +5,7 @@ import { fileURLToPath } from "url";
 import PDFDocument from "pdfkit";
 import { pool } from "../config/db.js";
 import { creerNotification } from "./notifications.controller.js";
+import { harmoniserTitre } from "../utils/titreOffre.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -83,7 +84,8 @@ const FILTRE_PUBLIC = `LOWER(COALESCE(statut, 'publiee')) <> 'brouillon' AND COA
 
 export function toOffrePayload(body = {}) {
   return {
-    titre: safeTrim(body.titre),
+    // Titres de postes harmonisés (majuscule initiale, sigles conservés) : cf. utils/titreOffre.js
+    titre: harmoniserTitre(safeTrim(body.titre)),
     resume: safeTrim(body.resume),
     description: safeTrim(body.description),
     attributions: safeTrim(body.attributions),
